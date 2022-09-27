@@ -1,6 +1,8 @@
-to run this example, go into the streamlit-light-leaflet directory and type:
+to run this example:
 
 ```
+cd streamlit-light-leaflet
+
 cat STARTUP.md
 ```
 
