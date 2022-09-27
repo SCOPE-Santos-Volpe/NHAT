@@ -1,4 +1,4 @@
-to run this example, type:
+to run this example, go into the streamlit-light-leaflet directory and type:
 
 ```
 cat STARTUP.md
