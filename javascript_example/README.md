@@ -18,9 +18,10 @@ Where I got the code:
 Leaflet has the benefit of being very interactive, but it is javascript and needs a way to receive data to plot from python.
 - I figured out a way to read from csv files using "FileReader", it's in the code right now.
   - It can plot 1000 points of FARS2020 data (in Huntsville Alabama), but since I tried to change how it reads in csv files, in my local code this ability was broken. Either way, working with huge csv data in JavaScript isn't great and we need pandas. I don't know how slow leaflet/JS would be if trying to plot 400k points like Mira's plotly example (it might be a downside if it's slow)  
-- Also this is one possible way which looks promising but I haven't implemented yet:
+- Also this is a possible way for leaflet to work with python using "geojson" which looks promising but I haven't implemented yet:
   - https://programminghistorian.org/en/lessons/mapping-with-python-leaflet
 
+By the way, the maps are from MapBox. I had to create a key for free to be able to use them.
 
 If plotly can also do the same things, I'll happily go with that instead (python yay!) but [Leaflet](https://leafletjs.com) has many great interactive map features. 
 
