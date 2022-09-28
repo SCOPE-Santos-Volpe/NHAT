@@ -1,10 +1,10 @@
-#Lilo's Leaflet example
+# Lilo's Leaflet example
 
 Sorry for the messy code! Working on fixing it up
 
 Where I got the code:
   
-- First I used this guy's example to return coordinates on map, and used it to learned how to create alerts and popups, and how to get the window's east west north and south longitudes and latitudes. 
+- First I used this guy's example to get the coordinates of the place you click on the map, and used it to learn how to create alerts and popups, and get the window's east west north and south longitudes and latitudes. 
   - https://discuss.streamlit.io/t/using-leaflet-instead-of-folium-in-streamlit-to-return-coordinates-on-map-click/4946
   - https://github.com/andfanilo/streamlit-light-leaflet
 - Next I used leaflet.js documentation examples to learn how to add overlays and controls, and to plot points that look different ways.
