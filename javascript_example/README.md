@@ -39,4 +39,4 @@ cat STARTUP.md
 
 Copy the first block into one terminal to start npm
 
-Copy the second block into a new terminal to start the python init file
+Copy the second block into a new terminal (after navigating to the correct folder) to start the python init file
