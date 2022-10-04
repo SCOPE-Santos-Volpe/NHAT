@@ -1,1 +1,1 @@
-# Olin College of Engineering Santos Volpe SCOPE Team
+# Olin College Santos Volpe SCOPE Team
