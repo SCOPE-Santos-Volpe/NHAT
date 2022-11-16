@@ -8,7 +8,7 @@ import glob
 import pandas as pd
 import os
 
-def combine_FARS_datasets(path: str = 'FARS CSVs/', output_filename: str = 'combined_FARS.csv') -> pd.DataFrame:
+def combine_FARS_datasets(path: str = 'FARS/FARS CSVs/', output_filename: str = 'combined_FARS.csv') -> pd.DataFrame:
     """ Combines FARS datasets in folder `path` into a single CSV file at `output_filename`.
 
     Calls a series of helper functions, see their docstrings for specifics.
@@ -50,6 +50,7 @@ def get_all_csv_filenames(path: str) -> list[str]:
         A list of strings containing the file path to every csv in the folder at `path`
     """
     all_filenames = glob.glob(os.path.join(path, "*.CSV"))
+    print(all_filenames)
     return all_filenames
 
 def get_all_dfs_from_csv(filenames: list[str], required_columns: list[str] = ['LATITUDE','LONGITUD']) -> list[pd.DataFrame]:

@@ -36,8 +36,8 @@ import time
 # base_file.close()
 # update_file.close()
 
-path='NEMSIS\\2021 ASCII\\'
-newpath='NEMSIS\\2021 Heads\\'
+path='NEMSIS/2021 ASCII/'
+newpath='NEMSIS/2021 Heads/'
 all_filenames = glob.glob(os.path.join(path, "*.txt"))
 print(all_filenames)
 
