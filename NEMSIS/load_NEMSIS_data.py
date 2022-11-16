@@ -1,3 +1,9 @@
+'''We used this file to try to work with the NEMSIS data. It turns out that the NEMSIS data doesn't include lat/lon because those are the identifiable data. It doesn't seem like we're allowed to have the raw lat/lon, only the anonymized version
+
+'''
+
+
+
 import glob
 import os
 import pandas as pd
