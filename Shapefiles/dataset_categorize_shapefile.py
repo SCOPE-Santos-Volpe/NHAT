@@ -1,4 +1,8 @@
-import json
+# import json
+import geojson
+from shapely.geometry import shape, Point, Polygon, MultiPolygon
+import pandas as pd
+
 
 state_codes = {
     'AL': '01', 'AK': '02', 'AZ': '04', 'AR': '05', 'CA': '06', 'CO': '08',
@@ -13,19 +17,53 @@ state_codes = {
     'PR': '72', 'VI': '78'
 }
 
-path_to_file = 'Shapefiles/gz_2010_us_040_00_500k.geojson'
+def load_geojson(path='Shapefiles/gz_2010_us_040_00_500k.geojson'):
+    with open(path) as f:
+        states = geojson.load(f)
 
-with open(path_to_file) as f:
-    states = json.load(f)
-features = states['features'][0]
+    states_dict = {}
 
-states_dict = {}
+    for i in range(len(states['features'])):
+        state_name = states['features'][i]['properties']['NAME']
+        state_coords = shape(states['features'][i]['geometry'])
+        states_dict[state_name] = state_coords
 
-for i in range(len(states['features'])):
-    state_name = states['features'][i]['properties']['NAME']
-    state_coords = states['features'][i]['geometry']['coordinates']
-    states_dict[state_name] = state_coords
+    return states_dict
+
+def get_fars(filename = 'combined_FARS.csv'):
+    df=pd.read_csv(filename)
+    return df
 
 
-thing = states_dict.keys()
 
+def main():
+    fars = get_fars()
+    states_dict = load_geojson()
+    state_multipoly = states_dict['California']
+
+
+    testloc = Point(-122.4721043962023, 37.74900843850233)
+
+    # thing = fars.columns
+
+    fars['point_object'] = fars.apply(lambda x: Point(x['LONGITUD'],x['LATITUDE']), axis=1)
+    fars['state_being_checked'] = 'California'
+    print(fars)
+    fars['point_in_state'] = fars.apply(lambda x: state_multipoly.contains(x['point_object']), axis=1)
+    # fars['point_object'] = fars.apply(lambda x: x['LONGITUD'], axis=1)
+
+    # thing = fars['point_object']
+
+    thing = fars
+
+    print(thing)
+    print(type(thing))
+
+if __name__=="__main__":
+    main()
+
+# test = geojson.intersects(thing,testloc)
+
+# MultiPolygon.contains(thing, testloc)
+
+# thing.contains(testloc)
