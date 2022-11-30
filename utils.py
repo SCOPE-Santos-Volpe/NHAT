@@ -33,7 +33,7 @@ def load_df_from_csv(path:str, **kwargs) -> pd.DataFrame:
     df=pd.read_csv(path, **kwargs)
     return df
 
-def get_all_dfs_from_csv(filenames: list[str], required_columns: list[str] = []) -> list[pd.DataFrame]:
+def get_all_dfs_from_csv(filenames: list[str], required_columns: list[str] = [], **kwargs) -> list[pd.DataFrame]:
     """Returns a list of dataframes loaded from the list of files `filename`.
 
     If `required_columns` is set then will only load .csvs with every item in `required_columns` in their column names.
@@ -51,7 +51,7 @@ def get_all_dfs_from_csv(filenames: list[str], required_columns: list[str] = [])
     dfs=[]
 
     for filename in all_files:
-        df=pd.read_csv(filename,index_col=None, encoding_errors='ignore', low_memory=False)
+        df=load_df_from_csv(filename, **kwargs)
         if(all(elem in df.columns for elem in required_columns)):
             dfs.append(df)
 
