@@ -51,7 +51,7 @@ category_col_name: str, category_id_func: Callable, category_geometry_func: Call
 
     """
 
-    categories_dict = build_categories_dict(shapes, category_id_func = category_id_func, category_geometry_func=category_geometry_func)
+    categories_dict = build_categories_dict(shapes, category_id_func = category_id_func, category_geometry_func = category_geometry_func)
 
     # Create a new column called point, with a shapely.geometry.Point made from lon_column and lat_column
     df['point'] = df.apply(lambda x: Point(x[lon_column], x[lat_column]), axis=1)
