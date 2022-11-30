@@ -18,7 +18,7 @@ def get_all_csv_filenames(path: str) -> list[str]:
     print(all_filenames)
     return all_filenames
 
-def get_all_dfs_from_csv(filenames: list[str], required_columns: list[str] = ['LATITUDE','LONGITUD']) -> list[pd.DataFrame]:
+def get_all_dfs_from_csv(filenames: list[str], required_columns: list[str] = []) -> list[pd.DataFrame]:
     """Returns a list of dataframes loaded from the list of files `filename`.
 
     If `required_columns` is set then will only load .csvs with every item in `required_columns` in their column names.
@@ -26,7 +26,7 @@ def get_all_dfs_from_csv(filenames: list[str], required_columns: list[str] = ['L
 
     Args:
         filenames: A list of strings containing the filename for each file to load
-        required_columns: A list of strings that must be present in the .csv column headers for the csv to be loaded. Default: `['LATITUDE','LONGITUD']`
+        required_columns: A list of strings that must be present in the .csv column headers for the csv to be loaded. Default is an empty list
 
     Returns:
         A list of dataframes containing the dataframe from every csv in the folder at `path`
