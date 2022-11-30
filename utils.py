@@ -1,44 +1,9 @@
-"""Combines all .csv datasets (intended for FARS data) into 1 `pd.DataFrame` and writes to a single .csv file.
-
-Main function is combine_FARS_datasets. Helper functions take the folder path and get all .csv filenames, read a list of filenames into `pd.DataFrame` objects, and concatenate a list of `pd.DataFrame` objects into a single `pd.DataFrame`.
-
+"""This file is to hold a bunch of useful helper functions so that they can be imported into any file
 """
 
-import glob
 import pandas as pd
+import glob
 import os
-
-def combine_FARS_datasets(path: str = 'FARS/FARS CSVs/', output_filename: str = 'combined_FARS.csv') -> pd.DataFrame:
-    """ Combines FARS datasets in folder `path` into a single CSV file at `output_filename`.
-
-    Calls a series of helper functions, see their docstrings for specifics.
-    
-    Args: 
-        path: A string specifying the folder where the CSVs will be loaded from. Defaults to 'FARS CSVs/'
-        output_filename: A string specifying the filename where the combined CSV will be saved. Defaults to 'combined_FARS.csv'
-
-    Returns:
-        A `pd.DataFrame object, which is the combined dataframe of all the FARS data
-    """
-
-    all_filenames = get_all_csv_filenames(path)
-    all_dfs = get_all_dfs_from_csv(all_filenames)
-    df = concat_pandas_dfs(all_dfs)
-    write_dataframe_to_file(df, output_filename)
-    return df
-
-def write_dataframe_to_file(df: pd.DataFrame, filename: str):
-    """Writes a `pd.DataFrame` to a CSV file at `filename`.
-
-    Args:
-        df: a `pd.DataFrame` to be written.
-        filename: a string specifying where to save the file
-
-    Returns:
-        Returns the output of `df.to_csv(filename)`
-    """
-    
-    return df.to_csv(filename)
 
 def get_all_csv_filenames(path: str) -> list[str]:
     """Finds and returns the filenames (including the folder) of every CSV in the folder specified at `path`.
@@ -76,7 +41,8 @@ def get_all_dfs_from_csv(filenames: list[str], required_columns: list[str] = ['L
             dfs.append(df)
 
     return dfs
-    
+
+
 def concat_pandas_dfs(dfs: list[pd.DataFrame]) -> pd.DataFrame:
     """Wrapper for pd.concat to make maintennance easier
 
@@ -87,7 +53,17 @@ def concat_pandas_dfs(dfs: list[pd.DataFrame]) -> pd.DataFrame:
     """
     
     return pd.concat(dfs, axis=0, ignore_index=True)
-        
 
-if __name__=="__main__":
-    combine_FARS_datasets()
+
+def write_dataframe_to_file(df: pd.DataFrame, filename: str):
+    """Writes a `pd.DataFrame` to a CSV file at `filename`.
+
+    Args:
+        df: a `pd.DataFrame` to be written.
+        filename: a string specifying where to save the file
+
+    Returns:
+        Returns the output of `df.to_csv(filename)`
+    """
+    
+    return df.to_csv(filename)
