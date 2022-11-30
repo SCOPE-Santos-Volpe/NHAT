@@ -15,7 +15,6 @@ def get_all_csv_filenames(path: str) -> list[str]:
         A list of strings containing the file path to every csv in the folder at `path`
     """
     all_filenames = glob.glob(os.path.join(path, "*.CSV"))
-    print(all_filenames)
     return all_filenames
 
 def load_df_from_csv(path:str, **kwargs) -> pd.DataFrame:
