@@ -18,6 +18,21 @@ def get_all_csv_filenames(path: str) -> list[str]:
     print(all_filenames)
     return all_filenames
 
+def load_df_from_csv(path:str, **kwargs) -> pd.DataFrame:
+    """Loads a dataframe from the csv at `path`.
+
+    Convenience wrapper for `pd.read_csv` because Mira likes wrapping everything in their own helper function
+
+    Args:
+        path: A string containing the path to a .csv file
+        **kwargs: Pass through other arguments to pd.read_csv
+
+    Returns:
+        A `pd.DataFrame` loaded from the .csv
+    """
+    df=pd.read_csv(path, **kwargs)
+    return df
+
 def get_all_dfs_from_csv(filenames: list[str], required_columns: list[str] = []) -> list[pd.DataFrame]:
     """Returns a list of dataframes loaded from the list of files `filename`.
 
