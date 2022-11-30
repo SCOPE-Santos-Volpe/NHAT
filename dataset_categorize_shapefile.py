@@ -1,69 +1,97 @@
-# import json
-import geojson
-from shapely.geometry import shape, Point, Polygon, MultiPolygon
+"""Categorizes each row of a dataframe into categories as defined by shapefiles.
+
+The main interface function is categorize_df_to_shapefiles()
+"""
+
+from shapely.geometry import shape, Point
 import pandas as pd
+import utils
+from collections.abc import Iterable, Callable
 
 
-state_codes = {
-    'AL': '01', 'AK': '02', 'AZ': '04', 'AR': '05', 'CA': '06', 'CO': '08',
-    'CT': '09', 'DE': '10', 'DC': '11', 'FL': '12', 'GA': '13', 'HI': '15',
-    'ID': '16', 'IL': '17', 'IN': '18', 'IA': '19', 'KS': '20', 'KY': '21',
-    'LA': '22', 'ME': '23', 'MD': '24', 'MA': '25', 'MI': '26', 'MN': '27',
-    'MS': '28', 'MO': '29', 'MT': '30', 'NE': '31', 'NV': '32', 'NH': '33', 
-    'NJ': '34', 'NM': '35', 'NY': '36', 'NC': '37', 'ND': '38', 'OH': '39',
-    'OK': '40', 'OR': '41', 'PA': '42', 'RI': '44', 'SC': '45', 'SD': '46',
-    'TN': '47', 'TX': '48', 'UT': '49', 'VT': '50', 'VA': '51', 'WA': '53', 
-    'WV': '54', 'WI': '55', 'WY': '56', 'AS': '60', 'GU': '66', 'MP': '69',
-    'PR': '72', 'VI': '78'
-}
+def build_categories_dict(shapes: Iterable, category_id_func: Callable, category_geometry_func: Callable) -> dict:
+    """Takes an iterable of shapes and creates a dictionary of categories
 
-def load_geojson(path='Shapefiles/gz_2010_us_040_00_500k.geojson'):
-    with open(path) as f:
-        states = geojson.load(f)
+    Args:
+        shapes: an iterable of geojson objects
+        category_id_func: a callable that takes in a shape (a single item from the iterable `shapes`) and a number, and returns a string that identifies that category
+        category_geometry_func: a callable that takes in a shape (a single item from the iterable `shapes`) and a number, and returns the geometry of that category
 
-    states_dict = {}
+    Returns:
+        a dictionary with the keys being the return of category_func for each item in shapes, and the values being the return of coords_func for each item in shapes
+    """
 
-    for i in range(len(states['features'])):
-        state_name = states['features'][i]['properties']['NAME']
-        state_coords = shape(states['features'][i]['geometry'])
-        states_dict[state_name] = state_coords
+    # Start with an empty dict
+    categories_dict = {}
 
-    return states_dict
+    # For each shape
+    for i in range(len(shapes)):
+        category_id = category_id_func(shapes, i) # get category id
+        geometry = shape(category_geometry_func(shapes, i)) # get geometry of this category
+        categories_dict[category_id] = geometry # set this value in the dictionary
 
-def get_fars(filename = 'combined_FARS.csv'):
-    df=pd.read_csv(filename)
+    return categories_dict
+
+
+def categorize_df_to_shapefiles(df: pd.DataFrame, lat_column: str, lon_column: str, shapes: Iterable, 
+category_col_name: str, category_id_func: Callable, category_geometry_func: Callable) -> pd.DataFrame:
+    """Categorizes each row of a dataframe into categories defined by shapefiles.
+
+    Args:
+        df: the dataframe to be categorized by row, will be returned with an additional column called `category_col_name`
+        lat_column: the name of the latitude column in df
+        lon_column: the name of the longitude column in df
+        shapes: an iterable of geojson objects
+        category_col_name: the name for the column that will be added to `df`
+        category_id_func: a callable that takes in a shape (a single item from the iterable `shapes`) and a number, and returns a string that identifies that category
+        category_geometry_func: a callable that takes in a shape (a single item from the iterable `shapes`) and a number, and returns the geometry of that category
+
+    Returns:
+        a `pd.DataFrame` which is the argument `df` with an added column called `category_col_name`. The value of this column is the output of `category_func` for that category
+
+    """
+
+    categories_dict = build_categories_dict(shapes, category_id_func = category_id_func, category_geometry_func=category_geometry_func)
+
+    # Create a new column called point, with a shapely.geometry.Point made from lon_column and lat_column
+    df['point'] = df.apply(lambda x: Point(x[lon_column], x[lat_column]), axis=1)
+
+    # Create a new columnm with the name defined by `category_col_name` argument, fill with None to start
+    df[category_col_name] = None
+    
+    # For each category in the dictionary
+    for key in categories_dict.keys():
+        category_geometry = categories_dict[key] # the geometry of this category is the dictionary value
+        df['point_in_category'] = df.apply(lambda x: category_geometry.contains(x['point']), axis=1) 
+        # New column with boolean value of if this category's geometry contains the point
+        df[category_col_name] = df.apply(lambda x: key if x['point_in_category'] else x[category_col_name], axis=1) 
+        # For each row, if this category's geometry intersects with the point, then replace the value of df[category_col_name] with the category name
+
+    df = df.drop(columns=['point','point_in_category']) # Get rid of temp columns
+
     return df
 
 
+def demo():
+    """Demonstration to show one example of calling the `categorize_df_to_shapefiles` function.
+    """
 
-def main():
-    fars = get_fars()
-    states_dict = load_geojson()
-    state_multipoly = states_dict['California']
+    # fars = utils.load_df_from_csv(path='FARS/FARS CSVs/ACCIDENT_2020.CSV', index_col=None, encoding_errors='ignore', low_memory=False)
+    fars = utils.load_df_from_csv(path='combined_FARS.csv', low_memory = False)
+    states_dict = utils.load_geojson(path='Shapefiles/gz_2010_us_040_00_500k.geojson')
+    #Load FARS and states JSON files
 
+    fars_categorized = categorize_df_to_shapefiles(
+        df = fars, 
+        lat_column = 'LATITUDE',
+        lon_column = 'LONGITUD',
+        shapes = states_dict['features'], #what to iterate over to get each category
+        category_col_name = 'State', #column name to categorize into
+        category_id_func = lambda s, i: s[i]['properties']['NAME'], #function that takes each shape in shapes argument and an i, must return a string to identify each category
+        category_geometry_func = lambda s, i: s[i]['geometry'] #function that takes each shape in shapes argument and an i, must return the geometry of that category
+    )
 
-    testloc = Point(-122.4721043962023, 37.74900843850233)
-
-    # thing = fars.columns
-
-    fars['point_object'] = fars.apply(lambda x: Point(x['LONGITUD'],x['LATITUDE']), axis=1)
-    fars['state_being_checked'] = 'California'
-    print(fars)
-    fars['point_in_state'] = fars.apply(lambda x: state_multipoly.contains(x['point_object']), axis=1)
-    # fars['point_object'] = fars.apply(lambda x: x['LONGITUD'], axis=1)
-
-    # thing = fars['point_object']
-
-    thing = fars
-
-    print(thing)
-    print(type(thing))
+    utils.write_dataframe_to_file(fars_categorized, filename="combined_FARS_categorized.csv")
 
 if __name__=="__main__":
-    main()
-
-# test = geojson.intersects(thing,testloc)
-
-# MultiPolygon.contains(thing, testloc)
-
-# thing.contains(testloc)
+    demo()
