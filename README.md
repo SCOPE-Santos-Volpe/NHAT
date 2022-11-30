@@ -1,1 +1,1 @@
-# Olin College Santos Volpe SCOPE Team
+# Olin College SCOPE Santos Volpe Team
