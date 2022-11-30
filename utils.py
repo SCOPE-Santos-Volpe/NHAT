@@ -4,6 +4,7 @@
 import pandas as pd
 import glob
 import os
+import geojson
 
 def get_all_csv_filenames(path: str) -> list[str]:
     """Finds and returns the filenames (including the folder) of every CSV in the folder specified at `path`.
@@ -81,3 +82,18 @@ def write_dataframe_to_file(df: pd.DataFrame, filename: str):
     """
     
     return df.to_csv(filename)
+
+
+def load_geojson(path: str):
+    """Loads ans returns a geojson object.
+
+    Args:
+        path: a string specifying what file to load
+
+    Returns:
+        Returns the output of `geojson.load`
+    """
+    with open(path) as f:
+        geo = geojson.load(f)
+
+    return geo
