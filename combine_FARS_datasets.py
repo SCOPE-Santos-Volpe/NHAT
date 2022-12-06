@@ -22,9 +22,24 @@ def combine_FARS_datasets(path: str = 'FARS/FARS CSVs/', output_filename: str = 
 
     all_filenames = utils.get_all_csv_filenames(path)
     all_dfs = utils.get_all_dfs_from_csv(all_filenames, required_columns=['LATITUDE', 'LONGITUD'], index_col=None, encoding_errors='ignore', low_memory=False)
-    df = utils.concat_pandas_dfs(all_dfs)
+    combined_df = utils.concat_pandas_dfs(all_dfs)
+    df = filter_for_valid_lat_long(combined_df)
     utils.write_dataframe_to_file(df, output_filename)
     return df
+
+def filter_for_valid_lat_long(df: pd.DataFrame) -> pd.DataFrame:
+    """Remove all rows with invalid latitude and longitude values
+
+    Args: 
+        dfs: A `pd.DataFrame`
+    Returns:
+        df_clean: A `pd.DataFrame`
+    """
+    # Delete Rows by Checking Conditions
+    df_clean = df.loc[(df["LATITUDE"] >=-90) & (df["LATITUDE"] <=90) & 
+                      (df["LONGITUD"] >=-180) & (df["LONGITUD"] <=180)]
+    return df_clean
+
 
 
 if __name__=="__main__":
