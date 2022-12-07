@@ -6,7 +6,7 @@ import glob
 import os
 import geojson
 
-def get_all_csv_filenames(path: str) -> list[str]:
+def get_all_csv_filenames(path: str, filetype: str = None) -> list[str]:
     """Finds and returns the filenames (including the folder) of every CSV in the folder specified at `path`.
 
     Args:
@@ -15,8 +15,40 @@ def get_all_csv_filenames(path: str) -> list[str]:
     Returns:
         A list of strings containing the file path to every csv in the folder at `path`
     """
-    all_filenames = glob.glob(os.path.join(path, "*.CSV"))
+    if filetype:
+        all_filenames = glob.glob(os.path.join(path, "*", filetype))
+    else:
+        all_filenames = glob.glob(os.path.join(path, "*"))
+        
     return all_filenames
+
+def get_all_filenames(path: str, extension: str, recursive = True):
+    
+    if(recursive):
+        all_files = []
+        for path_i, subdir, files in os.walk(path):
+            for filename in glob.glob(os.path.join(path_i, extension)):
+                all_files.append(filename)
+    else:
+        all_files = glob.glob(os.path.join(path, extension))
+        
+    return all_files
+
+def get_all_subdirectories(path: str, recursive = True):
+    
+    if(recursive):
+        all_subdirs = []
+        for path_i, subdir, files in os.walk(path):
+            for s in subdir:
+                all_subdirs.append(s)
+
+    else:
+        # all_subdirs = glob.glob(os.path.join(path, extension))
+        pass
+        
+    return all_subdirs
+
+
 
 def load_df_from_csv(path:str, **kwargs) -> pd.DataFrame:
     """Loads a dataframe from the csv at `path`.

@@ -20,7 +20,7 @@ def combine_FARS_datasets(path: str = 'FARS/FARS CSVs/', output_filename: str = 
         A `pd.DataFrame object, which is the combined dataframe of all the FARS data
     """
 
-    all_filenames = utils.get_all_csv_filenames(path)
+    all_filenames = utils.get_all_filenames(path, "*.CSV")
     all_dfs = utils.get_all_dfs_from_csv(all_filenames, required_columns=['LATITUDE', 'LONGITUD'], index_col=None, encoding_errors='ignore', low_memory=False)
     combined_df = utils.concat_pandas_dfs(all_dfs)
     df = filter_FARS_dataset(combined_df)
@@ -28,10 +28,10 @@ def combine_FARS_datasets(path: str = 'FARS/FARS CSVs/', output_filename: str = 
     return df
 
 def filter_FARS_dataset(df: pd.DataFrame) -> pd.DataFrame:
-    """Remove all rows with invalid latitude and longitude values. Remove all data that is not between 2015-2020
+    """Remove all rows with invalid latitude and longitude values. Remove all data that is not between 2015-2020.
 
     Args: 
-        dfs: A `pd.DataFrame`
+        df: A `pd.DataFrame`
     Returns:
         df_clean: A `pd.DataFrame`
     """

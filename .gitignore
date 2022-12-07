@@ -3,3 +3,7 @@ NEMSIS/2021 ASCII.zip
 NEMSIS/2021 ASCII/*
 
 .DS_Store
+
+SDS/Data/**
+
+SDS/Output/**
