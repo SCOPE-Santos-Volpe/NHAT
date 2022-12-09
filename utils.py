@@ -22,30 +22,44 @@ def get_all_csv_filenames(path: str, filetype: str = None) -> list[str]:
         
     return all_filenames
 
-def get_all_filenames(path: str, extension: str, recursive = True):
+def get_all_filenames(path: str, pattern: str, recursive: bool = True) -> list[str]:
+    """Finds and returns all filenames within a folder (optionally recursively) with the filename regex pattern match specified by `pattern`.
+
+    Args:
+        path: A string containing the path to the folder containing the .csv files
+        pattern: S string specifying the regex match for the filename. For example, `pattern = "*.csv"` will return only files with the .csv extension
+        recursive: Whether to get filenames from subdirectories recursively. Default is True
+
+    Returns:
+        A list strings with each element being the path to a file
+    """
     
     if(recursive):
         all_files = []
         for path_i, subdir, files in os.walk(path):
-            for filename in glob.glob(os.path.join(path_i, extension)):
+            for filename in glob.glob(os.path.join(path_i, pattern)):
                 all_files.append(filename)
     else:
-        all_files = glob.glob(os.path.join(path, extension))
+        all_files = glob.glob(os.path.join(path, pattern))
         
     return all_files
 
-def get_all_subdirectories(path: str, recursive = True):
-    
-    if(recursive):
-        all_subdirs = []
-        for path_i, subdir, files in os.walk(path):
-            for s in subdir:
-                all_subdirs.append(s)
+def get_all_subdirectories(path: str):
+    """Recursively locates all subdirectories within a folder at `path`
 
-    else:
-        # all_subdirs = glob.glob(os.path.join(path, extension))
-        pass
-        
+    This is necessary to find the subdirectory for each state of the SDS data. That structure is SDS/Data/{Folder for each state}/{file.csv for each year},
+    so this function returns a list containing each {Folder for each state}.
+
+    Args:
+        path: A string containing the path to the parent folder. The return is a list of all subdirectories of the parent folder.
+
+    Returns:
+        A list of strings with each element being the name of a subdirectory of the argument `path`.
+    """
+    all_subdirs = []
+    for path_i, subdir, files in os.walk(path):
+        for s in subdir:
+            all_subdirs.append(s)
     return all_subdirs
 
 
