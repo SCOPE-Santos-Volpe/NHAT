@@ -5,6 +5,9 @@ import pandas as pd
 import glob
 import os
 import geojson
+import json
+import geopandas
+
 
 def get_all_csv_filenames(path: str, filetype: str = None) -> list[str]:
     """Finds and returns the filenames (including the folder) of every CSV in the folder specified at `path`.
@@ -78,6 +81,27 @@ def load_df_from_csv(path:str, **kwargs) -> pd.DataFrame:
     """
     df=pd.read_csv(path, **kwargs)
     return df
+
+def load_df_from_geojson(path:str, **kwargs) -> pd.DataFrame:
+    """Loads a dataframe from the json at `path`.
+
+    Convenience wrapper for `pd.read_csv` because Mira likes wrapping everything in their own helper function
+
+    Args:
+        path: A string containing the path to a .csv file
+        **kwargs: Pass through other arguments to pd.read_csv
+
+    Returns:
+        A GeoDataFrame loaded from the .geojson
+    """
+    with open(path) as f:
+        data = json.load(f)
+    df = pd.DataFrame(data)
+    print("Type:" , type(df))
+    return df
+
+    # gdf = geopandas.read_file(path)
+    # return gdf
 
 def get_all_dfs_from_csv(filenames: list[str], required_columns: list[str] = [], **kwargs) -> list[pd.DataFrame]:
     """Returns a list of dataframes loaded from the list of files `filename`.

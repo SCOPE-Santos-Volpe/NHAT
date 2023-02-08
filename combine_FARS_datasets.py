@@ -5,7 +5,7 @@ Main function is combine_FARS_datasets. Helper functions take the folder path an
 """
 
 import pandas as pd
-import utils
+import helper
 
 def combine_FARS_datasets(path: str = 'FARS/FARS CSVs/', output_filename: str = 'combined_FARS.csv') -> pd.DataFrame:
     """Combines FARS datasets in folder `path` into a single CSV file at `output_filename`.
@@ -20,11 +20,11 @@ def combine_FARS_datasets(path: str = 'FARS/FARS CSVs/', output_filename: str = 
         A `pd.DataFrame object, which is the combined dataframe of all the FARS data
     """
 
-    all_filenames = utils.get_all_filenames(path, "*.CSV")
-    all_dfs = utils.get_all_dfs_from_csv(all_filenames, required_columns=['LATITUDE', 'LONGITUD'], index_col=None, encoding_errors='ignore', low_memory=False)
-    combined_df = utils.concat_pandas_dfs(all_dfs)
+    all_filenames = helper.get_all_filenames(path, "*.CSV")
+    all_dfs = helper.get_all_dfs_from_csv(all_filenames, required_columns=['LATITUDE', 'LONGITUD'], index_col=None, encoding_errors='ignore', low_memory=False)
+    combined_df = helper.concat_pandas_dfs(all_dfs)
     df = filter_FARS_dataset(combined_df)
-    utils.write_dataframe_to_file(df, output_filename)
+    helper.write_dataframe_to_file(df, output_filename)
     return df
 
 def filter_FARS_dataset(df: pd.DataFrame) -> pd.DataFrame:

@@ -5,7 +5,7 @@ The main interface function is categorize_df_to_shapefiles()
 
 from shapely.geometry import shape, Point
 import pandas as pd
-import utils
+import helper
 from collections.abc import Iterable, Callable
 
 
@@ -77,8 +77,8 @@ def demo():
     """
 
     # fars = utils.load_df_from_csv(path='FARS/FARS CSVs/ACCIDENT_2020.CSV', index_col=None, encoding_errors='ignore', low_memory=False)
-    fars = utils.load_df_from_csv(path='combined_FARS.csv', low_memory = False)
-    states_dict = utils.load_geojson(path='Shapefiles/gz_2010_us_040_00_500k.geojson')
+    fars = helper.load_df_from_csv(path='combined_FARS.csv', low_memory = False)
+    states_dict = helper.load_geojson(path='Shapefiles/gz_2010_us_040_00_500k.geojson')
     #Load FARS and states JSON files
 
     fars_categorized = categorize_df_to_shapefiles(
@@ -91,7 +91,7 @@ def demo():
         category_geometry_func = lambda s, i: s[i]['geometry'] #function that takes each shape in shapes argument and an i, must return the geometry of that category
     )
 
-    utils.write_dataframe_to_file(fars_categorized, filename="combined_FARS_categorized.csv")
+    helper.write_dataframe_to_file(fars_categorized, filename="combined_FARS_categorized.csv")
 
 if __name__=="__main__":
     demo()

@@ -1,9 +1,15 @@
 combined_FARS.csv
+combined_FARS_categorized.csv
+
 NEMSIS/2021 ASCII.zip
 NEMSIS/2021 ASCII/*
+
 
 .DS_Store
 
 SDS/Data/**
-
 SDS/Output/**
+Hospital_Data/
+
+Shapefiles/*
+__pycache__
