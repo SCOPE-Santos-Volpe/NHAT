@@ -9,6 +9,7 @@ import geopandas as gpd
 import glob
 import os
 import combine_FARS_datasets
+import combine_SDS_datasets
 
 class Batch():
 
@@ -74,7 +75,7 @@ def get_graph_from_place(place='Alameda', buffer_m = 500):
     return roads, buffers
 
 
-def get_fars_gpd(buffers, path='FARS CSVs'):
+def get_fars_gpd(buffers, path='FARS/FARS CSVs'):
     """Calculate a geopandas dataframe of each FARS point
 
     Args:
@@ -85,7 +86,7 @@ def get_fars_gpd(buffers, path='FARS CSVs'):
     """
 
     # Get a dataframe of all FARS data combined
-    fars_df_all = combine_FARS_datasets.combine_FARS_datasets(path)
+    fars_df_all = combine_FARS_datasets.combine_FARS_datasets(path, min_year = 2020)
     # FARS_GDF = gpd.GeoSeries(fars_df_all.loc[:, ["lon", "lat"]].apply(Point, axis=1), crs = "epsg:4326")
 
     # Convert each FARS point into a point object
@@ -113,12 +114,49 @@ def get_fars_gpd(buffers, path='FARS CSVs'):
 
     return fars_gpd
 
-def make_batches(buffers, fars_gpd):
+def get_sds_gpd(buffers,path='SDS/Data/'):
+    sds_dict = combine_SDS_datasets.combine_SDS_datasets(path)
+    lst = []
+    for key in sds_dict.keys():
+        sds_df = sds_dict[key]
+        print(sds_df)
+        sds_df['lat'] = pd.to_numeric(sds_df['lat'], errors='coerce')
+        sds_df['lon'] = pd.to_numeric(sds_df['lon'], errors='coerce')
+        sds_df = sds_df.dropna(subset=['lat','lon'])
+        lst.append(sds_df)
+    points_df = pd.concat(lst, axis=0, ignore_index=True)
+    points_gpd = gpd.GeoSeries(points_df.loc[:, ['lon', 'lat']].apply(Point, axis=1), crs = "epsg:4326")
+    points_gpd = points_gpd.to_crs("EPSG:2805")
+
+    # Get the bounds of this city's area (total bounds of all buffers)
+    minx, miny, maxx, maxy = buffers.total_bounds
+    ltc = Point(minx, maxy)
+    rtc = Point(maxx, maxy)
+    lbc = Point(minx, miny)
+    rbc = Point(maxx, miny)
+    box = Polygon([ltc,rtc,rbc,lbc])
+
+    # List for all sds points within this area
+    sds_holder = []
+
+    # For each point, if within the box, append to the sds holder
+    for pt in points_gpd:
+        if box.contains(pt):
+            sds_holder.append(pt)
+
+    # Make a geopandas geoseries of sds points
+    points_gpd = gpd.GeoSeries(sds_holder)
+
+    return points_gpd
+
+
+
+def make_batches(buffers, points_gpd):
     """Add all points within a given buffer to that Batch, for every Batch
 
     Args:
         buffers: a (something) of (somethings), with one buffer for each road segment
-        fars_gpd: a list of FARS points to be checked against the buffer areas
+        points_gpd: a list of points to be checked against the buffer areas
     Returns:
         A list of Batch classes that have 3+ points
     """
@@ -133,7 +171,7 @@ def make_batches(buffers, fars_gpd):
         batch.minx, batch.miny, batch.maxx, batch.maxy = buffers.total_bounds
 
         # For each point, if within the area, add to the batch
-        for point in fars_gpd:
+        for point in points_gpd:
             if(point.within(batch.area)):
                 batch.add_point(point)
 
@@ -163,15 +201,22 @@ def transparent_cmap(N=255):
     mycmap._lut[1:-3,3] = np.linspace(0, 1, N) # A
     mycmap._lut[-3:,:] = [1,0,0,1]
     # I don't remember why this matters tbh, it was a StackOverflow article fix
+    # return mycmap
+
+    "Copy colormap and set alpha values"
+
+    mycmap = plt.cm.blues
+    mycmap._init()
+    mycmap._lut[:,-1] = np.linspace(0.0, 0.9,N+4)
     return mycmap
 
-def plot_hin(batches, roads, fars_gpd):
+def plot_hin(batches, roads, points_gpd):
     """Plot the HIN network contour map
 
     Args:
         batches: a list of Batch objects
         roads: a (something) of (something), which contains every road in the area
-        fars_gpd: a (something) of every FARS data point
+        points_gpd: a (something) of every data point
     Returns:
         none
     """
@@ -197,12 +242,12 @@ def plot_hin(batches, roads, fars_gpd):
     yy = batches[0].yy
 
     # Make a new array of f values
-    fs = np.zeros_like(xx, dtype=np.float_)
+    # fs = np.zeros_like(xx, dtype=np.float_)
     # np.add()
 
     # Add each f value to fs.
-    for j,i in enumerate(batches):
-        np.add(fs, i.f, out=fs)
+    # for j,i in enumerate(batches):
+        # np.add(fs, i.f, out=fs)
         # print(i.f[0])
         # print(type(i.f[0]))
 
@@ -213,11 +258,11 @@ def plot_hin(batches, roads, fars_gpd):
 
     # This is where I was trying to use the fs to do only one contourf call
     # ax.contourf(xx,yy,fs,cmap=mycmap,zorder=0)
-    print(fs)
+    # print(fs)
     print("point 3")
 
     # Plot each FARS point
-    fars_gpd.plot(ax=ax, color="Black", markersize=10, zorder=10)
+    points_gpd.plot(ax=ax, color="Black", markersize=10, zorder=10)
     print("done plotting")
     plt.show()
 
@@ -235,15 +280,18 @@ def main():
     roads, buffers = get_graph_from_place()
 
     # Get each FARS point
-    fars_gpd = get_fars_gpd(buffers)
+    fars = get_fars_gpd(buffers)
+    # sds = get_sds_gpd(buffers)
+    # points_gpd = pd.concat([fars,sds],axis=0,ignore_index=True)
+    points_gpd = fars
     print("making batches")
 
     # Make batches from each buffer, categorize points
-    batches = make_batches(buffers, fars_gpd)
+    batches = make_batches(buffers, points_gpd)
     print("done batching")
 
     # Plot the HIN map
-    plot_hin(batches, roads, fars_gpd)
+    plot_hin(batches, roads, points_gpd)
 
 if __name__ == "__main__":
     main()
