@@ -32,7 +32,7 @@ def combine_SDS_datasets(path: str = '', output_path: str = 'SDS/Output/') -> pd
         combined_df = helper.concat_pandas_dfs(all_dfs_state)
         helper.write_dataframe_to_file(combined_df, output_path+state_dir+".csv")
         output[state_dir] = combined_df
-    return combined_df
+    return output
 
 if __name__=="__main__":
     combine_SDS_datasets(path = 'SDS/Data/', output_path='SDS/Output/')
