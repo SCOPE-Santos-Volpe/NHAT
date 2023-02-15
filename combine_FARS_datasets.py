@@ -21,7 +21,7 @@ def combine_FARS_datasets(path: str = 'FARS/FARS CSVs/', output_filename: str = 
     """
 
     all_filenames = helper.get_all_filenames(path, "*.CSV")
-    all_dfs = helper.get_all_dfs_from_csv(all_filenames, required_columns=['LATITUDE', 'LONGITUD'], index_col=None, encoding_errors='ignore', low_memory=False)
+    all_dfs = helper.get_all_dfs_from_csv(all_filenames, requiredcolumns_=['LATITUDE', 'LONGITUD'], index_col=None, encoding_errors='ignore', low_memory=False)
     combined_df = helper.concat_pandas_dfs(all_dfs)
     df = filter_FARS_dataset(combined_df)
     helper.write_dataframe_to_file(df, output_filename)
