@@ -9,6 +9,9 @@ NOTE: this file must be run in the home directory Santos-Volpe-SCOPE-Project
 """
 
 # Import libraries
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 import pandas as pd
 import geopandas as gpd
 import postgis
@@ -82,24 +85,25 @@ def upload_SDS_data_to_RDS():
         print("uploaded " + state + " SDS data.")
 
 
-def upload_shapefiles_to_RDS(path = "Shapefiles/mpo_boundaries_by_state/"):
+def upload_geojsons_to_RDS(table_name, geojson_folder_path = None, single_geojson_path = None):
     """ Upload shapefiles to RDS
     """
-    table_name = "boundaries_mpos"
 
     # Drop the mpo table if it already exists
-    if "boundaries_mpos" in table_names:
-        cursor.execute("DROP TABLE boundaries_mpos")
+    if table_name in table_names:
+        cursor.execute("DROP TABLE (%s)", (table_name))
 
     # Get list of all MPO geojsons paths
-    mpo_geojson_folder_path = "Shapefiles/mpo_boundaries_by_state/"
-    mpo_geojson_paths = helper.get_all_filenames(path = mpo_geojson_folder_path, pattern = '*.geojson')
+    if single_geojson_path is not None:
+        geojson_paths = [single_geojson_path]
+    else:
+        geojson_paths = helper.get_all_filenames(path = geojson_folder_path, pattern = '*.geojson')
 
     # List to store MultiPolygon rows. Rows with type MultiPolygon need to be separated 
     # from polygon because they require different methods to be pushed to the database.
     multipolygon_list = []
 
-    for geojson_path in mpo_geojson_paths:
+    for geojson_path in geojson_paths:
         gdf = helper.load_gdf_from_geojson(geojson_path)     # load geojson into a geodataframe
         
         for i, row in gdf.iterrows():                        # Loop through the gdf and separate out rows where Geometry is MultiPolygon
@@ -118,27 +122,30 @@ def upload_shapefiles_to_RDS(path = "Shapefiles/mpo_boundaries_by_state/"):
         gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False, dtype={'geom': Geometry(geometry_type='POLYGON', srid=4269)})
         
     # Alter table so that the geom column accepts any type
-    query = """ALTER TABLE boundaries_mpos ALTER COLUMN geom TYPE geometry(Geometry,4269);"""
+    query = "ALTER TABLE {} ALTER COLUMN geom TYPE geometry(Geometry,4269);".format(table_name)
     cursor.execute(query)
+    # cursor.execute("""ALTER TABLE (%s,) ALTER COLUMN geom TYPE geometry(Geometry,4269);""", (table_name,))
 
-    # Convert multipolygon list to gpd and uplaod to database. 
+    # Convert multipolygon list to gpd and upload to database. 
     multipoly_gdf = gpd.GeoDataFrame(multipolygon_list)
     multipoly_gdf['geom'] = multipoly_gdf['geometry'].apply(lambda x: WKTElement(x.wkt, srid=4269))
     multipoly_gdf.drop('geometry', 1, inplace=True)
     multipoly_gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False, dtype={'geom': Geometry(geometry_type='MULTIPOLYGON', srid=4269)})
 
     # gdf.to_postgis(table_name, con=sqlalchemy_conn, if_exists='replace', index=False)
-
+    print("uploaded {} table to RDS".format(table_name))
 
 if __name__=="__main__":
 
     # Drop the mpo table if it already exists
-    # cursor.execute("DROP TABLE boundaries_mpos")
-
+    # cursor.execute("DROP TABLE boundaries_mpo")
 
     # upload_FARS_data_to_RDS()
     # upload_SDS_data_to_RDS()
-    upload_shapefiles_to_RDS()
+
+    # upload_geojsons_to_RDS(table_name = 'boundaries_state', single_geojson_path = "Shapefiles/state.geojson")
+    # upload_geojsons_to_RDS(table_name = 'boundaries_mpo', geojson_folder_path = "Shapefiles/mpo_boundaries_by_state/")
+    # upload_geojsons_to_RDS(table_name = 'boundaries_county', geojson_folder_path = "Shapefiles/county_by_state/")
 
     # sql = """ SELECT * FROM "boundaries_mpo_AK" """
     # df = gpd.read_postgis(sql, con=sqlalchemy_conn)  
