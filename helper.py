@@ -92,10 +92,10 @@ def load_gdf_from_geojson(path:str, **kwargs) -> pd.DataFrame:
         A GeoDataFrame loaded from the .geojson
     """
     gdf = gpd.read_file(path)
-    print(gdf)
+    # print(gdf)
 
     # Drop nulls in the geometry column
-    print('Dropping ' + str(gdf.geometry.isna().sum()) + ' nulls.')
+    # print('Dropping ' + str(gdf.geometry.isna().sum()) + ' nulls.')
     gdf = gdf.dropna(subset=['geometry'])
 
     return gdf
