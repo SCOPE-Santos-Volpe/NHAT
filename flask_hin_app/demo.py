@@ -77,13 +77,17 @@ class Boundaries_state(db.Model):
     def __repr__(self):
         return f'<{int(self.STATE)} {self.name} >'
 
+
+
 def get_state_geojson_from_rds():
 
+    # sql = """ SELECT * FROM "boundaries_state" WHERE "STATE"=4 """
     sql = """ SELECT * FROM "boundaries_state" """
+
     gdf = gpd.read_postgis(sql, con=sqlalchemy_conn)  
-    gdf = gdf.to_json()
-    gdf.to_file(path, driver="GeoJSON")  
-    print ("GDF FROM DATABSE", gdf)
+    gdf_json = gdf.to_json()
+    # print ("GDF FROM DATABSE", gdf)
+    return gdf_json
 
     # @property
     # def json(self):
@@ -116,18 +120,26 @@ def get_fars_data(state_id):
     return jsonify({"data": fars_state_coords})
 
 # Get state boundaries and return it as as a geojson
-@app.route('/get_state_boundaries/<int:state_id>')
-def get_state_boundaries(state_id):
+@app.route('/get_state_boundaries_by_state_id/<int:state_id>')
+def get_state_boundaries_by_state_id(state_id):
     print("inside get state boundaries")
-    get_state_geojson_from_rds()
+    gdf_json = get_state_geojson_from_rds()
     # filtered_states = Boundaries_state.query.filter_by().all()
-
+    # print(gdf_json)
     filtered_states = Boundaries_state.query.filter_by(STATE=state_id).all()
     # print("state_id, filtered_states:", state_id, filtered_states)
-    return jsonify({"data": filtered_states[0].name})
+    # return jsonify({"data": filtered_states[0].name})
+    return gdf_json
     # geom = [[state.latitude, state.longitude] for state in filtered_states]
     # print("district_id, points, coords", state_id, points, coords)
     # return jsonify({"data": coords})
+
+
+@app.route('/get_all_state_boundaries/')
+def get_all_state_boundaries():
+    print("inside get state boundaries")
+    gdf_json = get_state_geojson_from_rds()
+    return gdf_json
 
 @app.route('/')
 def index():

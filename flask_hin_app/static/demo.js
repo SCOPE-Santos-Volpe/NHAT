@@ -516,10 +516,17 @@ function makeMap() {
     state_boundaries.addTo(map); // makes states always show up on first load of the web app
 
     // LOAD UP STATES LAYER ONTO THE MAP INITIALLY
-    d3.json('https://raw.githubusercontent.com/Santos-Volpe-SCOPE/Santos-Volpe-SCOPE-Project/app-framework/hin_app/state_data/states.geojson', function(data) {
-      const geojson = data;
+    // d3.json('https://raw.githubusercontent.com/Santos-Volpe-SCOPE/Santos-Volpe-SCOPE-Project/app-framework/hin_app/state_data/states.geojson', function(data) {
+    //   const geojson = data;
+    //   setStatesToMap(geojson);
+    //   console.log("state boundaries loaded");
+    // });
+
+    $.getJSON("/get_all_state_boundaries/", function(obj) {
+      const geojson = obj;
       setStatesToMap(geojson);
       console.log("state boundaries loaded");
+      
     });
 
     // TODO: JACKIE TRY TO USE THE FUNCTION TO LOAD UP THE STATE BOUNDARIES
@@ -1163,9 +1170,9 @@ function getFarsDataByState(state_id) {
     });
 }
 
-function getStateBoundaries(state_id) {
-  $.getJSON("/get_state_boundaries/" + state_id, function(obj) {
-     console.log ("state boundaries: ", obj.data)
+function getStateBoundariesByStateID(state_id) {
+  $.getJSON("/get_state_boundaries_by_state_id/" + state_id, function(obj) {
+     console.log ("state boundaries: ", obj)
       // var markers = obj.data.map(function(arr) {
       //     return L.circleMarker([arr[0], arr[1]], {radius: 2, color: 'red'}).bindPopup("Coordinates:<br>" + [arr[0], arr[1]]);
       // });
@@ -1259,7 +1266,7 @@ $(function() {
     $('#statesel').change(function() {
         var val = $('#statesel option:selected').val();
         getFarsDataByState(val);
-        getStateBoundaries(val);
+        getStateBoundariesByStateID(val);
 
     });
 })
