@@ -1,5 +1,8 @@
 combined_FARS.csv
 NEMSIS/2021 ASCII.zip
 NEMSIS/2021 ASCII/*
-
+__pycache__
+SDS
+Shapefiles
+combined_FARS_categorized.csv
 .DS_Store
