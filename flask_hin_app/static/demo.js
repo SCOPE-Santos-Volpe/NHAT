@@ -518,6 +518,8 @@ function makeMap() {
       console.log("state boundaries loaded");
     });
 
+    // TODO: JACKIE TRY TO USE THE FUNCTION TO LOAD UP THE STATE BOUNDARIES
+
     
     // ------------------------------------------------------------------------------------
     // Map behaviour
@@ -1140,8 +1142,13 @@ function makeMap() {
 
 var layer = L.layerGroup();
 
-function renderData(districtid) {
-    $.getJSON("/district/" + districtid, function(obj) {
+/*
+This function gets the FARS data by state by querying the python file
+It also plots the fars data on the map. 
+*/
+function getFarsDataByState(state_id) {
+    $.getJSON("/get_fars_data/" + state_id, function(obj) {
+       console.log ("fars data: ", obj.data)
         var markers = obj.data.map(function(arr) {
             return L.circleMarker([arr[0], arr[1]], {radius: 2, color: 'red'}).bindPopup("Coordinates:<br>" + [arr[0], arr[1]]);
         });
@@ -1150,6 +1157,19 @@ function renderData(districtid) {
         map.addLayer(layer);
     });
 }
+
+function getStateBoundaries(state_id) {
+  $.getJSON("/get_state_boundaries/" + state_id, function(obj) {
+     console.log ("state boundaries: ", obj.data)
+      // var markers = obj.data.map(function(arr) {
+      //     return L.circleMarker([arr[0], arr[1]], {radius: 2, color: 'red'}).bindPopup("Coordinates:<br>" + [arr[0], arr[1]]);
+      // });
+      // map.removeLayer(layer);
+      // layer = L.layerGroup(markers);
+      // map.addLayer(layer);
+  });
+}
+
 
 
 // ----------------------------------------------------------------------------------------------------
@@ -1229,10 +1249,12 @@ $(function() {
     make_sidebar();
     // console.log("objs", objs);
     // const [map, layerControl] = objs;
-    renderData('0');
-    $('#distsel').change(function() {
-        var val = $('#distsel option:selected').val();
-        renderData(val);
+    getFarsDataByState('0');
+    // getStateBoundaries('1');
+    $('#statesel').change(function() {
+        var val = $('#statesel option:selected').val();
+        getFarsDataByState(val);
+        getStateBoundaries(val);
+
     });
 })
-
