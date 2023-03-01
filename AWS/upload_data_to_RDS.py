@@ -15,10 +15,14 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 import geopandas as gpd
 import postgis
+import itertools
+
 from geoalchemy2 import Geometry, WKTElement
 import psycopg2
+
 from config.config import config
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Table, Column, Integer, String
+
 import json
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -41,9 +45,9 @@ print('Python connected to PostgreSQL via Psycogp2!')
 
 # Print all table names in the database
 query = """ SELECT table_name FROM information_schema.tables WHERE table_schema='public'"""
-table_names = pd.read_sql(query, con=conn)
-print(query, table_names)
-
+table_names = pd.read_sql(query, con=sqlalchemy_conn).values.tolist()
+table_names = list(itertools.chain(*table_names))
+# print(query, table_names)
 
 
 
@@ -77,7 +81,7 @@ def upload_SDS_data_to_RDS():
             col_list.append(col)
         print(col_list)
 
-    # Load the SDS data into AWS RDS
+    # Load the SDS data into AWS RDSv
         state = Path(csv).stem
         print('SDS_'+state)
         # sds.to_sql('SDS_'+state, con=sqlalchemy_conn, if_exists='replace',
@@ -88,10 +92,12 @@ def upload_SDS_data_to_RDS():
 def upload_geojsons_to_RDS(table_name, geojson_folder_path = None, single_geojson_path = None):
     """ Upload shapefiles to RDS
     """
-
+    # print("table names:" ,table_names)
     # Drop the mpo table if it already exists
     if table_name in table_names:
-        cursor.execute("DROP TABLE (%s)", (table_name))
+        query = "DROP TABLE {}".format(table_name)
+        cursor.execute(query)
+        print("Dropped {} since it already exists ".format(table_name))
 
     # Get list of all MPO geojsons paths
     if single_geojson_path is not None:
@@ -115,9 +121,10 @@ def upload_geojsons_to_RDS(table_name, geojson_folder_path = None, single_geojso
         # Change geometry column to geom
         gdf['geom'] = gdf['geometry'].apply(lambda x: WKTElement(x.wkt, srid=4269))
         gdf.drop('geometry', 1, inplace=True)
-
-        # print( "MULTIPOLYGON: ", len(multipolygon_list))
-        # print("MAIN DB: ", len(gdf))
+        # multipoly_gdf.rename(columns={"STATE": "state_id", "NAME": "sta"})
+        # Change STATE_ID column type to int
+        gdf['STATE'] = gdf['STATE'].astype(str).astype(int)
+        # print("DTYPES: ", gdf.dtypes)
 
         gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False, dtype={'geom': Geometry(geometry_type='POLYGON', srid=4269)})
         
@@ -130,8 +137,11 @@ def upload_geojsons_to_RDS(table_name, geojson_folder_path = None, single_geojso
     multipoly_gdf = gpd.GeoDataFrame(multipolygon_list)
     multipoly_gdf['geom'] = multipoly_gdf['geometry'].apply(lambda x: WKTElement(x.wkt, srid=4269))
     multipoly_gdf.drop('geometry', 1, inplace=True)
-    multipoly_gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False, dtype={'geom': Geometry(geometry_type='MULTIPOLYGON', srid=4269)})
+    
+    multipoly_gdf['STATE'] = multipoly_gdf['STATE'].astype(str).astype(int)
 
+    multipoly_gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False, dtype={'geom': Geometry(geometry_type='MULTIPOLYGON', srid=4269)})
+    
     # gdf.to_postgis(table_name, con=sqlalchemy_conn, if_exists='replace', index=False)
     print("uploaded {} table to RDS".format(table_name))
 
@@ -143,7 +153,7 @@ if __name__=="__main__":
     # upload_FARS_data_to_RDS()
     # upload_SDS_data_to_RDS()
 
-    # upload_geojsons_to_RDS(table_name = 'boundaries_state', single_geojson_path = "Shapefiles/state.geojson")
+    upload_geojsons_to_RDS(table_name = 'boundaries_state', single_geojson_path = "Shapefiles/state.geojson")
     # upload_geojsons_to_RDS(table_name = 'boundaries_mpo', geojson_folder_path = "Shapefiles/mpo_boundaries_by_state/")
     # upload_geojsons_to_RDS(table_name = 'boundaries_county', geojson_folder_path = "Shapefiles/county_by_state/")
 
