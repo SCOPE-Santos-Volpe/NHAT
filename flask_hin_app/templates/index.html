@@ -141,10 +141,11 @@
   </div>
   
   <div id="llmap"></div>
+
   <div>
-      <select id="distsel">
-        {% for district in districts %}
-        <option value="{{district.id}}">{{district.name}}</option>
+      <select id="statesel">
+        {% for state in states %}
+        <option value="{{state.id}}">{{state.name}}</option>
         {% endfor %}
 
       </select>
