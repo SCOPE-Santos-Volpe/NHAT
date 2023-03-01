@@ -249,6 +249,7 @@ function makeMap() {
             var mpo_not_county_bool = true;
             setSelectionToMap(selected_feature_name, mpo_not_county_bool, geojson);
             map.addLayer(selection_boundaries); // makes states transition to mpo/county
+            map.removeControl(layerControl); 
           });
         },
       }); 
@@ -343,9 +344,14 @@ function makeMap() {
             var mpo_not_county_bool = false;
             setSelectionToMap(selected_feature.feature.properties.GEOID, mpo_not_county_bool, geojson);
             map.addLayer(selection_boundaries); // makes states transition to mpo/county
+            map.removeControl(layerControl); 
           });
+
+          
         },
+
       });
+
       county_boundaries.addLayer(geojson_county_boundaries_layer);
       return geojson_county_boundaries_layer;
     }
@@ -437,6 +443,7 @@ function makeMap() {
           });
         },
       });
+
       // console.log("geojson_selection_boundaries_layer", geojson_selection_boundaries_layer);
       selection_boundaries.addLayer(geojson_selection_boundaries_layer);
       return geojson_selection_boundaries_layer;
@@ -446,10 +453,8 @@ function makeMap() {
     // -----------------------------------------------------------------------------------------
     // LOAD GEOJSON OF STATES
 
-    var toggle_county_vs_mpo = false; // TODO: Later add logic using a toggle switch
-    // var toggle_county_vs_mpo = true; // TODO: Later add logic using a toggle switch
 
-    function setStatesToMap(geojson) {
+    function setStatesToMap(geojson){
       var geojson_state_boundaries_layer = L.geoJSON(geojson, {
         style: function (feature) {
           return {
@@ -487,21 +492,20 @@ function makeMap() {
             map.fitBounds(this.getBounds());
             map.removeLayer(state_boundaries); // makes states transition to mpo/county
 
-            if (toggle_county_vs_mpo) { // Shows counties instead of MPOs
-              d3.json('https://raw.githubusercontent.com/Santos-Volpe-SCOPE/Santos-Volpe-SCOPE-Project/app-framework/hin_app/county_data/county.geojson', function(data) {
-                const geojson = data;
-                var geojson_county_boundaries_layer = setCountiesToMap(geojson, clicked_state);
-                console.log("county boundaries for state", clicked_state, "loaded");
-              });
-              map.addLayer(county_boundaries); // makes states transition to mpo/county
-            } else { // Shows MPOs instead of counties
-              d3.json('https://raw.githubusercontent.com/Santos-Volpe-SCOPE/Santos-Volpe-SCOPE-Project/app-framework/hin_app/mpo_data/mpo_boundaries.geojson', function(data) {
-                const geojson = data;
-                var geojson_mpo_boundaries_layer = setMposToMap(geojson, clicked_state);
-                console.log("mpo boundaries for state", clicked_state, "loaded");
-              });
-              map.addLayer(mpo_boundaries); // makes states transition to mpo/county
-            }
+      
+            // TODO: GET json from database instead of the github
+            d3.json('https://raw.githubusercontent.com/Santos-Volpe-SCOPE/Santos-Volpe-SCOPE-Project/app-framework/hin_app/county_data/county.geojson', function(data) {
+              const geojson = data;
+              var geojson_county_boundaries_layer = setCountiesToMap(geojson, clicked_state);
+              console.log("county boundaries for state", clicked_state, "loaded");
+            });
+            d3.json('https://raw.githubusercontent.com/Santos-Volpe-SCOPE/Santos-Volpe-SCOPE-Project/app-framework/hin_app/mpo_data/mpo_boundaries.geojson', function(data) {
+              const geojson = data;
+              var geojson_mpo_boundaries_layer = setMposToMap(geojson, clicked_state);
+              console.log("mpo boundaries for state", clicked_state, "loaded");
+            });
+            map.addLayer(county_boundaries); // makes states transition to mpo/county
+            map.addControl(layerControl); 
           });
         },
       }); 
@@ -591,20 +595,20 @@ function makeMap() {
     // ------------------------------------------------------------------------------------
     // Normal map controls
 
-    // // object with layers
-    // const overlayMaps = {
-    //   "Circle Example": pA,
-    //   "Pin Example": pB,
-    //   "FARS 2020 Crashes": fars_points,
-    //   "MPO Boundaries": mpo_boundaries,
-    //   "County Boundaries": county_boundaries,
-    //   "State Boundaries": state_boundaries,
-    //   "Heatmap Example": heatmapLayer,
-    //   "Polyline Example": roadHighlight_polylineLayer,
-    // };
+    // object with layers
+    const overlayMaps = {
+      "Circle Example": pA,
+      "Pin Example": pB,
+      "FARS 2020 Crashes": fars_points,
+      // "MPO Boundaries": mpo_boundaries,
+      // "County Boundaries": county_boundaries,
+      // "State Boundaries": state_boundaries,
+      "Heatmap Example": heatmapLayer,
+      "Polyline Example": roadHighlight_polylineLayer,
+    };
 
-    // // Makes base layer and overlay controls inside default box instead of in new separate box
-    // var layerControl = L.control.layers(baseLayers, overlayMaps, {collapsed:false}).addTo(map);
+    // Makes base layer and overlay controls inside default box instead of in new separate box
+    var layerControl = L.control.layers(baseLayers, overlayMaps, {collapsed:false}).addTo(map);
 
 
     // -------------------------------------------------------------------------------------------
@@ -944,16 +948,15 @@ function makeMap() {
           inputsLen = inputs.length;
       
           this._handlingClick = true;
-      
+
           for (i = 0; i < inputsLen; i++) {
           input = inputs[i];
           if (input.className === 'leaflet-control-layers-selector') {
               obj = this._getLayer(input.layerId);
-      
               if (input.checked && !this._map.hasLayer(obj.layer)) {
-              this._map.addLayer(obj.layer);
+                this._map.addLayer(obj.layer);
               } else if (!input.checked && this._map.hasLayer(obj.layer)) {
-              this._map.removeLayer(obj.layer);
+                this._map.removeLayer(obj.layer);
               }
           }
           }
@@ -1100,18 +1103,18 @@ function makeMap() {
 
     var groupedOverlays = {
       "Geographic Boundaries":{
-          "State Boundaries":state_boundaries,
+          //"State Boundaries":state_boundaries,
           "County Boundaries":county_boundaries,
           "MPO Boundaries":mpo_boundaries,
-          "Selected Boundaries":selection_boundaries,
+          //"Selected Boundaries":selection_boundaries,
       },
-      "Examples":{
-        "Circle Example": pA,
-        "Pin Example": pB,
-        "FARS 2020 Crashes": fars_points,
-        "Heatmap Example": heatmapLayer,
-        "Polyline Example": roadHighlight_polylineLayer,
-      }
+      // "Examples":{
+      //   "Circle Example": pA,
+      //   "Pin Example": pB,
+      //   "FARS 2020 Crashes": fars_points,
+      //   "Heatmap Example": heatmapLayer,
+      //   "Polyline Example": roadHighlight_polylineLayer,
+      // }
     }
     var options = {
       // Make the overlay group is exclusive (use radio inputs)
@@ -1124,14 +1127,16 @@ function makeMap() {
     // HAVE BEEN USING THIS ONE, EXCEPT THAT IT DOESN'T WORK WHEN LAYERS FOR MPO AND COUNTY AREN'T PRE-LOADED AND HAVEN'T FIGURED 
     // OUT HOW TO STYLE AFTER LOADING WITHOUT REDRAWING WHICH IS CALLED FROM INSIDE "click" METHOD
     // Use grouped layer plugin instead of "L.control.layers" to create radio boxes instead of checkboxes for overlays
-    var layerControl = L.control.groupedLayers(baseLayers, groupedOverlays, options);
-    map.addControl(layerControl); 
+    var layerControl = L.control.groupedLayers(null, groupedOverlays, options);
+    //map.addControl(layerControl); 
+
+
 
     // // Makes separate controls box with a custom button to toggle between county or MPO
     // var custom_toggle_control = new L.Control.CustomToggle(null, null, { collapsed: false }).addTo(map);
 
     // // Makes separate overlay controls box with checkboxes
-    // var custom_buttons_control = new L.Control.CustomButtons(null, overlayMaps, { collapsed: false }).addTo(map);
+    // var custom_buttons_control = new L.Control.CustomButtons(baseLayers, overlayMaps, { collapsed: false }).addTo(map);
 
 
 
