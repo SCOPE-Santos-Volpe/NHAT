@@ -1,152 +1,164 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NHAT (National HIN Aanalysis Tool)</title>
+<html>
+<head>
+  <script src="{{url_for('static', filename='jquery-2.2.2.min.js')}}"></script>
+  <script src="{{url_for('static', filename='leaflet/leaflet.js')}}"></script>
+  <link rel="stylesheet" href="{{url_for('static', filename='leaflet/leaflet.css')}}">
+  <link rel="stylesheet" href="{{url_for('static', filename='demo.css')}}">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 
-    <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script> -->
+  <title>NHAT (National HIN Aanalysis Tool)</title>
 
-    <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script> -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script> -->
 
-    <link rel="stylesheet" href="node_modules/leaflet/dist/leaflet.css">
-    <script src="node_modules/leaflet/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="../node_modules/leaflet/dist/leaflet.css">
+  <script src="../node_modules/leaflet/dist/leaflet.js"></script>
 
+  <script src="../node_modules/heatmap.js/build/heatmap.js"></script>
+  <script src="../node_modules/leaflet-heatmap/leaflet-heatmap.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/heatmap.js/2.0.2/heatmap.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-heatmap@1.0.0/leaflet-heatmap.min.js"></script>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.0/leaflet.draw.css" />
-    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.0/leaflet.draw.css" />
+  <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />
 
-    <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.0/leaflet.draw.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.2/dist/notiflix-notify-aio-3.2.2.min.js"></script>
+  <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.0/leaflet.draw.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.2/dist/notiflix-notify-aio-3.2.2.min.js"></script>
-    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
-    <script src="http://d3js.org/d3.v3.min.js"></script>
+  <base href=".">
+</head>
 
-  </head>
+<body>
 
-  <body>
-    <script src="node_modules/heatmap.js/build/heatmap.js"></script>
-    <script src="node_modules/leaflet-heatmap/leaflet-heatmap.js"></script>
+  <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+    <symbol id="icon-export" viewBox="0 0 24 24">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0 0 5.373 0 12zm17-1h-4v8h-2v-8H7l5-6 5 6z" />
+    </symbol>
+    <symbol id="icon-add" viewBox="0 0 24 24">
+      <path
+        d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm6 13h-5v5h-2v-5H6v-2h5V6h2v5h5v2z" />
+    </symbol>
+    <symbol id="icon-remove" viewBox="0 0 24 24">
+      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm6 13H6v-2h12v2z" />
+    </symbol>
+    <symbol id="icon-import" viewBox="0 0 24 24">
+      <path d="M24 12c0-6.627-5.373-12-12-12S0 5.373 0 12s5.373 12 12 12 12-5.373 12-12zM7 13h4V5h2v8h4l-5 6-5-6z" />
+    </symbol>
+  </svg>
 
+  <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
+    <symbol id="icon-arrow-left" viewBox="0 0 24 24">
+      <path d="M15.422 16.594 14.016 18l-6-6 6-6 1.406 1.406L10.828 12z" />
+    </symbol>
+    <symbol id="icon-clear" viewBox="0 0 24 24">
+      <path
+        d="M18.984 6.422 13.406 12l5.578 5.578-1.406 1.406L12 13.406l-5.578 5.578-1.406-1.406L10.594 12 5.016 6.422l1.406-1.406L12 10.594l5.578-5.578z"
+      />
+    </symbol>
+    <symbol id="icon-email" viewBox="0 0 24 24">
+      <path
+        d="M20.016 8.016V6L12 11.016 3.984 6v2.016L12 12.985zm0-4.032q.797 0 1.383.609t.586 1.406v12q0 .797-.586 1.406t-1.383.609H3.985q-.797 0-1.383-.609t-.586-1.406v-12q0-.797.586-1.406t1.383-.609h16.031z"
+      />
+    </symbol>
+    <symbol id="icon-menu" viewBox="0 0 24 24">
+      <path
+        d="M3 13h18a1 1 0 0 0 0-2H3a1 1 0 0 0 0 2zm0-6h18a1 1 0 0 0 0-2H3a1 1 0 0 0 0 2zm0 12h18a1 1 0 0 0 0-2H3a1 1 0 0 0 0 2z"
+      />
+    </symbol>
+    <symbol id="icon-person" viewBox="0 0 24 24">
+      <path
+        d="M12 14.016q2.531 0 5.273 1.102t2.742 2.883v2.016H3.984v-2.016q0-1.781 2.742-2.883t5.273-1.102zM12 12q-1.641 0-2.813-1.172T8.015 8.015t1.172-2.836T12 3.984t2.813 1.195 1.172 2.836-1.172 2.813T12 12z"
+      />
+    </symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24">
+      <path
+        d="M12 15.516q1.453 0 2.484-1.031t1.031-2.484-1.031-2.484T12 8.486 9.516 9.517t-1.031 2.484 1.031 2.484T12 15.516zm7.453-2.532 2.109 1.641q.328.234.094.656L19.64 18.75q-.188.328-.609.188l-2.484-.984q-.984.703-1.688.984l-.375 2.625q-.094.422-.469.422H9.984q-.375 0-.469-.422l-.375-2.625q-.891-.375-1.688-.984l-2.484.984q-.422.141-.609-.188l-2.016-3.469q-.234-.422.094-.656l2.109-1.641q-.047-.328-.047-.984t.047-.984L2.437 9.375q-.328-.234-.094-.656L4.359 5.25q.188-.328.609-.188l2.484.984q.984-.703 1.688-.984l.375-2.625q.094-.422.469-.422h4.031q.375 0 .469.422l.375 2.625q.891.375 1.688.984l2.484-.984q.422-.141.609.188l2.016 3.469q.234.422-.094.656l-2.109 1.641q.047.328.047.984t-.047.984z"
+      />
+    </symbol>
+  </svg>
 
-    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-      <symbol id="icon-export" viewBox="0 0 24 24">
-        <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0 0 5.373 0 12zm17-1h-4v8h-2v-8H7l5-6 5 6z" />
-      </symbol>
-      <symbol id="icon-add" viewBox="0 0 24 24">
-        <path
-          d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm6 13h-5v5h-2v-5H6v-2h5V6h2v5h5v2z" />
-      </symbol>
-      <symbol id="icon-remove" viewBox="0 0 24 24">
-        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm6 13H6v-2h12v2z" />
-      </symbol>
-      <symbol id="icon-import" viewBox="0 0 24 24">
-        <path d="M24 12c0-6.627-5.373-12-12-12S0 5.373 0 12s5.373 12 12 12 12-5.373 12-12zM7 13h4V5h2v8h4l-5 6-5-6z" />
-      </symbol>
-    </svg>
+  <div class="sidebar">
+    <button aria-label="close sidebar" type="button" class="close-button">
+      <svg>
+        <use xlink:href="#icon-clear" />
+      </svg>
+    </button>
 
-    <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
-      <symbol id="icon-arrow-left" viewBox="0 0 24 24">
-        <path d="M15.422 16.594 14.016 18l-6-6 6-6 1.406 1.406L10.828 12z" />
-      </symbol>
-      <symbol id="icon-clear" viewBox="0 0 24 24">
-        <path
-          d="M18.984 6.422 13.406 12l5.578 5.578-1.406 1.406L12 13.406l-5.578 5.578-1.406-1.406L10.594 12 5.016 6.422l1.406-1.406L12 10.594l5.578-5.578z"
-        />
-      </symbol>
-      <symbol id="icon-email" viewBox="0 0 24 24">
-        <path
-          d="M20.016 8.016V6L12 11.016 3.984 6v2.016L12 12.985zm0-4.032q.797 0 1.383.609t.586 1.406v12q0 .797-.586 1.406t-1.383.609H3.985q-.797 0-1.383-.609t-.586-1.406v-12q0-.797.586-1.406t1.383-.609h16.031z"
-        />
-      </symbol>
-      <symbol id="icon-menu" viewBox="0 0 24 24">
-        <path
-          d="M3 13h18a1 1 0 0 0 0-2H3a1 1 0 0 0 0 2zm0-6h18a1 1 0 0 0 0-2H3a1 1 0 0 0 0 2zm0 12h18a1 1 0 0 0 0-2H3a1 1 0 0 0 0 2z"
-        />
-      </symbol>
-      <symbol id="icon-person" viewBox="0 0 24 24">
-        <path
-          d="M12 14.016q2.531 0 5.273 1.102t2.742 2.883v2.016H3.984v-2.016q0-1.781 2.742-2.883t5.273-1.102zM12 12q-1.641 0-2.813-1.172T8.015 8.015t1.172-2.836T12 3.984t2.813 1.195 1.172 2.836-1.172 2.813T12 12z"
-        />
-      </symbol>
-      <symbol id="icon-settings" viewBox="0 0 24 24">
-        <path
-          d="M12 15.516q1.453 0 2.484-1.031t1.031-2.484-1.031-2.484T12 8.486 9.516 9.517t-1.031 2.484 1.031 2.484T12 15.516zm7.453-2.532 2.109 1.641q.328.234.094.656L19.64 18.75q-.188.328-.609.188l-2.484-.984q-.984.703-1.688.984l-.375 2.625q-.094.422-.469.422H9.984q-.375 0-.469-.422l-.375-2.625q-.891-.375-1.688-.984l-2.484.984q-.422.141-.609-.188l-2.016-3.469q-.234-.422.094-.656l2.109-1.641q-.047-.328-.047-.984t.047-.984L2.437 9.375q-.328-.234-.094-.656L4.359 5.25q.188-.328.609-.188l2.484.984q.984-.703 1.688-.984l.375-2.625q.094-.422.469-.422h4.031q.375 0 .469.422l.375 2.625q.891.375 1.688.984l2.484-.984q.422-.141.609.188l2.016 3.469q.234.422-.094.656l-2.109 1.641q.047.328.047.984t-.047.984z"
-        />
-      </symbol>
-    </svg>
-    <div class="sidebar">
-      <button aria-label="close sidebar" type="button" class="close-button">
-        <svg>
-          <use xlink:href="#icon-clear" />
-        </svg>
-      </button>
+    <ul class="sidebar-menu">
+      <li class="menu-item" data-item="menu">
+        <svg><use xlink:href="#icon-menu"></use></svg>
+      </li>
+      <li class="menu-item" data-item="person">
+        <svg><use xlink:href="#icon-person"></use></svg>
+      </li>
+      <li class="menu-item" data-item="email">
+        <svg><use xlink:href="#icon-email"></use></svg>
+      </li>
+      <li class="menu-item" data-item="settings">
+        <svg><use xlink:href="#icon-settings"></use></svg>
+      </li>
+    </ul>
 
-      <ul class="sidebar-menu">
-        <li class="menu-item" data-item="menu">
-          <svg><use xlink:href="#icon-menu"></use></svg>
-        </li>
-        <li class="menu-item" data-item="person">
-          <svg><use xlink:href="#icon-person"></use></svg>
-        </li>
-        <li class="menu-item" data-item="email">
-          <svg><use xlink:href="#icon-email"></use></svg>
-        </li>
-        <li class="menu-item" data-item="settings">
-          <svg><use xlink:href="#icon-settings"></use></svg>
-        </li>
-      </ul>
-
-      <div class="sidebar-content">
-        <div class="item-content" id="menu">
-          <h2>Sidebar without plugins</h2>
-          <div class="content">
-            Such a menu is not difficult to create on your own.<br /><br />You really don't need any plugin to do something like this.
-            <br /><br />FARS
-            <br />SDS
-            <br />OpenStreetMaps
-            <br />Census
-          </div>
-        </div>
-        <div class="item-content" id="person">
-          <h2>Person</h2>
-          <div class="content">
-            FARS
-            <br /><br />Bike
-            <br />Pedestrian
-            <br />Drunk Driving
-            <br />School Bus involved
-            <br />Road type
-            <br />Intersection
-          </div>
-        </div>
-        <div class="item-content" id="email">
-          <h2>Email</h2>
-          <div class="content">
-            email - Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-            Nobis nostrum incidunt, ab explicabo expedita aliquam officiis vitae
-          </div>
-        </div>
-        <div class="item-content" id="settings">
-          <h2>Settings</h2>
-          <div class="content">settings</div>
+    <div class="sidebar-content">
+      <div class="item-content" id="menu">
+        <h2>Sidebar without plugins</h2>
+        <div class="content">
+          Such a menu is not difficult to create on your own.<br /><br />You really don't need any plugin to do something like this.
+          <br /><br />FARS
+          <br />SDS
+          <br />OpenStreetMaps
+          <br />Census
         </div>
       </div>
+      <div class="item-content" id="person">
+        <h2>Person</h2>
+        <div class="content">
+          FARS
+          <br /><br />Bike
+          <br />Pedestrian
+          <br />Drunk Driving
+          <br />School Bus involved
+          <br />Road type
+          <br />Intersection
+        </div>
+      </div>
+      <div class="item-content" id="email">
+        <h2>Email</h2>
+        <div class="content">
+          email - Lorem, ipsum dolor sit amet consectetur adipisicing elit.
+          Nobis nostrum incidunt, ab explicabo expedita aliquam officiis vitae
+        </div>
+      </div>
+      <div class="item-content" id="settings">
+        <h2>Settings</h2>
+        <div class="content">settings</div>
+      </div>
     </div>
+  </div>
+  
+  <div id="llmap"></div>
 
-    <!-- this was used to show latlng on the map inside a textbox on the bottom right -->
-    <!-- <div class="marker-position"></div> -->
+  <div>
+      <select id="statesel">
+        {% for state in states %}
+        <option value="{{state.id}}">{{state.name}}</option>
+        {% endfor %}
 
-    <div id="map"></div>
-    
-    <!-- this was used before node.js changed from calling the script directly to calling bundle.js -->
-    <!-- <script src="script.js"></script> -->
+      </select>
+  </div>
+  
+  <!-- this was used before node.js changed from calling the script directly to calling bundle.js -->
+  <!-- <script src="script.js"></script> -->
 
-    <script src="bundle.js"></script>
+  <!-- this was used for node.js before flask -->
+  <!-- <script src="bundle.js"></script> -->
 
-  </body>
+  <base href="/">
 
+  <script type="module" src="{{url_for('static', filename='demo.js')}}"></script>
+</body>
 </html>
