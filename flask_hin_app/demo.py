@@ -51,6 +51,7 @@ class Fars_accident_2020(db.Model):
     def get_longitude(self):
         return self.longitude
 
+# TODO: Database storing list of states along with their abbreviations, ids, and xy coords
 class States(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80))
@@ -65,7 +66,6 @@ class States(db.Model):
         self.longitude = lng
 
 class Boundaries_state(db.Model):
-    
     STATE = db.Column(db.Integer, db.ForeignKey('states.id'), primary_key=True) 
     # state = db.relationship("States")
     name = db.Column('NAME', db.String(80))
@@ -76,39 +76,28 @@ class Boundaries_state(db.Model):
 
     def __repr__(self):
         return f'<{int(self.STATE)} {self.name} >'
+    # filtered_states = Boundaries_state.query.filter_by(STATE=state_id).all()
+    # print("state_id, filtered_states:", state_id, filtered_states)
+    # return jsonify({"data": filtered_states[0].name})
 
 
+def get_state_geojson_from_rds(state_id:int = None):
+    """ Returns a geojson object from the boundaries_state table in the RDS
+        that matches the given state_id
 
-def get_state_geojson_from_rds():
+        Args: 
+            state_id: integer. If none, return all shapefiles
 
-    # sql = """ SELECT * FROM "boundaries_state" WHERE "STATE"=4 """
-    sql = """ SELECT * FROM "boundaries_state" """
-
+        Returns:
+            geojson: geojson object of the particular state. 
+    """
+    if state_id == None:
+        sql = """ SELECT * FROM "boundaries_state" """
+    else:
+        sql = """ SELECT * FROM "boundaries_state" WHERE "STATE" = {} """.format(state_id)
     gdf = gpd.read_postgis(sql, con=sqlalchemy_conn)  
-    gdf_json = gdf.to_json()
-    # print ("GDF FROM DATABSE", gdf)
-    return gdf_json
-
-    # @property
-    # def json(self):
-    #     return to_json(self, self.__class__)
-
-    # def __init__(self, state_id, state, NAME, CENSUSAREA, geom):
-    #     print("init boundaries_state")
-    #     self.id = state_id
-    #     self.state = state
-    #     self.name = NAME
-    #     self.censusarea = CENSUSAREA
-    #     self.geom = geom
-    #     print(self.geom)
-
-# What is returned here gets put into app.route and sent to that address in javascript
-# @app.route('/district/<int:district_id>')
-# def district(district_id):
-#     points = Fars_accident_2020.query.filter_by(state=district_id).all()
-#     coords = [[point.latitude, point.longitude] for point in points]
-#     print("district_id, points, coords", district_id, points, coords)
-#     return jsonify({"data": coords})
+    geojson = gdf.to_json()
+    return geojson
 
 # Query fars accident data by state
 @app.route('/get_fars_data/<int:state_id>')
@@ -120,31 +109,20 @@ def get_fars_data(state_id):
     return jsonify({"data": fars_state_coords})
 
 # Get state boundaries and return it as as a geojson
-@app.route('/get_state_boundaries_by_state_id/<int:state_id>')
-def get_state_boundaries_by_state_id(state_id):
-    print("inside get state boundaries")
-    gdf_json = get_state_geojson_from_rds()
-    # filtered_states = Boundaries_state.query.filter_by().all()
-    # print(gdf_json)
-    filtered_states = Boundaries_state.query.filter_by(STATE=state_id).all()
-    # print("state_id, filtered_states:", state_id, filtered_states)
-    # return jsonify({"data": filtered_states[0].name})
-    return gdf_json
-    # geom = [[state.latitude, state.longitude] for state in filtered_states]
-    # print("district_id, points, coords", state_id, points, coords)
-    # return jsonify({"data": coords})
-
+@app.route('/get_state_boundaries_by_state/<int:state_id>')
+def get_state_boundaries_by_state(state_id):
+    print("getting state boundaries for # {}".format(state_id))
+    geojson = get_state_geojson_from_rds(state_id)
+    return geojson
 
 @app.route('/get_all_state_boundaries/')
 def get_all_state_boundaries():
-    print("inside get state boundaries")
-    gdf_json = get_state_geojson_from_rds()
-    return gdf_json
+    print("getting all state boundaries")
+    geojson = get_state_geojson_from_rds()
+    return geojson
 
 @app.route('/')
 def index():
-	# return 'Hello World!'
-    # return render_template('index.html')
     states = States.query.all()
     # state_boundaries = Boundaries_state.query.filter_by(state=1).all()
     print("states:", states)
