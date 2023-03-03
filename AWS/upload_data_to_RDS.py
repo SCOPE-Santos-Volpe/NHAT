@@ -88,7 +88,6 @@ def upload_SDS_data_to_RDS():
         #         index=False)
         print("uploaded " + state + " SDS data.")
 
-
 def upload_geojsons_to_RDS(table_name, geojson_folder_path = None, single_geojson_path = None):
     """ Upload shapefiles to RDS
     """
@@ -145,6 +144,15 @@ def upload_geojsons_to_RDS(table_name, geojson_folder_path = None, single_geojso
     # gdf.to_postgis(table_name, con=sqlalchemy_conn, if_exists='replace', index=False)
     print("uploaded {} table to RDS".format(table_name))
 
+def upload_states_to_RDS():
+    # Load state.csv data
+    states = helper.load_df_from_csv(path='states.csv', low_memory = False)
+    # Load the FARS data into AWS RDS
+    states.to_sql('states', con=sqlalchemy_conn, if_exists='replace',
+            index=False)
+    print("uploaded states data")
+
+
 if __name__=="__main__":
 
     # Drop the mpo table if it already exists
@@ -152,8 +160,9 @@ if __name__=="__main__":
 
     # upload_FARS_data_to_RDS()
     # upload_SDS_data_to_RDS()
+    upload_states_to_RDS()
 
-    upload_geojsons_to_RDS(table_name = 'boundaries_state', single_geojson_path = "Shapefiles/state.geojson")
+    # upload_geojsons_to_RDS(table_name = 'boundaries_state', single_geojson_path = "Shapefiles/state.geojson")
     # upload_geojsons_to_RDS(table_name = 'boundaries_mpo', geojson_folder_path = "Shapefiles/mpo_boundaries_by_state/")
     # upload_geojsons_to_RDS(table_name = 'boundaries_county', geojson_folder_path = "Shapefiles/county_by_state/")
 
