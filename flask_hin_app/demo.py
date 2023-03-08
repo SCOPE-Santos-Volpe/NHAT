@@ -10,7 +10,7 @@ from flask import Flask, render_template, jsonify #, request
 from flask_sqlalchemy import SQLAlchemy
 from geoalchemy2 import Geometry, WKTElement
 import geopandas as gpd
-from sqlalchemy import create_engine, Table, Column, Integer, String
+from sqlalchemy import create_engine, Table, Column, Integer, String, text
 
 
 # Establish sqlalchemy connection
@@ -92,9 +92,9 @@ def get_state_geojson_from_rds(state_id:int = None):
             geojson: geojson object of the particular state. 
     """
     if state_id == None:
-        sql = """ SELECT * FROM "boundaries_state" """
+        sql = text(""" SELECT * FROM "boundaries_state" """)
     else:
-        sql = """ SELECT * FROM "boundaries_state" WHERE "STATE" = {} """.format(state_id)
+        sql = text(""" SELECT * FROM "boundaries_state" WHERE "STATE" = {} """.format(state_id))
     gdf = gpd.read_postgis(sql, con=sqlalchemy_conn)  
     geojson = gdf.to_json()
     return geojson
@@ -131,4 +131,4 @@ def index():
 
 if __name__ == '__main__':
     # app.run(host="localhost", port=8080, debug=True)
-    app.run()
+    app.run(debug=True)
