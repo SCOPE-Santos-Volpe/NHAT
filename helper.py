@@ -64,8 +64,6 @@ def get_all_subdirectories(path: str):
             all_subdirs.append(s)
     return all_subdirs
 
-
-
 def load_df_from_csv(path:str, **kwargs) -> pd.DataFrame:
     """Loads a dataframe from the csv at `path`.
 
@@ -124,7 +122,6 @@ def get_all_dfs_from_csv(filenames: list[str], required_columns: list[str] = [],
 
     return dfs
 
-
 def concat_pandas_dfs(dfs: list[pd.DataFrame]) -> pd.DataFrame:
     """Wrapper for pd.concat to make maintennance easier
 
@@ -135,7 +132,6 @@ def concat_pandas_dfs(dfs: list[pd.DataFrame]) -> pd.DataFrame:
     """
     
     return pd.concat(dfs, axis=0, ignore_index=True)
-
 
 def write_dataframe_to_file(df: pd.DataFrame, filename: str):
     """Writes a `pd.DataFrame` to a CSV file at `filename`.

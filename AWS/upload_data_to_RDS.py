@@ -68,7 +68,7 @@ def upload_SDS_data_to_RDS():
         TODO: remove columns we don't need from each SDS
     """
 
-    # Create SDS dataframe for 
+    # Create SDS dataframe
     all_csvs = helper.get_all_csv_filenames(path = 'SDS/Output')
     print("Full list of states: " + str(all_csvs))
 
@@ -84,8 +84,8 @@ def upload_SDS_data_to_RDS():
     # Load the SDS data into AWS RDSv
         state = Path(csv).stem
         print('SDS_'+state)
-        # sds.to_sql('SDS_'+state, con=sqlalchemy_conn, if_exists='replace',
-        #         index=False)
+        sds.to_sql('SDS_'+state, con=sqlalchemy_conn, if_exists='replace',
+                index=False)
         print("uploaded " + state + " SDS data.")
 
 def upload_geojsons_to_RDS(table_name, geojson_folder_path = None, single_geojson_path = None):
@@ -97,7 +97,7 @@ def upload_geojsons_to_RDS(table_name, geojson_folder_path = None, single_geojso
         query = "DROP TABLE {}".format(table_name)
         cursor.execute(query)
         print("Dropped {} since it already exists ".format(table_name))
-
+ #-----------
     # Get list of all MPO geojsons paths
     if single_geojson_path is not None:
         geojson_paths = [single_geojson_path]
@@ -110,6 +110,10 @@ def upload_geojsons_to_RDS(table_name, geojson_folder_path = None, single_geojso
 
     for geojson_path in geojson_paths:
         gdf = helper.load_gdf_from_geojson(geojson_path)     # load geojson into a geodataframe
+
+        # TODO: add preprocessing for state/mpo/county datasets
+ #-----------
+
         
         for i, row in gdf.iterrows():                        # Loop through the gdf and separate out rows where Geometry is MultiPolygon
             type = str(row['geometry'].geom_type)
@@ -159,8 +163,8 @@ if __name__=="__main__":
     # cursor.execute("DROP TABLE boundaries_mpo")
 
     # upload_FARS_data_to_RDS()
-    # upload_SDS_data_to_RDS()
-    upload_states_to_RDS()
+    upload_SDS_data_to_RDS()
+    # upload_states_to_RDS()
 
     # upload_geojsons_to_RDS(table_name = 'boundaries_state', single_geojson_path = "Shapefiles/state.geojson")
     # upload_geojsons_to_RDS(table_name = 'boundaries_mpo', geojson_folder_path = "Shapefiles/mpo_boundaries_by_state/")

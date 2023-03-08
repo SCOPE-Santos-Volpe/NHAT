@@ -8,8 +8,8 @@ from shapely.geometry import Polygon, LineString, Point
 import geopandas as gpd
 import glob
 import os
-import combine_FARS_datasets
-import combine_SDS_datasets
+import preprocess_FARS_data
+import preprocess_SDS_data
 
 class Batch():
 
@@ -86,7 +86,7 @@ def get_fars_gpd(buffers, path='FARS/FARS CSVs'):
     """
 
     # Get a dataframe of all FARS data combined
-    fars_df_all = combine_FARS_datasets.combine_FARS_datasets(path, min_year = 2020)
+    fars_df_all = preprocess_FARS_data.combine_FARS_datasets(path, min_year = 2020)
     # FARS_GDF = gpd.GeoSeries(fars_df_all.loc[:, ["lon", "lat"]].apply(Point, axis=1), crs = "epsg:4326")
 
     # Convert each FARS point into a point object
@@ -115,7 +115,7 @@ def get_fars_gpd(buffers, path='FARS/FARS CSVs'):
     return fars_gpd
 
 def get_sds_gpd(buffers,path='SDS/Data/'):
-    sds_dict = combine_SDS_datasets.combine_SDS_datasets(path)
+    sds_dict = preprocess_SDS_data.combine_SDS_datasets(path)
     lst = []
     for key in sds_dict.keys():
         sds_df = sds_dict[key]
