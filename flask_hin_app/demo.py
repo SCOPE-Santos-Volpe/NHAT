@@ -94,7 +94,19 @@ def get_state_geojson_from_rds(state_id:int = None):
     if state_id == None:
         sql = text(""" SELECT * FROM "boundaries_state" """)
     else:
-        sql = text(""" SELECT * FROM "boundaries_state" WHERE "STATE" = {} """.format(state_id))
+        sql = text(""" SELECT * FROM "boundaries_state" WHERE "STATE_ID" = {} """.format(state_id))
+    gdf = gpd.read_postgis(sql, con=sqlalchemy_conn)  
+    geojson = gdf.to_json()
+    return geojson
+
+def get_mpo_boundaries_from_rds(state_id:int):
+    sql = text(""" SELECT * FROM "boundaries_mpo" WHERE "STATE_ID" = {} """.format(state_id))
+    gdf = gpd.read_postgis(sql, con=sqlalchemy_conn)  
+    geojson = gdf.to_json()
+    return geojson
+
+def get_county_boundaries_from_rds(state_id:int):
+    sql = text(""" SELECT * FROM "boundaries_county" WHERE "STATE_ID" = {} """.format(state_id))
     gdf = gpd.read_postgis(sql, con=sqlalchemy_conn)  
     geojson = gdf.to_json()
     return geojson
@@ -119,6 +131,18 @@ def get_state_boundaries_by_state(state_id):
 def get_all_state_boundaries():
     print("getting all state boundaries")
     geojson = get_state_geojson_from_rds()
+    return geojson
+
+@app.route('/get_mpo_boundaries_by_state_id/<int:state_id>')
+def get_mpo_boundaries_by_state_id(state_id):
+    print("getting mpo boundaries for # {}".format(state_id))
+    geojson = get_mpo_boundaries_from_rds(state_id)
+    return geojson
+
+@app.route('/get_county_boundaries_by_state_id/<int:state_id>')
+def get_county_boundaries_by_state_id(state_id):
+    print("getting county boundaries for # {}".format(state_id))
+    geojson = get_county_boundaries_from_rds(state_id)
     return geojson
 
 @app.route('/')

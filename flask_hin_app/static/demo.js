@@ -171,7 +171,7 @@ function makeMap() {
     function setMposToMap(geojson, clicked_state) {
       var geojson_mpo_boundaries_layer = L.geoJSON(geojson, {
         style: function (feature) {
-          var state_of_mpo = feature.properties.STATE;
+          var state_of_mpo = feature.properties.STATE_ID;
           // console.log("state_of_mpo", state_of_mpo);
           if (clicked_state == "NONE") {
             return {
@@ -181,7 +181,7 @@ function makeMap() {
               clickable: true
             };
           } else {
-            if (map_state_codes_to_nums[state_of_mpo] == clicked_state) {
+            if (state_of_mpo == clicked_state) {
               return {
                 color: "red",
                 weight: 1,
@@ -216,13 +216,13 @@ function makeMap() {
           });
           
           layer.on('mouseout', function () {
-            var state_of_mpo = feature.properties.STATE;
+            var state_of_mpo = feature.properties.STATE_ID;
             if (clicked_state == "NONE") {
               this.setStyle({
                 'fillColor': 'red'
               });
             } else {
-              if (map_state_codes_to_nums[state_of_mpo] == clicked_state) {
+              if (state_of_mpo == clicked_state) {
                 this.setStyle({
                   'fillColor': 'red'
                 });
@@ -236,7 +236,7 @@ function makeMap() {
           });
 
           layer.on('click', function (event) {
-            var state_of_mpo = feature.properties.STATE;
+            var state_of_mpo = feature.properties.STATE_ID;
             console.log("state_of_mpo", state_of_mpo);
             console.log("clicked feature", feature);
 
@@ -270,7 +270,7 @@ function makeMap() {
     function setCountiesToMap(geojson, clicked_state) {
       var geojson_county_boundaries_layer = L.geoJSON(geojson, {
         style: function (feature) {
-          var state_of_county = feature.properties.STATEFP;
+          var state_of_county = feature.properties.STATE_ID;
           if (clicked_state == "NONE") {
             return {
               color: "red",
@@ -299,7 +299,7 @@ function makeMap() {
         onEachFeature: function (feature, layer) {
           // const coordinates = feature.geometry.coordinates.toString();
           // const coordinate_string = coordinates.match(/[^,]+,[^,]+/g);
-          const county_name = feature.properties.NAME.toString();
+          const county_name = feature.properties.COUNTY_NAME.toString();
           layer.bindPopup(
             "<span>County Name:<br>" + county_name + "</span>"
           );
@@ -317,7 +317,7 @@ function makeMap() {
                 'fillColor': 'red'
               });
             } else {
-              if (feature.properties.STATEFP == clicked_state) {
+              if (feature.properties.STATE_ID == clicked_state) {
                 this.setStyle({
                   'fillColor': 'red'
                 });
@@ -331,7 +331,7 @@ function makeMap() {
           });
 
           layer.on('click', function (event) {
-            var state_of_county = feature.properties.STATEFP;
+            var state_of_county = feature.properties.STATE_ID;
             console.log("state_of_county", state_of_county);
             // console.log("clicked feature", feature);
 
@@ -342,7 +342,7 @@ function makeMap() {
             // // TODO: what to do here for map navigation. For now do exact same as if state is highlighted
             var selected_feature = this;
             var mpo_not_county_bool = false;
-            setSelectionToMap(selected_feature.feature.properties.GEOID, mpo_not_county_bool, geojson);
+            setSelectionToMap(selected_feature.feature.properties.COUNTY_NAME, mpo_not_county_bool, geojson);
             map.addLayer(selection_boundaries); // makes states transition to mpo/county
             map.removeControl(layerControl); 
           });
@@ -492,18 +492,18 @@ function makeMap() {
             map.fitBounds(this.getBounds());
             map.removeLayer(state_boundaries); // makes states transition to mpo/county
 
-      
-            // TODO: GET json from database instead of the github
-            d3.json('https://raw.githubusercontent.com/Santos-Volpe-SCOPE/Santos-Volpe-SCOPE-Project/app-framework/hin_app/county_data/county.geojson', function(data) {
-              const geojson = data;
-              var geojson_county_boundaries_layer = setCountiesToMap(geojson, clicked_state);
-              console.log("county boundaries for state", clicked_state, "loaded");
-            });
-            d3.json('https://raw.githubusercontent.com/Santos-Volpe-SCOPE/Santos-Volpe-SCOPE-Project/app-framework/hin_app/mpo_data/mpo_boundaries.geojson', function(data) {
-              const geojson = data;
+            $.getJSON("/get_mpo_boundaries_by_state_id/"+clicked_state, function(obj) {
+              const geojson = obj;
               var geojson_mpo_boundaries_layer = setMposToMap(geojson, clicked_state);
               console.log("mpo boundaries for state", clicked_state, "loaded");
             });
+
+            $.getJSON("/get_county_boundaries_by_state_id/"+clicked_state, function(obj) {
+              const geojson = obj;
+              var geojson_county_boundaries_layer = setCountiesToMap(geojson, clicked_state);
+              console.log("county boundaries for state", clicked_state, "loaded");
+            });
+
             map.addLayer(county_boundaries); // makes states transition to mpo/county
             map.addControl(layerControl); 
           });
@@ -521,6 +521,8 @@ function makeMap() {
       setStatesToMap(geojson);
       console.log("state boundaries loaded");
     });
+
+
 
     // ------------------------------------------------------------------------------------
     // Map behaviour
