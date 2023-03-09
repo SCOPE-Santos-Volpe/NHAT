@@ -92,7 +92,6 @@ def upload_SDS_data_to_RDS():
 def upload_geojsons_to_RDS(table_name, preprocessing_func, geojson_folder_path = None, single_geojson_path = None):
     """ Upload shapefiles to RDS
     """
-    # print("table names:" ,table_names)
     # Drop the mpo table if it already exists
     if table_name in table_names:
         query = "DROP TABLE {}".format(table_name)
@@ -100,18 +99,11 @@ def upload_geojsons_to_RDS(table_name, preprocessing_func, geojson_folder_path =
         print("Dropped {} since it already exists ".format(table_name))
 
     gdf = preprocess_geojsons.combine_geojsons_to_single_gdf(geojson_folder_path, single_geojson_path)
-    print("I have combined gdf")
-
-    # TODO: add in preprocessing
-    # gdf = preprocess_geojsons.preprocess_state_boundaries_df(gdf)
-    print("about to preprocess using function")
+    print("about to preprocess using passed in function")
     gdf = preprocessing_func(gdf)
-
     polygon_gdf, multipoly_gdf = preprocess_geojsons.separate_gdf_into_polygon_multipolygon(gdf)
 
-    # TODO: multipoly_gdf.rename(columns={"STATE": "state_id", "NAME": "sta"})
-
-    # print("DTYPES: ", gdf.dtypes)
+    # Upload polygon_gdf to RDS
     polygon_gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False, dtype={'geom': Geometry(geometry_type='POLYGON', srid=4269)})
     # Alter table so that the geom column accepts any type
     query = "ALTER TABLE {} ALTER COLUMN geom TYPE geometry(Geometry,4269);".format(table_name)
@@ -119,7 +111,6 @@ def upload_geojsons_to_RDS(table_name, preprocessing_func, geojson_folder_path =
     # Upload multipolygon_gdf to RDS
     multipoly_gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False, dtype={'geom': Geometry(geometry_type='MULTIPOLYGON', srid=4269)})
     
-    # gdf.to_postgis(table_name, con=sqlalchemy_conn, if_exists='replace', index=False)
     print("uploaded {} table to RDS".format(table_name))
 
 def upload_states_to_RDS():
@@ -132,18 +123,11 @@ def upload_states_to_RDS():
 
 
 if __name__=="__main__":
-
-    # Drop the mpo table if it already exists
-    # cursor.execute("DROP TABLE boundaries_mpo")
-
+    
     # upload_FARS_data_to_RDS()
     # upload_SDS_data_to_RDS()
     # upload_states_to_RDS()
 
-    upload_geojsons_to_RDS(table_name = 'boundaries_state', preprocessing_func = preprocess_geojsons.preprocess_state_boundaries_df, single_geojson_path = "Shapefiles/state.geojson")
-    # upload_geojsons_to_RDS(table_name = 'boundaries_mpo', geojson_folder_path = "Shapefiles/mpo_boundaries_by_state/")
-    # upload_geojsons_to_RDS(table_name = 'boundaries_county', geojson_folder_path = "Shapefiles/county_by_state/")
-
-    # sql = """ SELECT * FROM "boundaries_mpo_AK" """
-    # df = gpd.read_postgis(sql, con=sqlalchemy_conn)  
-    # print (df)
+    # upload_geojsons_to_RDS(table_name = 'boundaries_state', preprocessing_func = preprocess_geojsons.preprocess_state_boundaries_df, single_geojson_path = "Shapefiles/state.geojson")
+    # upload_geojsons_to_RDS(table_name = 'boundaries_mpo', preprocessing_func = preprocess_geojsons.preprocess_mpo_boundaries_df, geojson_folder_path = "Shapefiles/mpo_boundaries_by_state/")
+    # upload_geojsons_to_RDS(table_name = 'boundaries_county', preprocessing_func = preprocess_geojsons.preprocess_county_boundaries_df, geojson_folder_path = "Shapefiles/county_by_state/")

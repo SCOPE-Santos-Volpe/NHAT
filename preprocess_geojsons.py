@@ -35,24 +35,18 @@ def separate_gdf_into_polygon_multipolygon(gdf: gpd.GeoDataFrame):
     Separate gdf into gdfs with just polgons or multipolygons and change geometry
     """
 
-    # Loop through the gdf and separate out rows where Geometry is MultiPolygon. 
-    # Rows with type MultiPolygon need to be separated from polygon because they 
+    # Rows with geometry type MultiPolygon need to be separated from Polygon because they 
     # require different methods to be pushed to the database.
-    multipolygon_list = []
-    for i, row in gdf.iterrows():
-        type = str(row['geometry'].geom_type)
-        if (type != "Polygon"):
-            multipolygon_list.append(row)
-            gdf.drop(i, inplace=True)
-    multipoly_gdf = gpd.GeoDataFrame(multipolygon_list)
+    polygon_gdf = gpd.GeoDataFrame(gdf[gdf['geometry'].geom_type == "Polygon"])
+    multipoly_gdf = gpd.GeoDataFrame(gdf[gdf['geometry'].geom_type == "MultiPolygon"])
 
     # Change geometry column to geom
-    gdf['geom'] = gdf['geometry'].apply(lambda x: WKTElement(x.wkt, srid=4269))
-    gdf.drop('geometry', 1, inplace=True)
+    polygon_gdf['geom'] = polygon_gdf['geometry'].apply(lambda x: WKTElement(x.wkt, srid=4269))
+    polygon_gdf.drop(columns='geometry', axis=1, inplace=True)
     multipoly_gdf['geom'] = multipoly_gdf['geometry'].apply(lambda x: WKTElement(x.wkt, srid=4269))
-    multipoly_gdf.drop('geometry', 1, inplace=True)
+    multipoly_gdf.drop(columns='geometry', axis=1, inplace=True)
 
-    return gdf, multipoly_gdf
+    return polygon_gdf, multipoly_gdf
 
 
 def preprocess_state_boundaries_df(gdf: gpd.GeoDataFrame):
@@ -74,7 +68,7 @@ def preprocess_mpo_boundaries_df(gdf: gpd.GeoDataFrame ):
 
     gdf['STATE_ID'] = gdf['STATE_INITIAL'].map(d_state_initial2id)
     gdf['STATE_NAME'] = gdf['STATE_INITIAL'].map(d_state_initial2name)
-    gdf = gdf[['MPO_NAME', 'STATE_ID', 'STATE_NAME', 'geometry']]
+    gdf = gdf[['STATE_ID', 'STATE_NAME', 'MPO_NAME', 'geometry']]
 
     print(gdf.columns)
     return gdf
@@ -83,10 +77,11 @@ def preprocess_county_boundaries_df(gdf: gpd.GeoDataFrame ):
     """
     """
     gdf = gdf.drop(columns=['COUNTYNS', 'COUNTYFP', 'AFFGEOID', 'GEOID', 'LSAD', 'ALAND', 'AWATER'])
-    gdf = gdf.rename(columns={"STATEFP": "STATE_ID",})
+    gdf = gdf.rename(columns={"STATEFP": "STATE_ID", "NAME": "COUNTY_NAME"})
+    gdf['STATE_ID'] = gdf['STATE_ID'].astype(str).astype(int)
 
     gdf['STATE_NAME'] = gdf['STATE_ID'].map(d_state_id2name)
-    # gdf = gdf[['MPO_NAME', 'STATE_ID', 'STATE_NAME', 'geometry']]
+    gdf = gdf[['STATE_ID', 'STATE_NAME', 'COUNTY_NAME', 'geometry']]
 
     print(gdf.columns)
     return gdf
@@ -95,10 +90,11 @@ if __name__ == "__main__":
     # gdf = combine_geojsons_to_single_gdf(single_geojson_path = "Shapefiles/state.geojson")
     # gdf = preprocess_state_boundaries_df(gdf)
 
-    gdf = combine_geojsons_to_single_gdf(geojson_folder_path = "Shapefiles/county_by_state/")
-    gdf = preprocess_county_boundaries_df(gdf)
+    # gdf = combine_geojsons_to_single_gdf(geojson_folder_path = "Shapefiles/county_by_state/")
+    # gdf = preprocess_county_boundaries_df(gdf)
 
-    # gdf = combine_geojsons_to_single_gdf(geojson_folder_path = "Shapefiles/mpo_boundaries_by_state/")
-    # gdf = preprocess_mpo_boundaries_df(gdf)
-    print(gdf.head)
+    gdf = combine_geojsons_to_single_gdf(geojson_folder_path = "Shapefiles/mpo_boundaries_by_state/")
+    gdf = preprocess_mpo_boundaries_df(gdf)
+    polygon_gdf, multipolygon_gdf = separate_gdf_into_polygon_multipolygon(gdf)
+    # print(polygon_gdf.head(10))
 
