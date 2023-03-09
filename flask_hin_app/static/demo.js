@@ -465,7 +465,7 @@ function makeMap() {
           };
         },
         onEachFeature: function (feature, layer) {
-          var state_name = feature.properties.NAME.toString();
+          var state_name = feature.properties.STATE_NAME.toString();
           layer.bindPopup(
             "<span>State Name:<br>" + state_name + "</span>"
           );
@@ -485,9 +485,9 @@ function makeMap() {
           });
 
           layer.on('click', function (event) {
-            var clicked_state = feature.properties.STATE;
-            var state_name = feature.properties.NAME.toString();
-            console.log("Clicked state name and number: ", clicked_state, state_name);
+            var clicked_state = feature.properties.STATE_ID;
+            var state_name = feature.properties.STATE_NAME.toString();
+            console.log("Clicked state name and number: ", state_name, clicked_state);
 
             map.fitBounds(this.getBounds());
             map.removeLayer(state_boundaries); // makes states transition to mpo/county
