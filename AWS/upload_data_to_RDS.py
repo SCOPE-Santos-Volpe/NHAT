@@ -100,9 +100,11 @@ def upload_geojsons_to_RDS(table_name, preprocessing_func, geojson_folder_path =
         print("Dropped {} since it already exists ".format(table_name))
 
     gdf = preprocess_geojsons.combine_geojsons_to_single_gdf(geojson_folder_path, single_geojson_path)
-    
+    print("I have combined gdf")
+
     # TODO: add in preprocessing
     # gdf = preprocess_geojsons.preprocess_state_boundaries_df(gdf)
+    print("about to preprocess using function")
     gdf = preprocessing_func(gdf)
 
     polygon_gdf, multipoly_gdf = preprocess_geojsons.separate_gdf_into_polygon_multipolygon(gdf)
