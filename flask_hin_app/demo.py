@@ -51,7 +51,7 @@ class Fars_accident_2020(db.Model):
     def get_longitude(self):
         return self.longitude
 
-# TODO: Database storing list of states along with their abbreviations, ids, and xy coords
+
 class States(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80))
@@ -64,21 +64,6 @@ class States(db.Model):
         self.name = name
         self.latitude = lat
         self.longitude = lng
-
-class Boundaries_state(db.Model):
-    STATE = db.Column(db.Integer, db.ForeignKey('states.id'), primary_key=True) 
-    # state = db.relationship("States")
-    name = db.Column('NAME', db.String(80))
-    census_area = db.Column('CENSUSAREA', db.Float)
-    geom = db.Column(Geometry)
-
-    print("boundaries_state (STATE): ", STATE)
-
-    def __repr__(self):
-        return f'<{int(self.STATE)} {self.name} >'
-    # filtered_states = Boundaries_state.query.filter_by(STATE=state_id).all()
-    # print("state_id, filtered_states:", state_id, filtered_states)
-    # return jsonify({"data": filtered_states[0].name})
 
 
 def get_state_geojson_from_rds(state_id:int = None):
@@ -99,17 +84,25 @@ def get_state_geojson_from_rds(state_id:int = None):
     geojson = gdf.to_json()
     return geojson
 
-def get_mpo_boundaries_from_rds(state_id:int):
-    sql = text(""" SELECT * FROM "boundaries_mpo" WHERE "STATE_ID" = {} """.format(state_id))
+def get_mpo_boundaries_from_rds(state_id:int, mpo_name:String = None):
+    if mpo_name == None:
+        sql = text(""" SELECT * FROM "boundaries_mpo" WHERE "STATE_ID" = {} """.format(state_id))
+    else:
+        sql = text(""" SELECT * FROM "boundaries_mpo" WHERE "STATE_ID" = {} AND "MPO_NAME" = '{}' """.format(state_id, mpo_name))
     gdf = gpd.read_postgis(sql, con=sqlalchemy_conn)  
     geojson = gdf.to_json()
     return geojson
 
-def get_county_boundaries_from_rds(state_id:int):
-    sql = text(""" SELECT * FROM "boundaries_county" WHERE "STATE_ID" = {} """.format(state_id))
+
+def get_county_boundaries_from_rds(state_id:int, county_name:String = None):
+    if county_name == None:
+        sql = text(""" SELECT * FROM "boundaries_county" WHERE "STATE_ID" = {} """.format(state_id))
+    else: 
+        sql = text(""" SELECT * FROM "boundaries_county" WHERE "STATE_ID" = {} AND "COUNTY_NAME" = '{}' """.format(state_id, county_name))
     gdf = gpd.read_postgis(sql, con=sqlalchemy_conn)  
     geojson = gdf.to_json()
     return geojson
+
 
 # Query fars accident data by state
 @app.route('/get_fars_data/<int:state_id>')
@@ -139,18 +132,28 @@ def get_mpo_boundaries_by_state_id(state_id):
     geojson = get_mpo_boundaries_from_rds(state_id)
     return geojson
 
+@app.route('/get_mpo_boundaries_by_state_id_and_mpo_name/<int:state_id><string:mpo_name>')
+def get_mpo_boundaries_by_state_id_and_mpo_name(state_id, mpo_name):
+    print("getting mpo boundaries for {} in # {}".format(mpo_name, state_id))
+    geojson = get_mpo_boundaries_from_rds(state_id, mpo_name)
+    return geojson
+
 @app.route('/get_county_boundaries_by_state_id/<int:state_id>')
 def get_county_boundaries_by_state_id(state_id):
     print("getting county boundaries for # {}".format(state_id))
     geojson = get_county_boundaries_from_rds(state_id)
     return geojson
 
+@app.route('/get_county_boundaries_by_state_id_and_county_name/<int:state_id><string:county_name>')
+def get_county_boundaries_by_state_id_and_county_name(state_id, county_name):
+    print("getting county boundaries for {} in # {}".format(county_name, state_id))
+    geojson = get_county_boundaries_from_rds(state_id, county_name)
+    return geojson
+
 @app.route('/')
 def index():
     states = States.query.all()
-    # state_boundaries = Boundaries_state.query.filter_by(state=1).all()
     print("states:", states)
-    # Return states as a variable ot be used in index.html
     return render_template('index.html', states=states) 
 
 if __name__ == '__main__':

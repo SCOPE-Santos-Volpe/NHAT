@@ -247,7 +247,14 @@ function makeMap() {
             // // TODO: what to do here for map navigation. For now do exact same as if state is highlighted
             var selected_feature_name = this.feature.properties.MPO_NAME;
             var mpo_not_county_bool = true;
-            setSelectionToMap(selected_feature_name, mpo_not_county_bool, geojson);
+
+            // Get the geojson for the selected MPO
+            $.getJSON("/get_mpo_boundaries_by_state_id_and_mpo_name/"+clicked_state+selected_feature_name, function(obj) {
+              const mpogeojson = obj;
+              setSelectionToMap(selected_feature_name, mpo_not_county_bool, mpogeojson);
+              console.log("mpo boundaries for state", clicked_state, "loaded");
+            });
+
             map.addLayer(selection_boundaries); // makes states transition to mpo/county
             map.removeControl(layerControl); 
           });
@@ -342,7 +349,16 @@ function makeMap() {
             // // TODO: what to do here for map navigation. For now do exact same as if state is highlighted
             var selected_feature = this;
             var mpo_not_county_bool = false;
-            setSelectionToMap(selected_feature.feature.properties.COUNTY_NAME, mpo_not_county_bool, geojson);
+
+            // TODO: (JACKIE) something wierd here, not showing just one county boundary
+            // Get the geojson for the selected MPO/county
+            var county_name = selected_feature.feature.properties.COUNTY_NAME
+            $.getJSON("/get_county_boundaries_by_state_id_and_county_name/"+clicked_state+county_name, function(obj) {
+              const county_geojson = obj;
+              setSelectionToMap(county_name, mpo_not_county_bool, county_geojson);
+              console.log("county boundaries for state", county_name, "loaded");
+            });
+            
             map.addLayer(selection_boundaries); // makes states transition to mpo/county
             map.removeControl(layerControl); 
           });
@@ -436,6 +452,8 @@ function makeMap() {
             }
             selection_boundaries.removeLayer(geojson_selection_boundaries_layer);
             geojson_selection_boundaries_layer = L.geoJSON(); 
+
+            
             
             // Can't figure out how to dynamically restyle all the features in the feature group, tried many 
             // things, resorted to clearing the layer and remaking it when the user clicks a new boundary
@@ -522,8 +540,7 @@ function makeMap() {
       console.log("state boundaries loaded");
     });
 
-
-
+  
     // ------------------------------------------------------------------------------------
     // Map behaviour
     
