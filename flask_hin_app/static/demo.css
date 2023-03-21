@@ -53,6 +53,34 @@ body {
   cursor: pointer;
 }
 
+.popup{
+  position: absolute;
+  z-index: 999;
+  background-color: cornflowerblue;
+  width: 450px;
+  padding: 30px 40px;
+  transform: translate(-50%, -50%);
+  left: 50%;
+  top: 50%;
+  border-radius: 8px;
+}
+
+.popup button{
+  display: block;
+  margin: 0 0 20px auto;
+  background-color: transparent;
+  font-size: 30px;
+  color: #c5c5c5;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.popup p{
+  font-size: 14px;
+  margin: 20px 0;
+}
+
 
 .link-button label {
   cursor: pointer;

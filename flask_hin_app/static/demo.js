@@ -1244,6 +1244,14 @@ function make_sidebar() {
     element.classList.remove("active-item");
     activeContent.classList.remove("active-content");
   }
+
+  // --------------------------------------------------
+  // close popup
+  document.querySelector("#close").addEventListener
+  ("click", function(){
+    document.querySelector(".popup").style.display = "none";
+  });
+  // ----------------------------------------------------
 }
 
 $(function() {

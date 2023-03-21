@@ -15,7 +15,6 @@
 
   <link rel="stylesheet" href="../node_modules/leaflet/dist/leaflet.css">
   <script src="../node_modules/leaflet/dist/leaflet.js"></script>
-
   <script src="../node_modules/heatmap.js/build/heatmap.js"></script>
   <script src="../node_modules/leaflet-heatmap/leaflet-heatmap.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/heatmap.js/2.0.2/heatmap.js"></script>
@@ -33,7 +32,6 @@
 </head>
 
 <body>
-
   <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
     <symbol id="icon-export" viewBox="0 0 24 24">
       <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0 0 5.373 0 12zm17-1h-4v8h-2v-8H7l5-6 5 6z" />
@@ -80,6 +78,12 @@
       />
     </symbol>
   </svg>
+
+  <div class = "popup">
+    <button id="close">&times;</button>
+    <h2>NHAT (National HIN Aanalysis Tool)</h2>
+    <p> Welcome to NHAT website! You can create High Injury Network for any counties or MPO region across the US. </p>
+  </div>
 
   <div class="sidebar">
     <button aria-label="close sidebar" type="button" class="close-button">
