@@ -11,6 +11,8 @@ states_df = helper.load_df_from_csv(path='states.csv', low_memory = False)
 d_state_initial2id = dict(zip(states_df.state, states_df.id))
 d_state_initial2name = dict(zip(states_df.state, states_df.name))
 d_state_id2name = dict(zip(states_df.id, states_df.name))
+d_state_name2id = dict(zip(states_df.name, states_df.id))
+
 
 def combine_geojsons_to_single_gdf(geojson_folder_path = None, single_geojson_path = None):
 
@@ -23,9 +25,12 @@ def combine_geojsons_to_single_gdf(geojson_folder_path = None, single_geojson_pa
     # Combine all geojsons in the folder
     gdf_list = []
     for geojson_path in geojson_paths:
+        print('loading df')
         single_gdf = helper.load_gdf_from_geojson(geojson_path)     # load geojson into a geodataframe
         gdf_list.append(single_gdf)
     gdf = pd.concat(gdf_list)
+
+    print("got gdf")
 
     return gdf
 
@@ -54,7 +59,8 @@ def preprocess_state_boundaries_df(gdf: gpd.GeoDataFrame):
     """
     # Change STATE_ID column type to int
     gdf['STATE'] = gdf['STATE'].astype(str).astype(int)
-    gdf = gdf.rename(columns = {"STATE": "STATE_ID", "NAME": "STATE_NAME"})
+    gdf = gdf.rename(columns = {"STATE": "STATE_ID", 
+                                "NAME": "STATE_NAME"})
     gdf = gdf.drop(columns=['LSAD', 'GEO_ID', 'CENSUSAREA'])
     # NOTE: DOESN'T HAVE STATE_INITIAL
     print(gdf.columns)
@@ -63,12 +69,12 @@ def preprocess_state_boundaries_df(gdf: gpd.GeoDataFrame):
 def preprocess_mpo_boundaries_df(gdf: gpd.GeoDataFrame ):
     """
     """
-    gdf = gdf.drop(columns=['ID', 'AREA', 'DATA', 'MPO_ID'])
-    gdf = gdf.rename(columns={"STATE": "STATE_INITIAL",})
+    gdf = gdf.drop(columns=['ID', 'AREA', 'DATA'])
+    gdf = gdf.rename(columns={ "STATE": "STATE_INITIAL"})
 
     gdf['STATE_ID'] = gdf['STATE_INITIAL'].map(d_state_initial2id)
     gdf['STATE_NAME'] = gdf['STATE_INITIAL'].map(d_state_initial2name)
-    gdf = gdf[['STATE_ID', 'STATE_NAME', 'MPO_NAME', 'geometry']]
+    gdf = gdf[['STATE_ID', 'STATE_NAME', 'MPO_ID', 'MPO_NAME', 'geometry']]
 
     print(gdf.columns)
     return gdf
@@ -76,15 +82,45 @@ def preprocess_mpo_boundaries_df(gdf: gpd.GeoDataFrame ):
 def preprocess_county_boundaries_df(gdf: gpd.GeoDataFrame ):
     """
     """
-    gdf = gdf.drop(columns=['COUNTYNS', 'COUNTYFP', 'AFFGEOID', 'GEOID', 'LSAD', 'ALAND', 'AWATER'])
-    gdf = gdf.rename(columns={"STATEFP": "STATE_ID", "NAME": "COUNTY_NAME"})
+    gdf = gdf.drop(columns=['COUNTYNS', 'AFFGEOID', 'GEOID', 'LSAD', 'ALAND', 'AWATER'])
+    gdf = gdf.rename(columns={  "STATEFP": "STATE_ID", 
+                                "NAME": "COUNTY_NAME",
+                                "COUNTYFP" : "COUNTY_ID"
+                            })
     gdf['STATE_ID'] = gdf['STATE_ID'].astype(str).astype(int)
 
     gdf['STATE_NAME'] = gdf['STATE_ID'].map(d_state_id2name)
-    gdf = gdf[['STATE_ID', 'STATE_NAME', 'COUNTY_NAME', 'geometry']]
+    gdf = gdf[['STATE_ID', 'STATE_NAME', 'COUNTY_ID', 'COUNTY_NAME', 'geometry']]
 
     print(gdf.columns)
     return gdf
+
+def preprocess_census_tract_boundaries_df(gdf: gpd.GeoDataFrame ):
+    """
+    """
+    renames = {
+        'SF' : 'STATE_NAME',
+        'CF' : 'COUNTY_NAME',
+        'GEOID10' : 'CENSUS_TRACT_ID'
+    }
+    gdf.rename(columns = renames,inplace = True)
+
+    gdf['STATE_ID'] = gdf['STATE_NAME'].map(d_state_name2id)
+    gdf = gdf[['STATE_ID', 'STATE_NAME', 'COUNTY_NAME', 'CENSUS_TRACT_ID', 'geometry']]
+
+    column_type_dict = {"STATE_ID"                      : float, 
+                        "STATE_NAME"                    : str, 
+                        "CENSUS_TRACT_ID"               : float, 
+                        "COUNTY_NAME"                   : str,  
+    }
+    gdf = gdf.astype(column_type_dict)
+
+    # Join census tract data with justice40 stats
+    justice40 = helper.load_df_from_csv(path = "Justice40/justice_40_communities_clean.csv", low_memory = False)
+    gdf = pd.merge(gdf,justice40[['CENSUS_TRACT_ID','IDENTIFIED_AS_DISADVANTAGED']],on='CENSUS_TRACT_ID', how='left')
+
+    return gdf
+
 
 if __name__ == "__main__":
     # gdf = combine_geojsons_to_single_gdf(single_geojson_path = "Shapefiles/state.geojson")
@@ -93,8 +129,18 @@ if __name__ == "__main__":
     # gdf = combine_geojsons_to_single_gdf(geojson_folder_path = "Shapefiles/county_by_state/")
     # gdf = preprocess_county_boundaries_df(gdf)
 
-    gdf = combine_geojsons_to_single_gdf(geojson_folder_path = "Shapefiles/mpo_boundaries_by_state/")
-    gdf = preprocess_mpo_boundaries_df(gdf)
-    polygon_gdf, multipolygon_gdf = separate_gdf_into_polygon_multipolygon(gdf)
+    # gdf = combine_geojsons_to_single_gdf(geojson_folder_path = "Shapefiles/mpo_boundaries_by_state/")
+    # gdf = preprocess_mpo_boundaries_df(gdf)
+
+    gdf = combine_geojsons_to_single_gdf(single_geojson_path = "Shapefiles/census_tracts.geojson")
+    gdf = preprocess_census_tract_boundaries_df(gdf)
+    print("saving modified census tracts to file")
+    # gdf.to_file('Shapefiles/clean_geojsons/census_tracts.geojson', driver='GeoJSON')  
+
+    # helper.write_geodataframe_to_file(gdf, "filename")
+
+    print(gdf)
+
+    # polygon_gdf, multipolygon_gdf = separate_gdf_into_polygon_multipolygon(gdf)
     # print(polygon_gdf.head(10))
 

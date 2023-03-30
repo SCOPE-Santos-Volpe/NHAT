@@ -10,6 +10,7 @@ NEMSIS/2021 ASCII/*
 SDS/Data/**
 SDS/Output/**
 Hospital_Data/
+Justice40/
 
 Shapefiles/*
 __pycache__

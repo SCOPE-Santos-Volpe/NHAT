@@ -29,6 +29,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # import ../db.py
 import helper
 import preprocess_geojsons
+import preprocess_SDS_data
+import preprocess_Justice40_data
 from pathlib import Path
 
 # Establish sqlalchemy connection
@@ -48,12 +50,9 @@ print('Python connected to PostgreSQL via Psycogp2!')
 query = """ SELECT table_name FROM information_schema.tables WHERE table_schema='public'"""
 table_names = pd.read_sql(query, con=sqlalchemy_conn).values.tolist()
 table_names = list(itertools.chain(*table_names))
-# print(query, table_names)
-
-
+print(query, table_names)
 
 cursor.execute('CREATE EXTENSION IF NOT EXISTS postgis')
-
 
 def upload_FARS_data_to_RDS():
     # Create FARS dataframe
@@ -69,37 +68,57 @@ def upload_SDS_data_to_RDS():
         TODO: remove columns we don't need from each SDS
     """
 
-    # Create SDS dataframe
+    # Get all processed SDS
     all_csvs = helper.get_all_csv_filenames(path = 'SDS/Output')
     print("Full list of states: " + str(all_csvs))
 
+    # Process each state's crash data one by one
     for csv in all_csvs:
+        # Get state name and state initial
+        state_name = Path(csv).stem
+        
         sds = helper.load_df_from_csv(path = csv, low_memory = False)
 
-        col_list = []
-        # filter SDS 
-        for col in sds.columns:
-            col_list.append(col)
-        print(col_list)
-
-    # Load the SDS data into AWS RDSv
-        state = Path(csv).stem
-        print('SDS_'+state)
-        sds.to_sql('SDS_'+state, con=sqlalchemy_conn, if_exists='replace',
+        # Upload SDS data into AWS RDSv    
+        sds.to_sql('SDS_'+state_name, con=sqlalchemy_conn, if_exists='replace',
                 index=False)
-        print("uploaded " + state + " SDS data.")
+        print("uploaded " + state_name + " SDS data.")
 
-def upload_geojsons_to_RDS(table_name, preprocessing_func, geojson_folder_path = None, single_geojson_path = None):
+def upload_Justice40_data_to_RDS():
+    """ Upload Justice40 data to RDS
+        Note: make sure to run the preprocessing script before this function
+    """
+    justice40 = helper.load_df_from_csv(path = "Justice40/justice_40_communities_clean.csv", low_memory = False)
+    # justice40 = preprocess_Justice40_data.preprocess_justice40_data(justice40)
+    
+    # Load the FARS data into AWS RDS
+    justice40.to_sql('Justice40', con=sqlalchemy_conn, if_exists='replace',
+            index=False)
+    print("uploaded justice40 data")
+
+def upload_states_to_RDS():
+    # Load state.csv data
+    states = helper.load_df_from_csv(path='states.csv', low_memory = False)
+    # Load the FARS data into AWS RDS
+    states.to_sql('states', con=sqlalchemy_conn, if_exists='replace',
+            index=False)
+    print("uploaded states data")
+
+def upload_geojsons_to_RDS(table_name, preprocessing_func, geojson_folder_path = None, single_geojson_path = None, drop_exisiting_table = True):
     """ Upload shapefiles to RDS
     """
-    # Drop the mpo table if it already exists
-    if table_name in table_names:
+    # Drop the table if it already exists
+    if table_name in table_names and drop_exisiting_table:
         query = "DROP TABLE {}".format(table_name)
         cursor.execute(query)
         print("Dropped {} since it already exists ".format(table_name))
 
     gdf = preprocess_geojsons.combine_geojsons_to_single_gdf(geojson_folder_path, single_geojson_path)
-    print("about to preprocess using passed in function")
+    # gdf = combine_geojsons_to_single_gdf(single_geojson_path = "Shapefiles/census_tracts.geojson")
+    # gdf = preprocess_census_tract_boundaries_df(gdf)
+
+    
+    print("preprocessing")
     gdf = preprocessing_func(gdf)
     polygon_gdf, multipoly_gdf = preprocess_geojsons.separate_gdf_into_polygon_multipolygon(gdf)
 
@@ -113,21 +132,46 @@ def upload_geojsons_to_RDS(table_name, preprocessing_func, geojson_folder_path =
     
     print("uploaded {} table to RDS".format(table_name))
 
-def upload_states_to_RDS():
-    # Load state.csv data
-    states = helper.load_df_from_csv(path='states.csv', low_memory = False)
-    # Load the FARS data into AWS RDS
-    states.to_sql('states', con=sqlalchemy_conn, if_exists='replace',
-            index=False)
-    print("uploaded states data")
+def upload_state_boundaries_to_RDS():
+    """ 
+    """
+    upload_geojsons_to_RDS(table_name = 'boundaries_state', preprocessing_func = preprocess_geojsons.preprocess_state_boundaries_df, single_geojson_path = "Shapefiles/state.geojson")
+
+def upload_mpo_boundaries_to_RDS():
+    """ 
+    """
+    upload_geojsons_to_RDS(table_name = 'boundaries_mpo', preprocessing_func = preprocess_geojsons.preprocess_mpo_boundaries_df, geojson_folder_path = "Shapefiles/mpo_boundaries_by_state/")
+
+def upload_county_boundaries_to_RDS():
+    """ 
+    """
+    upload_geojsons_to_RDS(table_name = 'boundaries_county', preprocessing_func = preprocess_geojsons.preprocess_county_boundaries_df, geojson_folder_path = "Shapefiles/county_by_state/")
+
+def upload_census_tract_boundaries_to_RDS():
+    """
+    """
+    # Drop the table if it already exists
+    if 'boundaries_census_tract' in table_names:
+        query = "DROP TABLE {}".format('boundaries_census_tract')
+        cursor.execute(query)
+        print("Dropped {} since it already exists ".format('boundaries_census_tract'))
+
+    # Deal with census tracts separately
+    geojson_paths = helper.get_all_filenames(path = "Shapefiles/census_tracts_by_state", pattern = '*.geojson')
+
+    print(len(geojson_paths))
+    for i, path in enumerate(geojson_paths):
+        upload_geojsons_to_RDS(table_name = 'boundaries_census_tract', preprocessing_func = preprocess_geojsons.preprocess_census_tract_boundaries_df, single_geojson_path = path, drop_exisiting_table = False)
 
 
 if __name__=="__main__":
     
     # upload_FARS_data_to_RDS()
     # upload_SDS_data_to_RDS()
+    # upload_Justice40_data_to_RDS()
     # upload_states_to_RDS()
-
-    # upload_geojsons_to_RDS(table_name = 'boundaries_state', preprocessing_func = preprocess_geojsons.preprocess_state_boundaries_df, single_geojson_path = "Shapefiles/state.geojson")
-    # upload_geojsons_to_RDS(table_name = 'boundaries_mpo', preprocessing_func = preprocess_geojsons.preprocess_mpo_boundaries_df, geojson_folder_path = "Shapefiles/mpo_boundaries_by_state/")
-    # upload_geojsons_to_RDS(table_name = 'boundaries_county', preprocessing_func = preprocess_geojsons.preprocess_county_boundaries_df, geojson_folder_path = "Shapefiles/county_by_state/")
+    
+    # upload_state_boundaries_to_RDS()
+    # upload_mpo_boundaries_to_RDS()
+    # upload_county_boundaries_to_RDS()
+    # upload_census_tract_boundaries_to_RDS()

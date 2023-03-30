@@ -144,6 +144,4 @@ def write_dataframe_to_file(df: pd.DataFrame, filename: str):
         Returns the output of `df.to_csv(filename)`
     """
     
-    return df.to_csv(filename)
-
-
+    return df.to_csv(filename, index=False)
