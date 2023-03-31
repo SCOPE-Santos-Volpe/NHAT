@@ -80,17 +80,17 @@ class preprocess_SDS_data:
         }
         
         self.convert_column_type_dict = {"YEAR"              : int, 
-                                    "IS_FATAL"          : int, 
-                                    "SEVERITY"          : int, 
-                                    "IS_PED"            : int,  
-                                    "IS_CYC"            : int,
-                                    "WEATHER_COND"      : str, 
-                                    "LIGHT_COND"        : str, 
-                                    "ROAD_COND"         : str, 
-                                    "ROAD_NAME"         : str, 
-                                    "IS_INTERSECTION"   : int,
-                                    "LAT"               : float,
-                                    "LON"               : float,
+                                        "IS_FATAL"          : int, 
+                                        "SEVERITY"          : int, 
+                                        "IS_PED"            : int,  
+                                        "IS_CYC"            : int,
+                                        "WEATHER_COND"      : str, 
+                                        "LIGHT_COND"        : str, 
+                                        "ROAD_COND"         : str, 
+                                        "ROAD_NAME"         : str, 
+                                        "IS_INTERSECTION"   : int,
+                                        "LAT"               : float,
+                                        "LON"               : float,
             }
     
 
@@ -324,9 +324,6 @@ class preprocess_SDS_data:
         # Trim columns again
         new_columns = ["YEAR", "IS_FATAL", "SEVERITY", "IS_PED", "IS_CYC", "WEATHER_COND", "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON"]
         df = df[new_columns]
-
-        # print(df)
-        # print("unique: ", df['ACCIDENT_YEAR'].unique())
         
         return df
 
@@ -371,6 +368,15 @@ class preprocess_SDS_data:
         df, geometry=gpd.points_from_xy(df['LON'], df['LAT']))
 
         return gdf
+
+    def label_SDS_with_MPO_ID():
+        """ Loop through all MPO shapefiles and check whether each point is inside the polygon boundary
+        """
+        # Get all MPO shapefiles - maybe get it from the database
+        sql = "SELECT geom, highway FROM roads"
+        df = gpd.read_postgis(sql, con)  
+        #
+        
 
 
     def is_point_within_boundaries(pt, poly):
