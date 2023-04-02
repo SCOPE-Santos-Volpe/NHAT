@@ -108,6 +108,8 @@ def get_census_tract_boundaries_from_rds(state_id:int, county_name:String = None
         sql = text(""" SELECT * FROM "boundaries_census_tract" WHERE "STATE_ID" = {} AND "COUNTY_NAME" = '{}' """.format(state_id, county_name))
     if mpo_name != None:
         sql = text(""" SELECT * FROM "boundaries_census_tract" WHERE "STATE_ID" = {} AND "MPO_NAME" = '{}' """.format(state_id, county_name))
+    if state_id == None:
+        sql = text(""" SELECT * FROM "boundaries_census_tract" """)
     else:
         sql = text(""" SELECT * FROM "boundaries_census_tract" WHERE "STATE_ID" = {} """.format(state_id))
     gdf = gpd.read_postgis(sql, con=sqlalchemy_conn)  
@@ -161,8 +163,14 @@ def get_county_boundaries_by_state_id_and_county_name(state_id, county_name):
     geojson = get_county_boundaries_from_rds(state_id, county_name)
     return geojson
 
+@app.route('/get_census_tract_boundaries/')
+def get_census_tract_boundaries():
+    print("getting census tract boundaries")
+    geojson = get_census_tract_boundaries_from_rds()
+    return geojson
+
 @app.route('/get_census_tract_boundaries_by_state_id/<int:state_id>')
-def get_census_tract_boundaries_by_state_id_and_county_name(state_id, county_name):
+def get_census_tract_boundaries_by_state_id(state_id):
     print("getting census tract boundaries for # {}".format(state_id))
     geojson = get_census_tract_boundaries_from_rds(state_id)
     return geojson
