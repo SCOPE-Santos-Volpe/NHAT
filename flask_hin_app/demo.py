@@ -103,6 +103,17 @@ def get_county_boundaries_from_rds(state_id:int, county_name:String = None):
     geojson = gdf.to_json()
     return geojson
 
+def get_census_tract_boundaries_from_rds(state_id:int, county_name:String = None, mpo_name:String = None):
+    if county_name != None:
+        sql = text(""" SELECT * FROM "boundaries_census_tract" WHERE "STATE_ID" = {} AND "COUNTY_NAME" = '{}' """.format(state_id, county_name))
+    if mpo_name != None:
+        sql = text(""" SELECT * FROM "boundaries_census_tract" WHERE "STATE_ID" = {} AND "MPO_NAME" = '{}' """.format(state_id, county_name))
+    else:
+        sql = text(""" SELECT * FROM "boundaries_census_tract" WHERE "STATE_ID" = {} """.format(state_id))
+    gdf = gpd.read_postgis(sql, con=sqlalchemy_conn)  
+    geojson = gdf.to_json()
+    return geojson
+
 
 # Query fars accident data by state
 @app.route('/get_fars_data/<int:state_id>')
@@ -148,6 +159,24 @@ def get_county_boundaries_by_state_id(state_id):
 def get_county_boundaries_by_state_id_and_county_name(state_id, county_name):
     print("getting county boundaries for {} in # {}".format(county_name, state_id))
     geojson = get_county_boundaries_from_rds(state_id, county_name)
+    return geojson
+
+@app.route('/get_census_tract_boundaries_by_state_id/<int:state_id>')
+def get_census_tract_boundaries_by_state_id_and_county_name(state_id, county_name):
+    print("getting census tract boundaries for # {}".format(state_id))
+    geojson = get_census_tract_boundaries_from_rds(state_id)
+    return geojson
+
+@app.route('/get_census_tract_boundaries_by_state_id_and_county_name/<int:state_id><string:county_name>')
+def get_census_tract_boundaries_by_state_id_and_county_name(state_id, county_name):
+    print("getting census tract boundaries for {} in # {}".format(county_name, state_id))
+    geojson = get_census_tract_boundaries_from_rds(state_id, county_name)
+    return geojson
+
+@app.route('/get_census_tract_boundaries_by_state_id_and_mpo_name/<int:state_id><string:mpo_name>')
+def get_census_tract_boundaries_by_state_id_and_mpo_name(state_id, mpo_name):
+    print("getting census tract for {} in # {}".format(mpo_name, state_id))
+    geojson = get_census_tract_boundaries_from_rds(state_id, mpo_name)
     return geojson
 
 @app.route('/')
