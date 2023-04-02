@@ -65,11 +65,9 @@ def upload_FARS_data_to_RDS():
 
 def upload_SDS_data_to_RDS():
     """ Upload combined SDS data to RDS. Currently, each state is in a separate table.
-        TODO: remove columns we don't need from each SDS
     """
-
     # Get all processed SDS
-    all_csvs = helper.get_all_csv_filenames(path = 'SDS/Output')
+    all_csvs = helper.get_all_csv_filenames(path = 'SDS/Output_w_MPO_County_Identifiers/')
     print("Full list of states: " + str(all_csvs))
 
     # Process each state's crash data one by one
@@ -117,7 +115,6 @@ def upload_geojsons_to_RDS(table_name, preprocessing_func, geojson_folder_path =
     # gdf = combine_geojsons_to_single_gdf(single_geojson_path = "Shapefiles/census_tracts.geojson")
     # gdf = preprocess_census_tract_boundaries_df(gdf)
 
-    
     print("preprocessing")
     gdf = preprocessing_func(gdf)
     polygon_gdf, multipoly_gdf = preprocess_geojsons.separate_gdf_into_polygon_multipolygon(gdf)
@@ -167,7 +164,7 @@ def upload_census_tract_boundaries_to_RDS():
 if __name__=="__main__":
     
     # upload_FARS_data_to_RDS()
-    # upload_SDS_data_to_RDS()
+    upload_SDS_data_to_RDS()
     # upload_Justice40_data_to_RDS()
     # upload_states_to_RDS()
     
