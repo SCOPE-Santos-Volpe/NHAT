@@ -7,7 +7,7 @@ function makeMap() {
     // magnification and coordinates with which the map will start
     const zoom = 4;
     const lat = 35;
-    const lng = -98;
+    const lng = -108;
 
     const osmLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
     const cartoDB = '<a href="http://cartodb.com/attributions">CartoDB</a>';
@@ -17,13 +17,14 @@ function makeMap() {
     const cartoAttrib = `&copy; ${osmLink} Contributors & ${cartoDB}`;
 
     const osmMap = L.tileLayer(osmUrl, { attribution: osmAttrib });
-    const landMap = L.tileLayer(landUrl, { attribution: cartoAttrib });
+    // const landMap = L.tileLayer(landUrl, { attribution: cartoAttrib });
 
     // config map
     let config = {
       layers: [osmMap],
       minZoom: 3,
       maxZoom: 18,
+      zoomControl: false,
       preferCanvas: true, // helps to fix slowness by plotting points on a canvas rather than individual layers
       // fullscreenControl: true,
     };
@@ -31,9 +32,11 @@ function makeMap() {
     // calling map
     map = L.map("llmap", config).setView([lat, lng], zoom);
 
+    L.control.zoom({ position: "topright" }).addTo(map);
+
     var baseLayers = {
       "OSM": osmMap,
-      CartoDB: landMap,
+      // CartoDB: landMap,
     };
 
   // Make Layers
@@ -79,6 +82,7 @@ function makeMap() {
     }
 
     var FARS_renderer = L.canvas({ padding: 0.5 }); // helps to fix slowness by plotting points on a canvas rather than individual layers
+
     d3.csv('https://raw.githubusercontent.com/Santos-Volpe-SCOPE/Santos-Volpe-SCOPE-Project/app-framework/FARS2020NationalCSV/accident.csv', function(data) {
       for (var i = 0; i < data.length; i++) {
         var row = data[i];
@@ -89,6 +93,7 @@ function makeMap() {
         }
       }
     });
+
 
     // ------------------------------------------------------------------------------------
     // POLYLINE TO HIGHLIGHT ROADS
@@ -111,26 +116,27 @@ function makeMap() {
     // }).bindPopup("polygon"); //.addTo(map);
     // roadHighlight_polylineLayer.addLayer(roadHighlight_polyline);
 
-      var geojson = 'https://raw.githubusercontent.com/SCOPE-Santos-Volpe/SCOPE-Santos-Volpe-Project/app-framework/hin_app/monterey_test.json';
+      var geojson = 'https://raw.githubusercontent.com/SCOPE-Santos-Volpe/SCOPE-Santos-Volpe-Project/app-framework/hin_app/alameda_100_percent_hin.json';
       d3.json(geojson, function(data) { 
-        console.log("data", data);
+        console.log("hin data", data);
         const feature = L.geoJSON(data, {
           style: function (feature) {
             return {
-              color: feature.properties.color,
+              color: "blue",
               weight: 5,
-              opacity: feature.properties.opacity,
+              opacity: 0.5,
             };
           },
           onEachFeature: function (feature, layer) {
             roadHighlight_polylineLayer.addLayer(layer);
-            // const coordinates = feature.geometry.coordinates.toString();
+             const coordinates = feature.geometry.coordinates.toString();
             // const result = coordinates.match(/[^,]+,[^,]+/g);
-            const name = feature.properties.name.toString();
-            layer.bindPopup(
-              "<span>Name:<br>" + name + "</span>"
-              // "<span>Coordinates:<br>" + result.join("<br>") + "</span>"
-            );
+            //const name = feature.properties.name.toString();
+            //console.log("street: ", name)
+            // layer.bindPopup(
+            //   "<span>Name:<br>" + name + "</span>"
+            //   // "<span>Coordinates:<br>" + result.join("<br>") + "</span>"
+            // );
           },
         }); //.addTo(map);
       }); 
@@ -146,6 +152,8 @@ function makeMap() {
     };
 
     let heatmapLayer = new HeatmapOverlay(cfg);
+
+    
     d3.json('https://raw.githubusercontent.com/SCOPE-Santos-Volpe/SCOPE-Santos-Volpe-Project/app-framework/hin_app/federal_hill_sales.json', function(data) { 
     // $.getJSON('../federal_hill_sales.json', function(data){
       console.log("data", data);
@@ -168,7 +176,7 @@ function makeMap() {
                                       "TN":47, "TX":48, "UT":49, "VT":50, "VA":51, "VI":78, "WA":53,
                                       "WV":54, "WI":55, "WY":56 };
 
-    function setMposToMap(geojson, clicked_state) {
+    function setMposToMap(geojson, clicked_state, selectedLayer) {
       var geojson_mpo_boundaries_layer = L.geoJSON(geojson, {
         style: function (feature) {
           var state_of_mpo = feature.properties.STATE_ID;
@@ -245,13 +253,24 @@ function makeMap() {
 
             // // if (map_state_codes_to_nums[state_of_mpo] != clicked_state) {
             // // TODO: what to do here for map navigation. For now do exact same as if state is highlighted
-            var selected_feature_name = this.feature.properties.MPO_NAME;
+            var mpo_name = this.feature.properties.MPO_NAME;
             var mpo_not_county_bool = true;
 
+            //show in the tab what county the users clicked
+            document.querySelector('.after-state').style.display = 'none';
+            document.querySelector('.back-button').style.display = 'none';
+
+            document.querySelector('.region-click').style.display = 'block';
+            document.querySelector('.after-region').style.display = 'block';
+            document.querySelector('.back-button2').style.display = 'block';
+
+            region.innerText = mpo_name ? `You clicked mpo: ${mpo_name}` : `You haven't selected any mpo`;
+            afterregion.innerText = "You chose a region! Go to HIN tab to start generating HIN for your region.";
+
             // Get the geojson for the selected MPO
-            $.getJSON("/get_mpo_boundaries_by_state_id_and_mpo_name/"+clicked_state+selected_feature_name, function(obj) {
+            $.getJSON("/get_mpo_boundaries_by_state_id_and_mpo_name/"+clicked_state+mpo_name, function(obj) {
               const mpogeojson = obj;
-              setSelectionToMap(selected_feature_name, mpo_not_county_bool, mpogeojson);
+              setSelectionToMap(mpo_name, mpo_not_county_bool, mpogeojson, selectedLayer);
               console.log("mpo boundaries for state", clicked_state, "loaded");
             });
 
@@ -274,7 +293,7 @@ function makeMap() {
     // -----------------------------------------------------------------------------------------
     // LOAD GEOJSON OF COUNTIES
 
-    function setCountiesToMap(geojson, clicked_state) {
+    function setCountiesToMap(geojson, clicked_state, selectedLayer) {
       var geojson_county_boundaries_layer = L.geoJSON(geojson, {
         style: function (feature) {
           var state_of_county = feature.properties.STATE_ID;
@@ -340,22 +359,35 @@ function makeMap() {
           layer.on('click', function (event) {
             var state_of_county = feature.properties.STATE_ID;
             console.log("state_of_county", state_of_county);
-            // console.log("clicked feature", feature);
+            console.log("clicked feature", feature);
+
+            console.log("aaaa", this);
+            console.log("layer", layer);
 
             map.fitBounds(this.getBounds());
             map.removeLayer(county_boundaries); // makes states transition to mpo/county
 
             // if (state_of_county != clicked_state) {
             // // TODO: what to do here for map navigation. For now do exact same as if state is highlighted
-            var selected_feature = this;
+            var county_name = this.feature.properties.COUNTY_NAME;
             var mpo_not_county_bool = false;
+
+            //show in the tab what county the users clicked
+            document.querySelector('.after-state').style.display = 'none';
+            document.querySelector('.back-button').style.display = 'none';
+
+            document.querySelector('.region-click').style.display = 'block';
+            document.querySelector('.after-region').style.display = 'block';
+            document.querySelector('.back-button2').style.display = 'block';
+
+            region.innerText = county_name ? `You clicked county: ${county_name}` : `You haven't selected any county`;
+            afterregion.innerText = "You chose a region! Click the region one more time to confirm that this is the region you want to create HIN.";
 
             // TODO: (JACKIE) something wierd here, not showing just one county boundary
             // Get the geojson for the selected MPO/county
-            var county_name = selected_feature.feature.properties.COUNTY_NAME
             $.getJSON("/get_county_boundaries_by_state_id_and_county_name/"+clicked_state+county_name, function(obj) {
               const county_geojson = obj;
-              setSelectionToMap(county_name, mpo_not_county_bool, county_geojson);
+              setSelectionToMap(county_name, mpo_not_county_bool, county_geojson, selectedLayer);
               console.log("county boundaries for state", county_name, "loaded");
             });
             
@@ -367,6 +399,26 @@ function makeMap() {
         },
 
       });
+
+      // CODE WHEN BACK BUTTON IS CLICKED
+      function backButtonStateClicked() {
+        const backbtn = document.querySelector('#back');        
+        backbtn.addEventListener("click", () => {
+          map.setView([35, -108], 4);
+          map.removeLayer(county_boundaries);
+          map.removeLayer(mpo_boundaries);
+          map.addLayer(state_boundaries);
+          map.removeControl(layerControl); 
+          county_boundaries.removeLayer(geojson_county_boundaries_layer);
+
+          document.querySelector('.state-click').style.display = 'none'; 
+          document.querySelector('.back-button').style.display = 'none';
+          document.querySelector('.after-state').style.display = 'none';
+        });
+      }
+
+      backButtonStateClicked();
+
 
       county_boundaries.addLayer(geojson_county_boundaries_layer);
       return geojson_county_boundaries_layer;
@@ -382,16 +434,16 @@ function makeMap() {
     // -----------------------------------------------------------------------------------------
     // LOAD LAYER HIGHLIGHTING THE SELECTED AREA
 
-    function setSelectionToMap(selected_feature_name, mpo_not_county_bool, geojson) {
+    function setSelectionToMap(selected_feature_name, mpo_not_county_bool, geojson, thisLayer) {
       console.log("selected_feature_name", selected_feature_name);
       var geojson_selection_boundaries_layer = L.geoJSON(geojson, {
         style: function (feature) {
           if (mpo_not_county_bool) {
-            var bool_selected = feature.properties.MPO_NAME != selected_feature_name;
+            var bool_selected = feature.properties.MPO_NAME == selected_feature_name;
           } else {
-            var bool_selected = feature.properties.GEOID != selected_feature_name;
+            var bool_selected = feature.properties.COUNTY_NAME == selected_feature_name;
           }
-          if (bool_selected) {
+          if (!bool_selected) {
             return {
               color: "#555555",
               fillColor : "#555555",
@@ -401,10 +453,10 @@ function makeMap() {
           } else {
             return {
               color: "red",
-              fillColor : "red",
+              // fillColor : "red",
               weight: 5,
               opacity: 1.0,
-              fillOpacity: 0.0,
+              // fillOpacity: 0.0,
               clickable: true
             };
           }
@@ -412,55 +464,72 @@ function makeMap() {
         onEachFeature: function (feature, layer) {
           // console.log(selected_feature_name, feature.properties.GEOID);
           layer.on('mouseover', function () {
-            if (mpo_not_county_bool) {
-              var bool_selected = feature.properties.MPO_NAME != selected_feature_name;
-            } else {
-              var bool_selected = feature.properties.GEOID != selected_feature_name;
-            }
-            if (bool_selected) {
-              this.setStyle({
-                'fillColor': 'yellow'
-              });
-            }
+            this.setStyle({
+              'fillColor': 'yellow',
+            });
             this.openPopup();
           });
         
           layer.on('mouseout', function () {
-            if (mpo_not_county_bool) {
-              var bool_selected = feature.properties.MPO_NAME != selected_feature_name;
-            } else {
-              var bool_selected = feature.properties.GEOID != selected_feature_name;
-            }
-            if (bool_selected) {
-              this.setStyle({
-                'fillColor': '#555555'
-              });
-            }
+            this.setStyle({
+              'fillColor': '#555555',
+            });
             this.closePopup(); 
           });
 
           layer.on('click', function (event) {
+            map.addControl(startLayer);
             map.fitBounds(this.getBounds());
-            if (mpo_not_county_bool) {
-              if (feature.properties.MPO_NAME != selected_feature_name) {
-                selected_feature_name = feature.properties.MPO_NAME;
-              }
-            } else {
-              if (feature.properties.GEOID != selected_feature_name) {
-                selected_feature_name = feature.properties.GEOID;
-              }
-            }
-            selection_boundaries.removeLayer(geojson_selection_boundaries_layer);
-            geojson_selection_boundaries_layer = L.geoJSON(); 
+            // if (mpo_not_county_bool) {
+            //   if (feature.properties.MPO_NAME != selected_feature_name) {
+            //     selected_feature_name = feature.properties.MPO_NAME;
+            //   }
+            // } else {
+            //   if (feature.properties.COUNTY_NAME != selected_feature_name) {
+            //     selected_feature_name = feature.properties.GEOID;
+            //   }
+            // }
+            this.setStyle({
+              'color': '#555555',
+              'fillOpacity': 0.0,
+            });
+
+            document.querySelector('.back-button2').style.display = 'none';
+            document.querySelector('.after-region').style.display = 'none';
+            document.querySelector('.confirmation').style.display = 'block';
+            confirmation.innerText = "Go to the HIN tab to generate the HIN map!";
+
+            // selection_boundaries.removeLayer(geojson_selection_boundaries_layer);
+            // geojson_selection_boundaries_layer = L.geoJSON(); 
 
             
             
             // Can't figure out how to dynamically restyle all the features in the feature group, tried many 
             // things, resorted to clearing the layer and remaking it when the user clicks a new boundary
-            setSelectionToMap(selected_feature_name, mpo_not_county_bool, geojson); 
+            //setSelectionToMap(selected_feature_name, mpo_not_county_bool, geojson, thisLayer); 
           });
         },
       });
+
+      // CODE WHEN BACK BUTTON IS CLICKED
+      function backButtonRegionClicked() {
+        const backbtn2 = document.querySelector('#back2');        
+        backbtn2.addEventListener("click", () => {
+          map.fitBounds(thisLayer.getBounds());
+          map.removeLayer(selection_boundaries);
+          map.addLayer(county_boundaries);
+          map.addControl(layerControl); 
+          selection_boundaries.removeLayer(geojson_selection_boundaries_layer);
+
+          document.querySelector('.region-click').style.display = 'none'; 
+          document.querySelector('.back-button2').style.display = 'none';
+          document.querySelector('.after-region').style.display = 'none';
+
+          document.querySelector('.after-state').style.display = 'block';
+          document.querySelector('.back-button').style.display = 'block';
+        });
+      }
+      backButtonRegionClicked();
 
       // console.log("geojson_selection_boundaries_layer", geojson_selection_boundaries_layer);
       selection_boundaries.addLayer(geojson_selection_boundaries_layer);
@@ -507,18 +576,26 @@ function makeMap() {
             var state_name = feature.properties.STATE_NAME.toString();
             console.log("Clicked state name and number: ", state_name, clicked_state);
 
+            //show in the tab what state the users clicked
+            document.querySelector('.state-click').style.display = 'block'; 
+            document.querySelector('.after-state').style.display = 'block';
+            document.querySelector('.back-button').style.display = 'block'; 
+            state.innerText = clicked_state ? `You clicked state: ${state_name}` : `You haven't selected any state`;
+            afterstate.innerText = "Now, you can either choose your county or mpo boundaries. To switch to mpo boundaries, click the radio button on the right side of the map.";
+
+
             map.fitBounds(this.getBounds());
             map.removeLayer(state_boundaries); // makes states transition to mpo/county
 
             $.getJSON("/get_mpo_boundaries_by_state_id/"+clicked_state, function(obj) {
               const geojson = obj;
-              var geojson_mpo_boundaries_layer = setMposToMap(geojson, clicked_state);
+              var geojson_mpo_boundaries_layer = setMposToMap(geojson, clicked_state, layer);
               console.log("mpo boundaries for state", clicked_state, "loaded");
             });
 
             $.getJSON("/get_county_boundaries_by_state_id/"+clicked_state, function(obj) {
               const geojson = obj;
-              var geojson_county_boundaries_layer = setCountiesToMap(geojson, clicked_state);
+              var geojson_county_boundaries_layer = setCountiesToMap(geojson, clicked_state, layer);
               console.log("county boundaries for state", clicked_state, "loaded");
             });
 
@@ -626,8 +703,8 @@ function makeMap() {
     };
 
     // Makes base layer and overlay controls inside default box instead of in new separate box
-    var layerControl = L.control.layers(baseLayers, overlayMaps, {collapsed:false}).addTo(map);
-
+    var startLayer = L.control.layers(null, overlayMaps, {collapsed:false}).addTo(map);
+    map.removeControl(startLayer);
 
     // -------------------------------------------------------------------------------------------
     // EXCLUSIVE LAYER PLUGIN (ALLOWS RADIO BOXES FOR LAYERS, NOT JUST CHECKBOXES)
@@ -1194,11 +1271,60 @@ function getStateBoundariesByState(state_id) {
 
 
 // ----------------------------------------------------------------------------------------------------
+
+
+
+// ----------------------------------------------------------------------------------------------------
+// CODE TO CHECK WHAT DATABASE IS CLICKED
+function databaseClicked() {
+  const btn = document.querySelector('#btn');        
+  const radioButtons = document.querySelectorAll('input[name="database"]');
+  btn.addEventListener("click", () => {
+      let selectedSize;
+      for (const radioButton of radioButtons) {
+          if (radioButton.checked) {
+              selectedSize = radioButton.value;
+              break;
+          }
+      }
+      // show the output:
+      output.innerText = selectedSize ? `You selected ${selectedSize}` : `You haven't selected any database`;
+  });
+}
+
+// ----------------------------------------------------------------------------------------------------
+// CODE TO CREATE TAB BAR
+function make_tab() {
+  let filter_btn = document.querySelectorAll('.filter-btn');
+  let tab_items = document.querySelectorAll('.tab-item');
+
+  for (let i = 0; i < filter_btn.length; i++) {
+    filter_btn[i].addEventListener('click', function () {
+      console.log(filter_btn);
+      for (let j = 0; j < filter_btn.length; j++) {
+        filter_btn[j].classList.remove('active');
+      }
+      let select_tab = filter_btn[i].getAttribute('data-tab');
+      filter_btn[i].classList.add('active');
+      for (let t = 0; t < tab_items.length; t++) {
+        if (filter_btn[t].classList.contains('active')) {
+          tab_items[t].classList.add('select_tab');
+        } else {
+          tab_items[t].classList.remove('select_tab');
+        }
+      }
+      console.log(tab_items);
+    });
+  }
+}
+
+// ----------------------------------------------------------------------------------------------------
 // CODE TO CREATE SIDEBAR
 function make_sidebar() {
   const menuItems = document.querySelectorAll(".menu-item");
   const sidebar = document.querySelector(".sidebar");
   const buttonClose = document.querySelector(".close-button");
+
 
   menuItems.forEach((item) => {
     item.addEventListener("click", (e) => {
@@ -1246,12 +1372,11 @@ function make_sidebar() {
   });
 
   // close sidebar when click outside
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest(".sidebar")) {
-      closeSidebar();
-    }
-  });
-
+  // document.addEventListener("click", (e) => {
+  //   if (!e.target.closest(".sidebar")) {
+  //     closeSidebar();
+  //   }
+  // });
   // --------------------------------------------------
   // close sidebar
 
@@ -1275,15 +1400,17 @@ function make_sidebar() {
 
 $(function() {
     map = makeMap();
-    make_sidebar();
-    // console.log("objs", objs);
-    // const [map, layerControl] = objs;
+    // make_sidebar();
+    make_tab();
     getFarsDataByState('0');
     // getStateBoundaries('1');
-    $('#statesel').change(function() {
-        var val = $('#statesel option:selected').val();
-        getFarsDataByState(val);
-        getStateBoundariesByState(val);
 
-    });
+    databaseClicked();
+
+    // $('#statesel').change(function() {
+    //     var val = $('#statesel option:selected').val();
+    //     getFarsDataByState(val);
+    //     getStateBoundariesByState(val);
+
+    // });
 })

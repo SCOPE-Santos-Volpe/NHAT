@@ -3,7 +3,7 @@ html,
 #llmap {
   /* height: 600px;
    width: 1200px */
-   height: 90%;
+   height: 100%;
     width: 100%
 }
 
@@ -76,11 +76,161 @@ body {
   cursor: pointer;
 }
 
-.popup p{
-  font-size: 14px;
-  margin: 20px 0;
+.tab{
+  position: absolute;
+  z-index: 999;
+  background-color: lightgoldenrodyellow;
+  width: 450px;
+  height: 97%;
+  padding: 30px 40px;
+  transform: translate(10%, 0%);
+  /* left: 27%; */
+  /* top: 50%; */
+  border-radius: 8px;
+}
+.tab-filter-container {
+  padding: 0px;
+  text-align: center;
+  background: hsl(205.71, 30.43%, 95.49%);
+}
+.filter-btn {
+  display: inline-flex;
+  padding: 0.8rem 2.5rem;
+  cursor: pointer;
+  /* border-radius: 2rem; */
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+.filter-btn.active {
+  background: chocolate;
+  color: white;
+}
+.tab-filter-item-container {
+  background: var(--white);
+  margin: 0 auto;
+  position: absolute;
+  overflow: hidden;
+}
+.tab-item {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  padding: 0rem 3rem;
+  /* transform: translateY(100%); */
+  /* background: var(--white-light); */
+  /* transition: transform 0.5s ease-in-out; */
+  display: none;
+  /* grid-template-columns: repeat(auto-fit, minmax(29rem, 1fr)); */
+  place-items: normal start;
 }
 
+.tab-heading {
+  padding: 2rem 0;
+  font-size: 3rem;
+}
+
+.tab-heading2 {
+  padding: 2rem 0;
+  font-size: 2rem;
+}
+
+.tab-item.select_tab {
+  transform: translateY(0);
+  /* transition: transform 0.5s ease-in-out; */
+  background: var(--white-light);
+  display: grid;
+  /* animation: feadIn 0.6s ease-in-out; */
+}
+.btn-primary {
+  margin-top: 1.5rem;
+  display: inline-block;
+  background: var(--primary);
+  padding: 0.6rem 2rem;
+  border-radius: 2rem;
+  color: var(--white);
+}
+.tab p{
+  font-size: 14px;
+  margin: 0 0;
+}
+
+.button {
+  margin-top: 1.5rem;
+  display: inline-block;
+  background: var(--);
+  padding: 0.6rem 2rem;
+  border-radius: 2rem;
+  color: var(--white);
+}
+
+.state-click {
+  display: none;
+  margin: 1rem 0rem;
+  padding: 0.4rem 2rem;
+  background: lightgray;
+  font-size: 15px;
+
+}
+
+.region-click {
+  display: none;
+  margin: 1rem 0rem;
+  padding: 0.4rem 2rem;
+  background: lightgray;
+  font-size: 15px;
+
+}
+
+.back-button {
+  display: none;
+  margin: 1rem 0;
+  background: lightgray;
+  border-radius: 2rem;
+  padding: 0.3rem 2rem;
+  font-size: 13px; 
+  
+}
+
+.back-button2 {
+  display: none;
+  margin: 1rem 0;
+  background: lightgray;
+  border-radius: 2rem;
+  padding: 0.3rem 2rem;
+  font-size: 13px; 
+  
+}
+
+.after-state {
+  display: none;
+}
+
+.after-region {
+  display: none;
+}
+
+.confirm {
+  display: none;
+}
+
+/* -----------------------------------------------*/
+/* Radio Box Style*/
+
+label {
+  display: flex;
+  align-items: center;
+  margin: 15px 20px;
+  cursor: pointer;
+  font-size: 15px;
+  
+}
+
+/* input[type="radio"] {
+  opacity: 0;
+} */
+
+/* -----------------------------------------------*/
 
 .link-button label {
   cursor: pointer;
@@ -164,7 +314,8 @@ svg:not(:root) {
   gap: 1rem;
   position: absolute;
   width: 46px;
-  max-width: 480px;
+  /* max-width: 480px; */
+  max-width: 400px;
   z-index: 99999;
   background: #fff;
   box-shadow: none;
@@ -174,7 +325,8 @@ svg:not(:root) {
 }
 
 .active-sidebar .sidebar {
-  max-width: 760px;
+  /* max-width: 760px; */
+  max-width: 400px;
   width: 100%;
 }
 
@@ -192,7 +344,8 @@ svg:not(:root) {
   }
 
   .active-sidebar .sidebar {
-    max-width: 480px;
+    /*Change this if want to change width of the active sidebar*/
+    max-width: 400px;
     width: 100%;
     transition: width 1s;
   }
@@ -235,7 +388,7 @@ svg:not(:root) {
 }
 
 .active-sidebar .sidebar::before {
-  left: 42px;
+  left: 44px;
 }
 
 .sidebar svg {
@@ -247,10 +400,18 @@ svg:not(:root) {
 }
 
 .sidebar-menu {
-  display: flex;
-  flex-direction: column;
-  list-style: none;
-  height: 100%;
+  /* display: flex; */
+  flex-direction: row;
+  /* list-style: none;  */
+  /* height: 100%; */
+  float: left;
+  background: #eee; 
+  padding: 10px; 
+  border: 1px solid #ccc; 
+  margin-left: -10px; 
+  position: relative;
+  left: 1px; 
+
 }
 
 .sidebar-menu li {
