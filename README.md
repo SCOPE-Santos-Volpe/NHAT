@@ -1,4 +1,4 @@
-# High Injoury Network Webapp 
+# High Injury Network Webapp 
 
 This project aims to identify and visualize high injury networks in the United States using FARS, SDS, and Justice 40 equity data. The ultimate goal is to provide a live web-app map that displays the entire national roadway network and highlights areas with high injury rates using kernel density estimation.
 
