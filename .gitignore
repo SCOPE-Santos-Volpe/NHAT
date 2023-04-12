@@ -7,9 +7,13 @@ NEMSIS/2021 ASCII/*
 
 .DS_Store
 
+SDS/**
 SDS/Data/**
 SDS/Output/**
 Hospital_Data/
+Justice40/
+FARS/
 
 Shapefiles/*
 __pycache__
+AWS/config/__pycache__

@@ -1,25 +1,15 @@
 import osmnx as ox
 from scipy.interpolate import interp1d
 import numpy as np
-np.seterr(divide='ignore', invalid='ignore')
 import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
 import pandas as pd
 import scipy.stats as st
 from shapely.geometry import Polygon, LineString, Point
 import geopandas as gpd
 import glob
 import os
-import combine_FARS_datasets
-import combine_SDS_datasets
-import multiprocessing as mp
-import copy
-
-# with mp.Pool() as pool: # have the pool map each tuple onto calculate_s arguments
-#         # Starmap is just unpacking the tuple into multiple arguments
-#         # This will complete the operation with an optimal number of pool workers,
-#         # making use of all CPU cores.
-#         output_rows = pool.starmap(simulate_one, params)
+import preprocess_FARS_data
+import preprocess_SDS_data
 
 class Batch():
 
@@ -55,7 +45,6 @@ class Batch():
 
         kernel = st.gaussian_kde(T_fars, bw_method="silverman")
         self.f = np.reshape(kernel(positions).T, self.xx.shape)
-        self.f = np.divide(self.f,np.nanmax(self.f))
         return self.f, self.minx, self.miny, self.maxx, self.maxy
 
 def get_graph_from_place(place='Alameda', buffer_m = 500):
@@ -97,7 +86,7 @@ def get_fars_gpd(buffers, path='FARS/FARS CSVs'):
     """
 
     # Get a dataframe of all FARS data combined
-    fars_df_all = combine_FARS_datasets.combine_FARS_datasets(path)
+    fars_df_all = preprocess_FARS_data.combine_FARS_datasets(path, min_year = 2020)
     # FARS_GDF = gpd.GeoSeries(fars_df_all.loc[:, ["lon", "lat"]].apply(Point, axis=1), crs = "epsg:4326")
 
     # Convert each FARS point into a point object
@@ -126,7 +115,7 @@ def get_fars_gpd(buffers, path='FARS/FARS CSVs'):
     return fars_gpd
 
 def get_sds_gpd(buffers,path='SDS/Data/'):
-    sds_dict = combine_SDS_datasets.combine_SDS_datasets(path)
+    sds_dict = preprocess_SDS_data.combine_SDS_datasets(path)
     lst = []
     for key in sds_dict.keys():
         sds_df = sds_dict[key]
@@ -160,26 +149,6 @@ def get_sds_gpd(buffers,path='SDS/Data/'):
 
     return points_gpd
 
-def batch_helper(area, buffers, points_gpd):
-    batch = Batch(area) # Create a Batch
-
-    # This sets the bounds of the KDE plot to the entire visualization bounds.
-    batch.minx, batch.miny, batch.maxx, batch.maxy = buffers.total_bounds
-
-    # For each point, if within the area, add to the batch
-    for point in points_gpd:
-        if(point.within(batch.area)):
-            batch.add_point(point)
-
-    if(len(batch.fars_gdf) >= 3):
-        batch.calc_KDE()
-        if(np.nanmax(batch.f) is np.nan):
-            return None
-        else:
-            return batch
-
-    return None
-
 
 
 def make_batches(buffers, points_gpd):
@@ -194,40 +163,23 @@ def make_batches(buffers, points_gpd):
     # minx, miny, maxx, maxy = buffers.total_bounds
 
     # Variable to store all batches
-    # batches = []
-
-    params = [(a,buffers,points_gpd) for _, a in enumerate(buffers)]
-
-    with mp.Pool() as pool: # have the pool map each tuple onto calculate_s arguments
-        # Starmap is just unpacking the tuple into multiple arguments
-        # This will complete the operation with an optimal number of pool workers,
-        # making use of all CPU cores.
-        output = pool.starmap(batch_helper, params)
-    pool.close()
-
-    # for _, area in enumerate(buffers): # For each buffer
-    #     batch = Batch(area) # Create a Batch
-
-    #     # This sets the bounds of the KDE plot to the entire visualization bounds.
-    #     batch.minx, batch.miny, batch.maxx, batch.maxy = buffers.total_bounds
-
-    #     # For each point, if within the area, add to the batch
-    #     for point in points_gpd:
-    #         if(point.within(batch.area)):
-    #             batch.add_point(point)
-
-    #     # If there are enough points to calculate a KDE, then calculate KDE and add to batches
-    #     if(len(batch.fars_gdf) >= 3):
-    #         batch.calc_KDE()
-    #         batches.append(batch)
-
     batches = []
-    for b in output:
-        if (b is None):
-            pass
-        else:
-            batches.append(b)
-    return copy.deepcopy(batches)
+    for _, area in enumerate(buffers): # For each buffer
+        batch = Batch(area) # Create a Batch
+
+        # This sets the bounds of the KDE plot to the entire visualization bounds.
+        batch.minx, batch.miny, batch.maxx, batch.maxy = buffers.total_bounds
+
+        # For each point, if within the area, add to the batch
+        for point in points_gpd:
+            if(point.within(batch.area)):
+                batch.add_point(point)
+
+        # If there are enough points to calculate a KDE, then calculate KDE and add to batches
+        if(len(batch.fars_gdf) >= 3):
+            batch.calc_KDE()
+            batches.append(batch)
+    return batches
 
 
 def transparent_cmap(N=255):
@@ -240,44 +192,23 @@ def transparent_cmap(N=255):
     """
     # "Copy colormap and set alpha values"
 
-    # mycmap = plt.cm.Blues
-    # mycmap._init()
-    # mycmap._lut[0,:] = [1,1,1,0]
-    # mycmap._lut[1:-3,0] = np.linspace(1, 0, N) # R
-    # mycmap._lut[1:-3,1] = np.linspace(1, 0, N) # G
-    # mycmap._lut[1:-3,2] = np.linspace(1, 1, N) # B
-    # mycmap._lut[1:-3,3] = np.linspace(0, 1, N) # A
-    # mycmap._lut[-3:,:] = [1,0,0,1]
+    mycmap = plt.cm.Blues
+    mycmap._init()
+    mycmap._lut[0,:] = [1,1,1,0]
+    mycmap._lut[1:-3,0] = np.linspace(1, 0, N) # R
+    mycmap._lut[1:-3,1] = np.linspace(1, 0, N) # G
+    mycmap._lut[1:-3,2] = np.linspace(1, 1, N) # B
+    mycmap._lut[1:-3,3] = np.linspace(0, 1, N) # A
+    mycmap._lut[-3:,:] = [1,0,0,1]
     # I don't remember why this matters tbh, it was a StackOverflow article fix
     # return mycmap
 
     "Copy colormap and set alpha values"
 
-    mycmap = plt.cm.Blues
+    mycmap = plt.cm.blues
     mycmap._init()
     mycmap._lut[:,-1] = np.linspace(0.0, 0.9,N+4)
     return mycmap
-
-# def transparent_cmap():
-#     """https://stackoverflow.com/questions/51601272/python-matplotlib-heatmap-colorbar-from-transparent
-#     """
-#     ncolors = 256
-#     color_array = plt.get_cmap('gist_rainbow')(range(ncolors))
-
-#     # change alpha values
-#     color_array[:,-1] = np.linspace(1.0,0.0,ncolors)
-
-#     # create a colormap object
-#     map_object = LinearSegmentedColormap.from_list(name='rainbow_alpha',colors=color_array)
-
-#     # register this new colormap with matplotlib
-#     # plt.register_cmap(cmap=map_object)
-#     return map_object
-
-#     # # show some example data
-#     # f,ax = plt.subplots()
-#     # h = ax.imshow(np.random.rand(100,100),cmap='rainbow_alpha')
-#     # plt.colorbar(mappable=h)
 
 def plot_hin(batches, roads, points_gpd):
     """Plot the HIN network contour map
@@ -292,8 +223,7 @@ def plot_hin(batches, roads, points_gpd):
     print("started plot")
 
     # Make transparent colormap for the contourf plots
-    # mycmap = transparent_cmap()
-    plt.register_cmap(cmap=transparent_cmap(),name='mira')
+    mycmap = transparent_cmap()
 
     # Make new figure. Doesn't need to be 8x8, that was just for .ipynb troubleshooting
     fig = plt.figure(figsize=(8,8))
@@ -308,8 +238,8 @@ def plot_hin(batches, roads, points_gpd):
     print("point 2")
 
     # This is leftover code from when I was trying to add all the f values
-    # xx = batches[0].xx
-    # yy = batches[0].yy
+    xx = batches[0].xx
+    yy = batches[0].yy
 
     # Make a new array of f values
     # fs = np.zeros_like(xx, dtype=np.float_)
@@ -323,20 +253,7 @@ def plot_hin(batches, roads, points_gpd):
 
     # Draw the contour plot for each batch with enough points
     for j,i in enumerate(batches):
-        print(i.f,np.nanmax(i.f))
-        ax.contourf(i.xx, i.yy, i.f, cmap = 'mira', levels = np.linspace(start=0,stop=np.nanmax(i.f),num=100),algorithm='threaded')
-
-    # # If you replace:
-
-    # plt.contourf(xx, yy, f, cmap=cmap, alpha=0.5)
-
-    # # with:
-
-    # step = 0.02
-    # m = np.amax(f)
-    # levels = np.arange(0.0, m, step) + step
-    # plt.contourf(xx, yy, f, levels, cmap=cmap, alpha=0.5)
-
+        ax.contourf(i.xx, i.yy, i.f, cmap=mycmap, zorder=0)
 
 
     # This is where I was trying to use the fs to do only one contourf call
@@ -364,9 +281,9 @@ def main():
 
     # Get each FARS point
     fars = get_fars_gpd(buffers)
-    sds = get_sds_gpd(buffers)
-    points_gpd = pd.concat([fars,sds],axis=0,ignore_index=True)
-    # points_gpd = fars
+    # sds = get_sds_gpd(buffers)
+    # points_gpd = pd.concat([fars,sds],axis=0,ignore_index=True)
+    points_gpd = fars
     print("making batches")
 
     # Make batches from each buffer, categorize points
