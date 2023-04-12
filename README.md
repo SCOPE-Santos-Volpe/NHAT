@@ -2,6 +2,8 @@
 
 This project aims to identify and visualize high injury networks in the United States using FARS, SDS, and Justice 40 equity data. The ultimate goal is to provide a live web-app map that displays the entire national roadway network and highlights areas with high injury rates using kernel density estimation.
 
+The current version of the website is hosted [here](http://34.233.143.226/)
+
 ## Table of Contents
 
 1. [Data](#data)
@@ -13,8 +15,10 @@ This project aims to identify and visualize high injury networks in the United S
 The data used in this project comes from the following sources:
 
 - [FARS: Fatality Analysis Reporting System](https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars)
-- SDS: Serious Data System
-- Justice 40: Justice 40 equity data
+- [SDS: Serious Data System](https://www.nhtsa.gov/state-data-programs/sds-overview) 
+  - [California SDS](https://dot.ca.gov/programs/research-innovation-system-information/annual-collision-data)
+  - [Massachussets SDS](https://apps.impact.dot.state.ma.us/cdp/home)
+- [Justice 40: Justice 40 equity data](https://www.transportation.gov/equity-Justice40)
 
 To access the data, please use the following line of code, replacing `<placeholders>` with the appropriate information:
 
