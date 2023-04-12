@@ -1,4 +1,4 @@
-"""This file is to hold a bunch of useful helper functions so that they can be imported into any file
+"""This file is to hold a bunch of useful helper functions so that they can be imported into any file.
 """
 
 import pandas as pd

@@ -1,6 +1,6 @@
 """Categorizes each row of a dataframe into categories as defined by shapefiles.
 
-The main interface function is categorize_df_to_shapefiles()
+The main interface function is `categorize_df_to_shapefiles()`
 """
 
 from shapely.geometry import shape, Point

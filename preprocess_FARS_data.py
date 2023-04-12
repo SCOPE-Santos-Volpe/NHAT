@@ -1,6 +1,6 @@
-"""Combines all .csv datasets (intended for FARS data) into 1 pd.DataFrame and writes to a single .csv file.
+"""Combines all .csv datasets (intended for FARS data) into 1 `pd.DataFrame` and writes to a single .csv file.
 
-Main function is combine_FARS_datasets. Helper functions take the folder path and get all .csv filenames, read a list of filenames into pd.DataFrame objects, and concatenate a list of pd.DataFrame objects into a single pd.DataFrame.
+Main function is `combine_FARS_datasets`. Helper functions take the folder path and get all .csv filenames, read a list of filenames into `pd.DataFrame` objects, and concatenate a list of `pd.DataFrame` objects into a single `pd.DataFrame.`
 
 https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813254
 
