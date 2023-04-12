@@ -43,9 +43,9 @@ def convert_columns_to_proper_types(df:pd.DataFrame) -> pd.DataFrame:
 def remove_invalid_lat_lon(df:pd.DataFrame) -> pd.DataFrame:
     """ Takes a preprocessed SDS data and remove points with invalid latitude and longitudes
     """
-    # Valid lat and lon range
-    lat_range = [-90, 90]
-    lon_range = [-180, 180]
+
+    df = df.loc[(df["LAT"] >=-90) & (df["LAT"] <=90) &
+                      (df["LON"] >=-180) & (df["LON"] <=180)]
 
     print("LENGTH BEFORE DROPPING: ", df.shape[0])
     # Drop NAs
