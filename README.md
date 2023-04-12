@@ -7,7 +7,7 @@ Docstring format is [Google Python Style Guide](https://github.com/google/styleg
 Note: This is not a complete list of files. This is all the files with code that is used in the final app.
 
 ### [`census_tracts_split.py`](census_tracts_split.py)
-No description yet
+Splits the single census tracts geojson into a geojson for each state.
 
 TODO: Document this file
 
@@ -47,6 +47,11 @@ Combines all .csv datasets for each folder (intended for SDS data) into 1 `pd.Da
 Main function is combine_SDS_datasets. Helper functions take the folder path and get all .csv filenames, read a list of filenames into `pd.DataFrame` objects, and concatenate a list of `pd.DataFrame` objects into a single `pd.DataFrame`.
 
 ### [`preprocess_utils.py`](preprocess_utils.py)
+No description yet
+
+TODO: Document this file
+
+### ['AWS/upload_data_to_RDS.py`](AWS/upload_data_to_RDS.py)
 No description yet
 
 TODO: Document this file
