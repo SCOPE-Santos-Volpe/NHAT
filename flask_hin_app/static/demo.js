@@ -68,7 +68,7 @@ function makeMap() {
     const state_boundaries = new L.FeatureGroup();
     const census_boundaries = new L.FeatureGroup(); // TODO: implement
     const roadHighlight_polylineLayer = new L.FeatureGroup(); // TODO: implement
-    
+
     // adding markers to the layer pointsA
     for (let i = 0; i < pointsA.length; i++) {
         var marker = L.circleMarker([pointsA[i][0], pointsA[i][1]], {radius: 10, color: '#FF00FF'}).bindPopup(pointsA[i][2]);
@@ -83,16 +83,16 @@ function makeMap() {
 
     var FARS_renderer = L.canvas({ padding: 0.5 }); // helps to fix slowness by plotting points on a canvas rather than individual layers
 
-    d3.csv('https://raw.githubusercontent.com/Santos-Volpe-SCOPE/Santos-Volpe-SCOPE-Project/app-framework/FARS2020NationalCSV/accident.csv', function(data) {
-      for (var i = 0; i < data.length; i++) {
-        var row = data[i];
-        if (row.LATITUDENAME != "Not Available" & row.LONGITUDNAME != "Not Available" & row.LATITUDENAME != "Not Reported" & row.LONGITUDNAME != "Not Reported" & row.LATITUDENAME != "Reported as Unknown" & row.LONGITUDNAME != "Reported as Unknown"){
-          // renderer option helps to fix slowness by plotting points on a canvas rather than individual layers
-          var marker = L.circleMarker([row.LATITUDE, row.LONGITUD], {radius: 1, opacity: 0.9, color: '#0000ff', renderer: FARS_renderer}).bindPopup("Coordinates:<br/>" + [row.LATITUDENAME, row.LONGITUDNAME]); //.addTo(map);
-          fars_points.addLayer(marker);
-        }
-      }
-    });
+    // d3.csv('https://raw.githubusercontent.com/Santos-Volpe-SCOPE/Santos-Volpe-SCOPE-Project/app-framework/FARS2020NationalCSV/accident.csv', function(data) {
+    //   for (var i = 0; i < data.length; i++) {
+    //     var row = data[i];
+    //     if (row.LATITUDENAME != "Not Available" & row.LONGITUDNAME != "Not Available" & row.LATITUDENAME != "Not Reported" & row.LONGITUDNAME != "Not Reported" & row.LATITUDENAME != "Reported as Unknown" & row.LONGITUDNAME != "Reported as Unknown"){
+    //       // renderer option helps to fix slowness by plotting points on a canvas rather than individual layers
+    //       var marker = L.circleMarker([row.LATITUDE, row.LONGITUD], {radius: 1, opacity: 0.9, color: '#0000ff', renderer: FARS_renderer}).bindPopup("Coordinates:<br/>" + [row.LATITUDENAME, row.LONGITUDNAME]); //.addTo(map);
+    //       fars_points.addLayer(marker);
+    //     }
+    //   }
+    // });
 
 
     // ------------------------------------------------------------------------------------
@@ -262,7 +262,9 @@ function makeMap() {
 
             document.querySelector('.region-click').style.display = 'block';
             document.querySelector('.after-region').style.display = 'block';
-            document.querySelector('.back-button2').style.display = 'block';
+            var x = document.querySelectorAll('.button-group button');
+            x[0].style.display = 'inline-block';
+            x[1].style.display = 'inline-block';
 
             region.innerText = mpo_name ? `You clicked mpo: ${mpo_name}` : `You haven't selected any mpo`;
             afterregion.innerText = "You chose a region! Go to HIN tab to start generating HIN for your region.";
@@ -361,7 +363,6 @@ function makeMap() {
             console.log("state_of_county", state_of_county);
             console.log("clicked feature", feature);
 
-            console.log("aaaa", this);
             console.log("layer", layer);
 
             map.fitBounds(this.getBounds());
@@ -378,7 +379,9 @@ function makeMap() {
 
             document.querySelector('.region-click').style.display = 'block';
             document.querySelector('.after-region').style.display = 'block';
-            document.querySelector('.back-button2').style.display = 'block';
+            var x = document.querySelectorAll('.button-group button');
+            x[0].style.display = 'inline-block';
+            x[1].style.display = 'inline-block';
 
             region.innerText = county_name ? `You clicked county: ${county_name}` : `You haven't selected any county`;
             afterregion.innerText = "You chose a region! Click the region one more time to confirm that this is the region you want to create HIN.";
@@ -387,7 +390,7 @@ function makeMap() {
             // Get the geojson for the selected MPO/county
             $.getJSON("/get_county_boundaries_by_state_id_and_county_name/"+clicked_state+county_name, function(obj) {
               const county_geojson = obj;
-              setSelectionToMap(county_name, mpo_not_county_bool, county_geojson, selectedLayer);
+              setSelectionToMap(county_name, mpo_not_county_bool, county_geojson, selectedLayer, clicked_state);
               console.log("county boundaries for state", county_name, "loaded");
             });
             
@@ -424,18 +427,12 @@ function makeMap() {
       return geojson_county_boundaries_layer;
     }
 
-    // d3.json('https://raw.githubusercontent.com/Santos-Volpe-SCOPE/Santos-Volpe-SCOPE-Project/app-framework/hin_app/county_data/county.geojson', function(data) {
-    //   const geojson = data;
-    //   var clicked_state = "NONE";
-    //   setCountiesToMap(geojson, clicked_state);
-    //   console.log("county boundaries loaded");
-    // });
 
     // -----------------------------------------------------------------------------------------
     // LOAD LAYER HIGHLIGHTING THE SELECTED AREA
 
-    function setSelectionToMap(selected_feature_name, mpo_not_county_bool, geojson, thisLayer) {
-      console.log("selected_feature_name", selected_feature_name);
+    function setSelectionToMap(selected_feature_name, mpo_not_county_bool, geojson, thisLayer, clicked_state) {
+      console.log("geojson", selected_feature_name);
       var geojson_selection_boundaries_layer = L.geoJSON(geojson, {
         style: function (feature) {
           if (mpo_not_county_bool) {
@@ -445,70 +442,75 @@ function makeMap() {
           }
           if (!bool_selected) {
             return {
-              color: "#555555",
-              fillColor : "#555555",
-              weight: 1,
+              color: "red",
+              //fillColor : "#555555",
+              weight: 5,
+              opacity: 1.0,
               clickable: true
             };
           } else {
             return {
-              color: "red",
-              // fillColor : "red",
-              weight: 5,
-              opacity: 1.0,
-              // fillOpacity: 0.0,
+              color: "#555555",
+              opacity: 1,
+              fillOpacity: 0.0,
+              // fillOpacity: 0.0L,
               clickable: true
             };
           }
         },
-        onEachFeature: function (feature, layer) {
-          // console.log(selected_feature_name, feature.properties.GEOID);
-          layer.on('mouseover', function () {
-            this.setStyle({
-              'fillColor': 'yellow',
-            });
-            this.openPopup();
-          });
+        // onEachFeature: function (feature, layer) {
+        //   // console.log(selected_feature_name, feature.properties.GEOID);
+        //   layer.on('mouseover', function () {
+        //     this.setStyle({
+        //       'fillColor': 'yellow',
+        //     });
+        //     this.openPopup();
+        //   });
         
-          layer.on('mouseout', function () {
-            this.setStyle({
-              'fillColor': '#555555',
-            });
-            this.closePopup(); 
-          });
+        //   layer.on('mouseout', function () {
+        //     this.setStyle({
+        //       'fillColor': '#555555',
+        //     });
+        //     this.closePopup(); 
+        //   });
 
-          layer.on('click', function (event) {
-            map.addControl(startLayer);
-            map.fitBounds(this.getBounds());
-            // if (mpo_not_county_bool) {
-            //   if (feature.properties.MPO_NAME != selected_feature_name) {
-            //     selected_feature_name = feature.properties.MPO_NAME;
-            //   }
-            // } else {
-            //   if (feature.properties.COUNTY_NAME != selected_feature_name) {
-            //     selected_feature_name = feature.properties.GEOID;
-            //   }
-            // }
-            this.setStyle({
-              'color': '#555555',
-              'fillOpacity': 0.0,
-            });
+        //   layer.on('click', function (event) {
+        //     map.addControl(startLayer);
+        //     map.fitBounds(this.getBounds());
 
-            document.querySelector('.back-button2').style.display = 'none';
-            document.querySelector('.after-region').style.display = 'none';
-            document.querySelector('.confirmation').style.display = 'block';
-            confirmation.innerText = "Go to the HIN tab to generate the HIN map!";
+        //     this.setStyle({
+        //       'color': '#555555',
+        //       'fillOpacity': 0.0,
+        //     });
 
-            // selection_boundaries.removeLayer(geojson_selection_boundaries_layer);
-            // geojson_selection_boundaries_layer = L.geoJSON(); 
+        //     document.querySelector('.back-button2').style.display = 'none';
+        //     document.querySelector('.after-region').style.display = 'none';
+        //     // document.querySelector('.confirmation').style.display = 'block';
+        //     // confirmation.innerText = "Go to the HIN tab to generate the HIN map!";
+
+        //     if (mpo_not_county_bool){
+        //       $.getJSON("/get_census_tract_boundaries_by_state_id_and_mpo_name/"+clicked_state+feature.properties.MPO_NAME, function(obj) {
+        //         const mpo_census = obj;
+        //         censusToMap(mpo_census);
+        //         console.log("mpo census for ", feature.properties.MPO_NAME, "loaded");
+        //         // map.addLayer(census_boundaries);
+        //       });
+        //     }
+        //     else {
+        //       $.getJSON("/get_census_tract_boundaries_by_state_id_and_county_name/"+clicked_state+feature.properties.COUNTY_NAME, function(obj) {
+        //         const county_census = obj;
+        //         censusToMap(county_census);
+        //         console.log("county census for ", feature.properties.COUNTY_NAME, "loaded");
+        //         // map.addLayer(census_boundaries);
+        //       });
+        //     }
 
             
-            
-            // Can't figure out how to dynamically restyle all the features in the feature group, tried many 
-            // things, resorted to clearing the layer and remaking it when the user clicks a new boundary
-            //setSelectionToMap(selected_feature_name, mpo_not_county_bool, geojson, thisLayer); 
-          });
-        },
+        //     // Can't figure out how to dynamically restyle all the features in the feature group, tried many 
+        //     // things, resorted to clearing the layer and remaking it when the user clicks a new boundary
+        //     //setSelectionToMap(selected_feature_name, mpo_not_county_bool, geojson, thisLayer); 
+        //   });
+        // },
       });
 
       // CODE WHEN BACK BUTTON IS CLICKED
@@ -523,17 +525,103 @@ function makeMap() {
 
           document.querySelector('.region-click').style.display = 'none'; 
           document.querySelector('.back-button2').style.display = 'none';
+          document.querySelector('.btn-confirm').style.display = 'none';
           document.querySelector('.after-region').style.display = 'none';
 
           document.querySelector('.after-state').style.display = 'block';
           document.querySelector('.back-button').style.display = 'block';
         });
       }
+
       backButtonRegionClicked();
+      confirmClicked(mpo_not_county_bool, selected_feature_name, clicked_state);
 
       // console.log("geojson_selection_boundaries_layer", geojson_selection_boundaries_layer);
       selection_boundaries.addLayer(geojson_selection_boundaries_layer);
       return geojson_selection_boundaries_layer;
+    }
+
+
+
+    //------------------------------------------------------------------------------------------
+    // CODE WHEN CONFIRM IS CLICKED
+    function confirmClicked(mpo_not_county_bool, selected_feature_name, clicked_state){
+      const conf = document.querySelector('#btnconfirm');
+      conf.addEventListener("click", () => {
+        map.addControl(startLayer);
+        document.querySelector('.back-button2').style.display = 'none';
+        document.querySelector('.after-region').style.display = 'none';
+        document.querySelector('.btn-confirm').style.display = 'none';
+        // document.querySelector('.confirmation').style.display = 'block';
+        //confirmation.innerText = "Go to the HIN tab to generate the HIN map!";
+
+        if (mpo_not_county_bool){
+          $.getJSON("/get_census_tract_boundaries_by_state_id_and_mpo_name/"+clicked_state+ selected_feature_name, function(obj) {
+            const mpo_census = obj;
+            censusToMap(mpo_census);
+            console.log("mpo census for ", selected_feature_name, "loaded");
+            // map.addLayer(census_boundaries);
+          });
+        }
+        else {
+          console.log("aaaaaaaaa");
+          $.getJSON("/get_census_tract_boundaries_by_state_id_and_county_name/"+clicked_state+selected_feature_name, function(obj) {
+            const county_census = obj;
+            censusToMap(county_census);
+            console.log("county census for ", selected_feature_name, "loaded");
+            // map.addLayer(census_boundaries);
+          });
+          // $.getJSON("/get_fars_data_by_county/"+clicked_state+ selected_feature_name, function(obj) {
+          //   const county_fars = obj;
+          //   //farsToMap(county_fars);
+          //   console.log("fars for ", selected_feature_name, "loaded");
+          // });
+        }
+
+        let filter_btn = document.querySelectorAll('.filter-btn');
+        let tab_items = document.querySelectorAll('.tab-item');
+
+        for (let j = 0; j < filter_btn.length; j++) {
+          filter_btn[j].classList.remove('active');
+          tab_items[j].classList.remove('select_tab');
+        }
+        filter_btn[1].classList.add('active');
+        tab_items[1].classList.add('select_tab');
+
+      })
+    }
+
+    // -----------------------------------------------------------------------------------------
+    // LOAD FARS DATA
+    function farsToMap(fars_data){
+
+      var markers = fars_data.data.map(function(arr) {
+        return L.circleMarker([arr[0], arr[1]], {radius: 2, color: 'red'}).bindPopup("Coordinates:<br>" + [arr[0], arr[1]]);
+      });
+
+      layer = L.layerGroup(markers);
+
+      fars_points.addLayer(layer);
+      return layer;
+    }
+
+
+    // -----------------------------------------------------------------------------------------
+    // LOAD GEOJSON OF CENSUS BOUNDARIES
+    function censusToMap(geojson){
+      var geojson_census_layer = L.geoJSON(geojson, {
+        style: function (feature) {
+          return {
+            color: "blue",
+            weight: 1,
+            opacity: 0.5,
+            clickable: true
+          };
+        }
+      });
+
+      census_boundaries.addLayer(geojson_census_layer);
+      return geojson_census_layer;
     }
 
 
@@ -694,11 +782,12 @@ function makeMap() {
     const overlayMaps = {
       "Circle Example": pA,
       "Pin Example": pB,
-      "FARS 2020 Crashes": fars_points,
+      "FARS Crashes": fars_points,
       // "MPO Boundaries": mpo_boundaries,
       // "County Boundaries": county_boundaries,
       // "State Boundaries": state_boundaries,
       "Heatmap Example": heatmapLayer,
+      "Census Boundaries": census_boundaries,
       "Polyline Example": roadHighlight_polylineLayer,
     };
 
@@ -1300,7 +1389,6 @@ function make_tab() {
 
   for (let i = 0; i < filter_btn.length; i++) {
     filter_btn[i].addEventListener('click', function () {
-      console.log(filter_btn);
       for (let j = 0; j < filter_btn.length; j++) {
         filter_btn[j].classList.remove('active');
       }

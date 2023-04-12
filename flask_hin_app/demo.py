@@ -105,13 +105,22 @@ def get_county_boundaries_from_rds(state_id:int, county_name:String = None):
 
 def get_census_tract_boundaries_from_rds(state_id:int, county_name:String = None, mpo_name:String = None):
     if county_name != None:
-        sql = text(""" SELECT * FROM "boundaries_census_tract" WHERE "STATE_ID" = {} AND "COUNTY_NAME" = '{}' """.format(state_id, county_name))
-    if mpo_name != None:
-        sql = text(""" SELECT * FROM "boundaries_census_tract" WHERE "STATE_ID" = {} AND "MPO_NAME" = '{}' """.format(state_id, county_name))
-    if state_id == None:
-        sql = text(""" SELECT * FROM "boundaries_census_tract" """)
+        sql = text(""" SELECT * FROM "boundaries_census_tract_v3" WHERE "STATE_ID" = {} AND "COUNTY_NAME" = '{}' AND "IDENTIFIED_AS_DISADVANTAGED" = 1 """.format(state_id, county_name))
+    elif mpo_name != None:
+        sql = text(""" SELECT * FROM "boundaries_census_tract_v3" WHERE "STATE_ID" = {} AND "MPO_NAME" = '{}' AND "IDENTIFIED_AS_DISADVANTAGED" = 1 """.format(state_id, mpo_name))
+    elif state_id == None:
+        sql = text(""" SELECT * FROM "boundaries_census_tract_v3" """)
     else:
-        sql = text(""" SELECT * FROM "boundaries_census_tract" WHERE "STATE_ID" = {} """.format(state_id))
+        sql = text(""" SELECT * FROM "boundaries_census_tract_v3" WHERE "STATE_ID" = {} """.format(state_id))
+    gdf = gpd.read_postgis(sql, con=sqlalchemy_conn)  
+    geojson = gdf.to_json()
+    return geojson
+
+def get_fars_from_rds(state_id:int, county_name:String = None, mpo_name:String = None):
+    if county_name != None:
+        sql = text(""" SELECT * FROM "FARS" WHERE "STATE_ID" = {} AND "COUNTY_NAME" = '{}' """.format(state_id, county_name))
+    elif mpo_name != None:
+        sql = text(""" SELECT * FROM "FARS" WHERE "STATE_ID" = {} AND "MPO_NAME" = '{}' """.format(state_id, mpo_name))
     gdf = gpd.read_postgis(sql, con=sqlalchemy_conn)  
     geojson = gdf.to_json()
     return geojson
@@ -125,6 +134,13 @@ def get_fars_data(state_id):
     fars_state_coords = [[point.latitude, point.longitude] for point in fars_state_data]
     # print("state_id, points, coords", state_id, fars_state_data, fars_state_coords)
     return jsonify({"data": fars_state_coords})
+
+# Get FARS of selected county
+@app.route('/get_fars_data_by_county/<int:state_id><string:county_name>')
+def get_fars_data_by_county(state_id, county_name):
+    print("getting fars data for {} in # {}".format(county_name, state_id))
+    geojson = get_fars_from_rds(state_id, county_name=county_name)
+    return geojson
 
 # Get state boundaries and return it as as a geojson
 @app.route('/get_state_boundaries_by_state/<int:state_id>')
@@ -178,13 +194,14 @@ def get_census_tract_boundaries_by_state_id(state_id):
 @app.route('/get_census_tract_boundaries_by_state_id_and_county_name/<int:state_id><string:county_name>')
 def get_census_tract_boundaries_by_state_id_and_county_name(state_id, county_name):
     print("getting census tract boundaries for {} in # {}".format(county_name, state_id))
-    geojson = get_census_tract_boundaries_from_rds(state_id, county_name)
+    logging.warning('Watch out!')
+    geojson = get_census_tract_boundaries_from_rds(state_id, county_name=county_name)
     return geojson
 
 @app.route('/get_census_tract_boundaries_by_state_id_and_mpo_name/<int:state_id><string:mpo_name>')
 def get_census_tract_boundaries_by_state_id_and_mpo_name(state_id, mpo_name):
     print("getting census tract for {} in # {}".format(mpo_name, state_id))
-    geojson = get_census_tract_boundaries_from_rds(state_id, mpo_name)
+    geojson = get_census_tract_boundaries_from_rds(state_id, mpo_name=mpo_name)
     return geojson
 
 @app.route('/')

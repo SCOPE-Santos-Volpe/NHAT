@@ -108,7 +108,8 @@ body {
 }
 .tab-filter-item-container {
   background: var(--white);
-  margin: 0 auto;
+  margin: 0 0;
+  padding-right: 1rem;
   position: absolute;
   overflow: hidden;
 }
@@ -116,7 +117,7 @@ body {
   width: 100%;
   height: 100%;
   position: relative;
-  padding: 0rem 3rem;
+  padding: 0rem 1rem;
   /* transform: translateY(100%); */
   /* background: var(--white-light); */
   /* transition: transform 0.5s ease-in-out; */
@@ -151,7 +152,7 @@ body {
   color: var(--white);
 }
 .tab p{
-  font-size: 14px;
+  font-size: 15px;
   margin: 0 0;
 }
 
@@ -188,19 +189,19 @@ body {
   background: lightgray;
   border-radius: 2rem;
   padding: 0.3rem 2rem;
-  font-size: 13px; 
+  font-size: 15px; 
   
 }
 
-.back-button2 {
+/* .back-button2 {
   display: none;
   margin: 1rem 0;
   background: lightgray;
   border-radius: 2rem;
   padding: 0.3rem 2rem;
-  font-size: 13px; 
+  font-size: 15px; 
   
-}
+} */
 
 .after-state {
   display: none;
@@ -210,9 +211,23 @@ body {
   display: none;
 }
 
-.confirm {
+
+.button-group button{
   display: none;
+  background: lightgray;
+  border-radius: 2rem;
+  padding: 0.3rem 2rem;
+  font-size: 15px;
 }
+
+/* .btn-confirm {
+  margin-right: 1rem;
+  margin-left: auto;
+  background: lightgray;
+  border-radius: 2rem;
+  padding: 0.3rem 2rem;
+  font-size: 15px;
+} */
 
 /* -----------------------------------------------*/
 /* Radio Box Style*/
