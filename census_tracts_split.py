@@ -93,7 +93,7 @@ def split_census_tracts():
 
     tracts = load_all_tracts_geojson()
 
-    state_dict = categorize_tracts_by_state(d_state_name2initial,tracts)
+    state_dict = categorize_tracts_by_state(tracts)
 
     write_files(state_dict,d_state_name2initial)
 

@@ -12,7 +12,7 @@ Splits the single census tracts geojson into a geojson for each state.
 ### [`dataset_categorize_shapefile.py`](dataset_categorize_shapefile.py)
 Categorizes each row of a dataframe into categories as defined by shapefiles. The main interface function is `categorize_df_to_shapefiles.`
 
-THIS FILE MAY BE USELESS ACTUALLY, CHECK LATER
+THIS FILE IS USELESS, CONFIRM THAT WE DONT NEED IT
 
 ### [`helper.py`](helper.py)
 This file is to hold a bunch of useful helper functions so that they can be imported into any file.
