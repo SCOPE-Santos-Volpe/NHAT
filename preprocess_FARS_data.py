@@ -165,10 +165,10 @@ def label_FARS_with_MPO_and_county_identifiers(df):
     """Take preprocessed FARS data and label it with MPO and county.
 
     Args:
-        df: a `pd.dataframe` outputted by `clean_FARS_data`
+        df: a `pd.DataFrame` outputted by `clean_FARS_data`
 
     Returns:
-        A `pd.dataframe` of FARS data, labeled by MPO and county
+        A `pd.DataFrame` of FARS data, labeled by MPO and county
     """
 
     # Create a column with a point opject, and convert to geojson

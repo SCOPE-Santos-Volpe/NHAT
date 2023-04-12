@@ -143,5 +143,11 @@ def write_dataframe_to_file(df: pd.DataFrame, filename: str):
     Returns:
         Returns the output of `df.to_csv(filename)`
     """
-    
+
+    outname = 'name.csv'
+
+    outdir = os.path.dirname(filename)
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
+
     return df.to_csv(filename, index=False)
