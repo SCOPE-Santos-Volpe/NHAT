@@ -12,7 +12,7 @@ This project aims to identify and visualize high injury networks in the United S
 
 The data used in this project comes from the following sources:
 
-- FARS: Fatality Analysis Reporting System
+- (FARS: Fatality Analysis Reporting System)[https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars]
 - SDS: Serious Data System
 - Justice 40: Justice 40 equity data
 
