@@ -128,12 +128,12 @@ body {
 
 .tab-heading {
   padding: 2rem 0;
-  font-size: 3rem;
+  font-size: 2.5rem;
 }
 
 .tab-heading2 {
   padding: 2rem 0;
-  font-size: 2rem;
+  font-size: 1.5rem;
 }
 
 .tab-item.select_tab {
@@ -152,7 +152,7 @@ body {
   color: var(--white);
 }
 .tab p{
-  font-size: 15px;
+  font-size: 13px;
   margin: 0 0;
 }
 
@@ -170,7 +170,7 @@ body {
   margin: 1rem 0rem;
   padding: 0.4rem 2rem;
   background: lightgray;
-  font-size: 15px;
+  font-size: 13px;
 
 }
 
@@ -179,7 +179,7 @@ body {
   margin: 1rem 0rem;
   padding: 0.4rem 2rem;
   background: lightgray;
-  font-size: 15px;
+  font-size: 13px;
 
 }
 
@@ -189,7 +189,7 @@ body {
   background: lightgray;
   border-radius: 2rem;
   padding: 0.3rem 2rem;
-  font-size: 15px; 
+  font-size: 13px; 
   
 }
 
@@ -217,7 +217,7 @@ body {
   background: lightgray;
   border-radius: 2rem;
   padding: 0.3rem 2rem;
-  font-size: 15px;
+  font-size: 13px;
 }
 
 /* .btn-confirm {
@@ -229,6 +229,44 @@ body {
   font-size: 15px;
 } */
 
+
+/* ------------------------------------------------------ */
+/* Slider */
+
+.slidecontainer {
+  width: 80%; /* Width of the outside container */
+}
+
+.slider {
+  width: 100%;
+  height: 15px;
+  border-radius: 5px;  
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%; 
+  background: #04AA6D;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #04AA6D;
+  cursor: pointer;
+}
+
+
 /* -----------------------------------------------*/
 /* Radio Box Style*/
 
@@ -237,13 +275,14 @@ label {
   align-items: center;
   margin: 15px 20px;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 13px;
   
 }
 
 /* input[type="radio"] {
   opacity: 0;
 } */
+
 
 /* -----------------------------------------------*/
 

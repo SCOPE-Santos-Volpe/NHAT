@@ -122,13 +122,13 @@
 
       </div>
       <div class="tab-item hin">
-        <h3 class="tab-heading2">Generate High Injury Network</h1>
+        <h3 class="tab-heading">Generate High Injury Network</h1>
         <h4>
           Databases
         </h4>
         <div>
           <div class="radio-box">
-            <input type="radio" name="database" value="fars" id="fars" >
+            <input type="radio" name="database" value="fars" id="fars" checked>
             <label for = "fars"> FARS </label>
           </div>
           <div>
@@ -139,18 +139,22 @@
             <input type="radio" name="database" value="own" id="own" disabled>
             <label for = "own"> Your Own Database</label>
           </div>
-
         </div>
+        <h4>
+          Threshold
+        </h4>
+        <div class="slidecontainer">
+          <input type="range" min="0.000" max="0.005" value="0.003" step = "0.001" class="slider" id="myRange">
+        </div>
+        <div class="slider-value" id = "slidervalue"></div>
 
-        <button class="button" id="btn">Show Selected Value</button>
+        <button class="button" id="rd-btn">Generate HIN map</button>
 
         <p id="output"></p>
       </div>
       <div class="tab-item stat">
         <h2 class="tab-heading"> Statistic Page</h1>
-        <p>
-          You can view statistics here
-        </p>
+        <div class = "stats" id = "stats"></div>
       </div>
     </div>
   </div>

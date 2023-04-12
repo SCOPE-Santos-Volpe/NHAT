@@ -51,6 +51,45 @@ class Fars_accident_2020(db.Model):
     def get_longitude(self):
         return self.longitude
 
+class Fars_testing(db.Model):
+    YEAR = db.Column(db.Integer)
+    STATE_ID = db.Column(db.Integer)
+    STATE_NAME = db.Column(db.String(80))
+    COUNTY_ID = db.Column(db.Float)
+    COUNTY_NAME = db.Column(db.String(80))
+    MPO_ID = db.Column(db.Float)
+    MPO_NAME = db.Column(db.String(80))
+    IS_FATAL =  db.Column(db.Integer)
+    SEVERITY = db.Column(db.Integer)
+    IS_PED = db.Column(db.Integer)
+    IS_CYC = db.Column(db.Integer)
+    WEATHER_COND = db.Column(db.String(80))
+    LIGHT_COND = db.Column(db.String(80))
+    ROAD_COND = db.Column(db.String(80))
+    ROAD_NAME = db.Column(db.String(80))
+    IS_INTERSECTION = db.Column(db.Integer)
+    LAT = db.Column(db.Float, primary_key=True)
+    LON = db.Column(db.Float)
+
+    def __init__(self, STATE_ID, COUNTY_ID, LAT, LON):
+        print("init point")
+        self.STATE_ID = STATE_ID
+        self.COUNTY_ID = COUNTY_ID
+        self.LAT = LAT
+        self.LON = LON
+
+    def __repr__(self):
+        return "<State %d: Lat %s Lng %s>" % (self.STATE_ID, self.LAT, self.LON)
+
+@app.route('/get_fars_data_by_county/<int:state_id><string:county_name>')
+def get_fars_data_by_county(state_id, county_name):
+    # Filter data points by a particular state id
+    print("getting fars data for state: ", state_id, " county_name: ", county_name)
+    fars_state_data = Fars_testing.query.filter(Fars_testing.STATE_ID == state_id).\
+                                        filter(Fars_testing.COUNTY_NAME == county_name).all()
+    fars_state_coords = [[point.LAT, point.LON] for point in fars_state_data]
+    print(fars_state_coords)
+    return jsonify({"data": fars_state_coords})
 
 class States(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -135,12 +174,7 @@ def get_fars_data(state_id):
     # print("state_id, points, coords", state_id, fars_state_data, fars_state_coords)
     return jsonify({"data": fars_state_coords})
 
-# Get FARS of selected county
-@app.route('/get_fars_data_by_county/<int:state_id><string:county_name>')
-def get_fars_data_by_county(state_id, county_name):
-    print("getting fars data for {} in # {}".format(county_name, state_id))
-    geojson = get_fars_from_rds(state_id, county_name=county_name)
-    return geojson
+
 
 # Get state boundaries and return it as as a geojson
 @app.route('/get_state_boundaries_by_state/<int:state_id>')
@@ -194,7 +228,6 @@ def get_census_tract_boundaries_by_state_id(state_id):
 @app.route('/get_census_tract_boundaries_by_state_id_and_county_name/<int:state_id><string:county_name>')
 def get_census_tract_boundaries_by_state_id_and_county_name(state_id, county_name):
     print("getting census tract boundaries for {} in # {}".format(county_name, state_id))
-    logging.warning('Watch out!')
     geojson = get_census_tract_boundaries_from_rds(state_id, county_name=county_name)
     return geojson
 
