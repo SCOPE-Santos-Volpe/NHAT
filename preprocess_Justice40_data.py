@@ -5,16 +5,8 @@ https://screeningtool.geoplatform.gov/en/#3/33.47/-97.5
 import pandas as pd
 import geopandas as gpd
 import helper
+import preprocess_utils
 import fiona
-
-states_df = helper.load_df_from_csv(path='states.csv', low_memory = False)
-# Dictionaries to convert the STATE_INITIAL to STATE_ID & STATE_NAME
-# d_state_initial2id = dict(zip(states_df.state, states_df.id))
-# d_state_initial2name = dict(zip(states_df.state, states_df.name))
-# d_state_id2name = dict(zip(states_df.id, states_df.name))
-d_state_name2id = dict(zip(states_df.name, states_df.id))
-d_state_name2initial = dict(zip(states_df.name, states_df.state))
-
 
 def census_tract_shp_2_geojson():
     shp_file = gpd.read_file('Justice40/usa/usa.shp')
@@ -39,8 +31,8 @@ def preprocess_justice40_data(df: pd.DataFrame = "Justice40/justice_40_communiti
     df.rename(columns = renames,inplace = True)
 
 
-    df['STATE_ID'] = df['STATE_NAME'].map(d_state_name2id)
-    df['STATE_INITIAL'] = df['STATE_NAME'].map(d_state_name2initial)
+    df['STATE_ID'] = df['STATE_NAME'].map(preprocess_utils.d_state_name2id)
+    df['STATE_INITIAL'] = df['STATE_NAME'].map(preprocess_utils.d_state_name2initial)
     
     def is_disadvantaged(row):
         if row['IDENTIFIED_AS_DISADVANTAGED'] == True:

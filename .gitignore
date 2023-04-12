@@ -12,6 +12,7 @@ SDS/Data/**
 SDS/Output/**
 Hospital_Data/
 Justice40/
+FARS/
 
 Shapefiles/*
 __pycache__

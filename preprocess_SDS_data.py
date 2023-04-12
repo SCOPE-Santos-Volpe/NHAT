@@ -62,10 +62,9 @@ import matplotlib.pyplot as plt
 from geoalchemy2 import Geometry, WKTElement
 
 import helper
+import preprocess_utils
 from shapely.geometry import Point, Polygon, MultiPolygon, shape
 from sqlalchemy import create_engine, Table, Column, Integer, String, text
-
-
 
 # Establish sqlalchemy connection
 conn_string = 'postgresql://scope_team:greenTea123@database-1.ci75bfibgs4e.us-east-1.rds.amazonaws.com/FARS'
@@ -84,38 +83,13 @@ SDS_columns = {
     
 }
 
-states_df = helper.load_df_from_csv(path='states.csv', low_memory = False)
-# Dictionaries to convert the STATE_INITIAL to STATE_ID & STATE_NAME
-# d_state_initial2id = dict(zip(states_df.state, states_df.id))
-# d_state_initial2name = dict(zip(states_df.state, states_df.name))
-# d_state_id2name = dict(zip(states_df.id, states_df.name))
-d_state_name2id = dict(zip(states_df.name, states_df.id))
-# d_state_name2initial = dict(zip(states_df.name, states_df.state))
-
 class preprocess_SDS_data:
     def __init__(self) -> None:
         self.preprocess_func_dict = {
             'California': self.preprocess_CA_SDS,
             'Massachusetts': self.preprocess_MA_SDS
         }
-        
-        self.convert_column_type_dict = {"YEAR"              : int, 
-                                        "IS_FATAL"          : int, 
-                                        "SEVERITY"          : int, 
-                                        "IS_PED"            : int,  
-                                        "IS_CYC"            : int,
-                                        "WEATHER_COND"      : str, 
-                                        "LIGHT_COND"        : str, 
-                                        "ROAD_COND"         : str, 
-                                        "ROAD_NAME"         : str, 
-                                        "IS_INTERSECTION"   : int,
-                                        "LAT"               : float,
-                                        "LON"               : float,
-            }
-    
 
-
-    # TODO: rename this to preprocess_SDS_datasets
     def preprocess_SDS_datasets(self, path: str = 'SDS/Data/', output_path: str = 'SDS/Output/') -> dict[str,pd.DataFrame]:
         """Combines folders of SDS datasets in folder `path` into a single CSV file for each folder in `output_path`. Also runs the sppropriate preprocessing function for each state
 
@@ -142,10 +116,8 @@ class preprocess_SDS_data:
             # Run preprocessing function for the particular state
             if state in self.preprocess_func_dict:
                 df = self.preprocess_func_dict[state](df)
-                df = self.convert_columns_to_proper_types(df)
-                df = self.remove_invalid_lat_lon(df)
-                # Create the geometry column
-                df = self.create_geometry_column_from_lat_lon(df)
+                df = preprocess_utils.convert_columns_to_proper_types(df)
+                df = preprocess_utils.remove_invalid_lat_lon(df)
 
             helper.write_dataframe_to_file(df, output_path+state+".csv")
             output[state] = df
@@ -346,50 +318,7 @@ class preprocess_SDS_data:
         df = df[new_columns]
         
         return df
-
-    def convert_columns_to_proper_types(self, df:pd.DataFrame) -> pd.DataFrame:
-        """ Convert columns to the proper types
-        """
-        # Drop all lat lon that are not numberic
-        # df = df[df.f.apply(lambda x: x.isnumeric())]
-        df = df[pd.to_numeric(df['LAT'], errors='coerce').notnull()]
-        df = df[pd.to_numeric(df['LON'], errors='coerce').notnull()]
-
-        df = df.astype(self.convert_column_type_dict)
-
-        print(df.dtypes)
-        return df
-
-    def remove_invalid_lat_lon(self, df:pd.DataFrame) -> pd.DataFrame:
-        """ Takes a preprocessed SDS data and remove points with invalid latitude and longitudes
-        """
-        # Valid lat and lon range
-        lat_range = [-90, 90]
-        lon_range = [-180, 180]
-
-        print("LENGTH BEFORE DROPPING: ", df.shape[0])
-        # Drop NAs
-        df = df.dropna(subset=['LAT', 'LON'], how='all')
-        print("LENGTH AFTER DROPPING NANS: ", df.shape[0])
-
-        return df
     
-    def create_point_column_from_lat_lon(self, df: pd.DataFrame):
-        """ Generate a Point geometry column using latitude and longitude
-            We want to use this because then we can use shapely to determine 
-            whether each of the points 
-        """
-
-        
-        gdf = gpd.GeoDataFrame(
-        df, geometry=gpd.points_from_xy(df['LON'], df['LAT']), crs="EPSG:4269")
-
-        # gdf['geom'] = gdf['geometry'].apply(lambda x: WKTElement(x.wkt, srid=4269))
-        # gdf.drop(columns='geometry', axis=1, inplace=True)
-        # gdf.set_geometry('geom')
-
-        return gdf
-
     def label_SDS_with_MPO_and_county_identifiers(self, state_name):
         """ Loop through all MPO shapefiles and check whether each point is inside the polygon boundary
         """
@@ -397,17 +326,18 @@ class preprocess_SDS_data:
         processed_SDS_path = 'SDS/Output/' + state_name + '.csv'
         SDS_df = helper.load_df_from_csv(processed_SDS_path)
         print("Got SDS data")
-        SDS_df['MPO_ID'] = np.nan
-        SDS_df['COUNTY_ID'] = np.nan
-
-        # Create point column from lat_long
-        SDS_df = self.create_point_column_from_lat_lon(SDS_df, flip_lon_sign = False)
-        # Create MPO_ID and COUNTY_ID columns
-        print("made point columns from lat long")
         print(SDS_df.head)
 
+        if state_name == "California":
+            flip_lon_sign = True
+        else:
+            flip_lon_sign = False
+        SDS_gdf = preprocess_utils.create_point_column_from_lat_lon(SDS_df, flip_lon_sign)
+        print("made point columns from lat long")
+
         # Convert state name to state id
-        state_id = d_state_name2id[state_name]
+        state_id = preprocess_utils.d_state_name2id[state_name]
+        print(state_id)
        
         # Get all County boundaries
         print("Getting all County boundaries for state_id: ", state_id)
@@ -424,49 +354,40 @@ class preprocess_SDS_data:
         print(mpo_boundaries.head)
 
         # Perform a spatial join between SDS and county boundaries
-        SDS_with_county = gpd.sjoin(SDS_df,county_boundaries, predicate='intersects', how='left')
-        columns = ["YEAR", 'COUNTY_ID_right', "COUNTY_NAME", "IS_FATAL", "SEVERITY", "IS_PED", "IS_CYC", "WEATHER_COND", "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON", "geometry"]
+        SDS_with_county = gpd.sjoin(SDS_gdf,county_boundaries, predicate='intersects', how='left')
+        columns = ["YEAR", 'COUNTY_ID', "COUNTY_NAME", "IS_FATAL", "SEVERITY", "IS_PED", "IS_CYC", "WEATHER_COND", "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON", "geometry"]
         SDS_with_county = SDS_with_county[columns]
-        renames = {'COUNTY_ID_right' : 'COUNTY_ID'}
-        SDS_with_county.rename(columns = renames,inplace = True)
 
-        # Perform a spatial join between SDS and mpo boundaries
+        # Perform a spatial join between SDS and mpo boundaries, but don't include the geometry column
         SDS_with_MPOs = gpd.sjoin(SDS_with_county,mpo_boundaries, predicate='intersects', how='left')
-        columns = ["YEAR", 'COUNTY_ID', "COUNTY_NAME", "MPO_ID", "MPO_NAME", "IS_FATAL", "SEVERITY", "IS_PED", "IS_CYC", "WEATHER_COND", "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON", "geometry"]
-        SDS_with_MPOs = SDS_with_MPOs[columns]
-        
-        # Write updated geojson to file
-        helper.write_dataframe_to_file(SDS_with_MPOs, "SDS/Output_w_MPO_County_Identifiers/"+state_name+".csv")
+        columns = ["YEAR", 'COUNTY_ID', "COUNTY_NAME", "MPO_ID", "MPO_NAME", "IS_FATAL", "SEVERITY", "IS_PED", "IS_CYC", "WEATHER_COND", "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON"]
+        SDS_altered = SDS_with_MPOs[columns]
 
+        # Make sure all the types of the columns are correct
+        added_column_type_dict = {  "MPO_ID"                : float, 
+                                    "MPO_NAME"              : str, 
+                                    "COUNTY_ID"             : float, 
+                                    "COUNTY_NAME"           : str
+        }
+        SDS_altered = SDS_altered.astype(added_column_type_dict)
 
-    def point_is_within_boundaries(self, pt: Point, poly: Polygon):
-        """ Determines whether a lat lon point is within a boundary
-        """
-
-        # p1 = Point(24.952242, 60.1696017)
-        # p2 = Point(24.976567, 60.1612500)
-
-        # # Create a Polygon
-        # coords = [(24.950899, 60.169158), (24.953492, 60.169158), (24.953510, 60.170104), (24.950958, 60.169990)]
-        # Polygon ((-120.072484 38.509869, -120.072566 38.447081, -120.05365 38.455607, -120.019951 38.433521, -119.884749 38.356185, -119.869667 38.367597, -119.837551 38.382411, -119.814691 38.387516, -119.801737 38.401321, -119.770553 38.406663, -119.753481 38.416759, -119.705385 38.416102, -119.698671 38.409838, -119.693622 38.378899, -119.700029 38.365215, -119.669524 38.348288, -119.639205 38.32688, -119.628295 38.349733, -119.635575 38.353908, -119.607395 38.366458, -119.622093 38.393875, -119.601212 38.405354, -119.592409 38.398877, -119.561995 38.410734, -119.570009 38.43486, -119.556426 38.447465, -119.555863 38.470242, -119.542367 38.481657, -119.542862 38.499694, -119.556616 38.501702, -119.556217 38.516621, -119.568055 38.537707, -119.587367 38.558354, -119.599815 38.593348, -119.619237 38.604501, -119.614658 38.665879, -119.598647 38.670942, -119.579518 38.705609, -119.585437 38.713212, -119.587066 38.714345, -119.587679 38.714734, -119.904315 38.933324, -119.887643 38.918295, -119.879516 38.887021, -119.888444 38.879301, -119.877287 38.870193, -119.891909 38.857344, -119.906779 38.854664, -119.908493 38.834346, -119.92271 38.829955, -119.92186 38.820962, -119.942108 38.80311, -119.947927 38.781642, -119.964948 38.775986, -120.072392 38.702767, -120.072484 38.509869))
-        # POINT (119.78938 34.44396)
-
-        # poly = Polygon(coords)
-
-        # print(pt)
-        # print(poly)
-        poly
-
-        if poly.contains(pt):
-            return True
-        return False
+        # Write updated csv to file
+        helper.write_dataframe_to_file(SDS_altered, "SDS/Output_w_MPO_County_Identifiers/"+state_name+".csv")
 
 
 
 if __name__=="__main__":
     preprocessor = preprocess_SDS_data()
     # preprocessor.preprocess_SDS_datasets()
-    # preprocessor.label_SDS_with_MPO_and_county_identifiers("California")
+
+    # TESTER CODE
+    # state_id = 6
+    # print("Getting ALEMEDA COUNTY for state_id: ", state_id)
+    # sql = text(""" SELECT * FROM "boundaries_census_tract" WHERE "STATE_ID" = 6 AND "COUNTY_NAME" = 'Alameda' """)
+    # boundaries = gpd.read_postgis(sql, con=sqlalchemy_conn)
+    # boundaries.to_file('Shapefiles/CENSUS_TRACTS_Alameda.geojson', driver='GeoJSON')  
+
+    preprocessor.label_SDS_with_MPO_and_county_identifiers("California")
     # preprocessor.label_SDS_with_MPO_and_county_identifiers("Massachusetts")
     # df = helper.load_df_from_csv('SDS/Output/California.csv')
 
@@ -476,5 +397,4 @@ if __name__=="__main__":
     # df = preprocessor.remove_invalid_lat_lon(df)
     # df = preprocessor.preprocess_MA_SDS()
     # print(df)
-
-    
+    print("pass")
