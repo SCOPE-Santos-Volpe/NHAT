@@ -15,7 +15,6 @@
 
   <link rel="stylesheet" href="../node_modules/leaflet/dist/leaflet.css">
   <script src="../node_modules/leaflet/dist/leaflet.js"></script>
-
   <script src="../node_modules/heatmap.js/build/heatmap.js"></script>
   <script src="../node_modules/leaflet-heatmap/leaflet-heatmap.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/heatmap.js/2.0.2/heatmap.js"></script>
@@ -33,7 +32,6 @@
 </head>
 
 <body>
-
   <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
     <symbol id="icon-export" viewBox="0 0 24 24">
       <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0 0 5.373 0 12zm17-1h-4v8h-2v-8H7l5-6 5 6z" />
@@ -81,7 +79,88 @@
     </symbol>
   </svg>
 
-  <div class="sidebar">
+  <div class = "tab">
+    <div class="tab-filter-container">
+      <li class="filter-btn active" data-tab="home">
+        <ion-icon name="home-outline"></ion-icon>
+        Home
+      </li>
+      <li class="filter-btn" data-tab="hin">
+        <ion-icon name="options-outline"></ion-icon>
+        HIN
+      </li>
+      <li class="filter-btn" data-tab="stat">
+        <ion-icon name="stats-chart-outline"></ion-icon>
+        Statistic
+      </li>
+    </div>
+    <div class="tab-filter-item-container">
+      <div class="tab-item intro select_tab">
+        <h2 class="tab-heading"> National High Injury Network Analysis Tool</h2>
+        <p>
+          National High Injury Network Analysis Tool (NHAT) is a free and open
+          source resource that allows the users to generate the map of high-risk roads.
+          You can create High Injury Network for any counties or MPO region across
+          the US.
+        </p>
+        <a href="#!" class="btn-primary">Read More</a>
+        <h2 class="tab-heading"> How To Navigate</h2>
+        <p>
+          Start by clicking the state you want to navigate to!
+        </p>
+        <div class= "state-click" id="state"></div>
+        <div class = "after-state" id="afterstate"> </div>
+        <button class= "back-button" id = "back"> Back</button>
+
+        <div class="region-click" id = "region"></div>
+        <div class="after-region" id = "afterregion"></div>
+        <div class="button-group">
+          <button class= "back-button2" id = "back2"> Back</button>
+          <button class= "btn-confirm" id = "btnconfirm"> Confirm </button>
+        </div>
+
+
+      </div>
+      <div class="tab-item hin">
+        <h3 class="tab-heading2">Generate High Injury Network</h1>
+        <h4>
+          Databases
+        </h4>
+        <div>
+          <div class="radio-box">
+            <input type="radio" name="database" value="fars" id="fars" >
+            <label for = "fars"> FARS </label>
+          </div>
+          <div>
+            <input type="radio" name="database" value="sds" id="sds" >
+            <label for = "sds"> SDS</label>
+          </div>
+          <div>
+            <input type="radio" name="database" value="own" id="own" disabled>
+            <label for = "own"> Your Own Database</label>
+          </div>
+
+        </div>
+
+        <button class="button" id="btn">Show Selected Value</button>
+
+        <p id="output"></p>
+      </div>
+      <div class="tab-item stat">
+        <h2 class="tab-heading"> Statistic Page</h1>
+        <p>
+          You can view statistics here
+        </p>
+      </div>
+    </div>
+  </div>
+  <!-- <div class = "popup">
+    <button id="close">&times;</button>
+    <h2>NHAT (National HIN Aanalysis Tool)</h2>
+    <p> Welcome to NHAT website! You can create High Injury Network for any counties or MPO region across the US. </p>
+  </div> -->
+
+  <!-- <div class="sidebar">
     <button aria-label="close sidebar" type="button" class="close-button">
       <svg>
         <use xlink:href="#icon-clear" />
@@ -89,7 +168,7 @@
     </button>
 
     <ul class="sidebar-menu">
-      <li class="menu-item" data-item="menu">
+      <li class="menu-item active-item" data-item="menu">
         <svg><use xlink:href="#icon-menu"></use></svg>
       </li>
       <li class="menu-item" data-item="person">
@@ -138,18 +217,18 @@
         <div class="content">settings</div>
       </div>
     </div>
-  </div>
+  </div> -->
   
   <div id="llmap"></div>
 
-  <div>
+  <!-- <div>
       <select id="statesel">
         {% for state in states %}
         <option value="{{state.id}}">{{state.name}}</option>
         {% endfor %}
 
       </select>
-  </div>
+  </div> -->
   
   <!-- this was used before node.js changed from calling the script directly to calling bundle.js -->
   <!-- <script src="script.js"></script> -->
@@ -160,5 +239,13 @@
   <base href="/">
 
   <script type="module" src="{{url_for('static', filename='demo.js')}}"></script>
+  <script
+      type="module"
+      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"
+    ></script>
+    <script
+      nomodule
+      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"
+    ></script>
 </body>
 </html>
