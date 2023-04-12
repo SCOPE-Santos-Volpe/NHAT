@@ -4,6 +4,8 @@ This project aims to identify and visualize high injury networks in the United S
 
 The current version of the website is hosted [here](http://34.233.143.226/)
 
+For more information on the usage of the Web-app go [here](https://docs.google.com/document/d/1Ayhyc90FQXBuUS7694T1m7Xpa8PzGiR2jC1KWXh37FA/edit?usp=sharing)
+
 ## Table of Contents
 
 1. [Data](#data)
