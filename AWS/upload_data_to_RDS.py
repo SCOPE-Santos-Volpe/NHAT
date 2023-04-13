@@ -105,7 +105,7 @@ def upload_states_to_RDS():
             index=False)
     print("uploaded states data")
 
-def upload_geojsons_to_RDS(table_name, preprocessing_func, geojson_folder_path = None, single_geojson_path = None, drop_exisiting_table = True):
+def upload_geojsons_to_RDS(table_name, preprocessing_func, path = None, drop_exisiting_table = True):
     """ Upload shapefiles to RDS
     """
     # Drop the table if it already exists
@@ -114,7 +114,7 @@ def upload_geojsons_to_RDS(table_name, preprocessing_func, geojson_folder_path =
         cursor.execute(query)
         print("Dropped {} since it already exists ".format(table_name))
 
-    gdf = preprocess_geojsons.combine_geojsons_to_single_gdf(geojson_folder_path, single_geojson_path)
+    gdf = preprocess_geojsons.combine_geojsons_to_single_gdf(path)
     # gdf = combine_geojsons_to_single_gdf(single_geojson_path = "Shapefiles/census_tracts.geojson")
     # gdf = preprocess_census_tract_boundaries_df(gdf)
 
@@ -135,17 +135,17 @@ def upload_geojsons_to_RDS(table_name, preprocessing_func, geojson_folder_path =
 def upload_state_boundaries_to_RDS():
     """ 
     """
-    upload_geojsons_to_RDS(table_name = 'boundaries_state', preprocessing_func = preprocess_geojsons.preprocess_state_boundaries_df, single_geojson_path = "Shapefiles/state.geojson")
+    upload_geojsons_to_RDS(table_name = 'boundaries_state', preprocessing_func = preprocess_geojsons.preprocess_state_boundaries_df, path = "Shapefiles/state.geojson")
 
 def upload_mpo_boundaries_to_RDS():
     """ 
     """
-    upload_geojsons_to_RDS(table_name = 'boundaries_mpo', preprocessing_func = preprocess_geojsons.preprocess_mpo_boundaries_df, geojson_folder_path = "Shapefiles/mpo_boundaries_by_state/")
+    upload_geojsons_to_RDS(table_name = 'boundaries_mpo', preprocessing_func = preprocess_geojsons.preprocess_mpo_boundaries_df, path = "Shapefiles/mpo_boundaries_by_state/")
 
 def upload_county_boundaries_to_RDS():
     """ 
     """
-    upload_geojsons_to_RDS(table_name = 'boundaries_county', preprocessing_func = preprocess_geojsons.preprocess_county_boundaries_df, geojson_folder_path = "Shapefiles/county_by_state/")
+    upload_geojsons_to_RDS(table_name = 'boundaries_county', preprocessing_func = preprocess_geojsons.preprocess_county_boundaries_df, path = "Shapefiles/county_by_state/")
 
 def upload_census_tract_boundaries_to_RDS():
     """
