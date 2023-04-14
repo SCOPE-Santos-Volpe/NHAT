@@ -70,7 +70,7 @@ def write_files(state_dict, d_state_name2initial):
         none
     """
     for state_name in state_dict.keys():
-        string = '{"type":"FeatureCollection","name":"census_tracts_split","features":" + json.dumps(state_dict[state_name]) + "}'
+        string = '{"type":"FeatureCollection","name":"census_tracts_split","features":' + json.dumps(state_dict[state_name]) + '}'
 
         label = state_name
         if state_name in d_state_name2initial:

@@ -10,7 +10,7 @@ Note: This is not a complete list of files. This is all the files with code that
 Splits the single census tracts geojson into a geojson for each state.
 
 ### [`dataset_categorize_shapefile.py`](dataset_categorize_shapefile.py)
-Categorizes each row of a dataframe into categories as defined by shapefiles. The main interface function is `categorize_df_to_shapefiles.`
+Categorizes each row of a dataframe into categories as defined by shapefiles. The main interface function is `categorize_df_to_shapefiles`.
 
 THIS FILE IS USELESS, CONFIRM THAT WE DONT NEED IT
 
@@ -23,9 +23,7 @@ Combines all .csv datasets (intended for FARS data) into 1 `pd.DataFrame` and wr
 Main function is `combine_FARS_datasets`. Helper functions load and combine all .csv files in the folder path and get all .csv filenames, clean the data, and label by county and MPO region.
 
 ### [`preprocess_geojsons.py`](preprocess_geojsons.py)
-Preprocess geojsons bc they are ugly
-
-TODO: document this file
+Provides code to preprocess state, county, MPO, and census tract boundaries. Functions called by upload_data_to_RDS.py.
 
 ### [`preprocess_Justice40_data.py`](preprocess_Justice40_data.py)
 No description yet

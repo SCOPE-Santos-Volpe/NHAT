@@ -83,8 +83,9 @@ def load_gdf_from_geojson(path:str, **kwargs) -> pd.DataFrame:
     """Loads a geodataframe from the geojson at `path`.
 
     Args:
-        path: A string containing the path to a .csv file
+        path: A string containing the path to a .geojson file
         **kwargs: Pass through other arguments to pd.read_csv
+        # TODO: remove **kwargs
 
     Returns:
         A GeoDataFrame loaded from the .geojson
