@@ -148,8 +148,8 @@ def upload_geojsons_to_RDS(table_name, preprocessing_func, path = None, drop_exi
     Args:
         table_name: the table name of the RDS to upload into
         preprocessing_func: the function to call to preprocess the data
-        path: the path to be passed into preprocessing_func(). Default is None.
-        drop_existing_table: a boolean defining whether to drop an existing table called table_name. Default is True.
+        path: the path to be passed into `preprocessing_func()`. Default is None.
+        drop_existing_table: a boolean defining whether to drop an existing table called `table_name`. Default is `True`.
 
     Returns:
         None

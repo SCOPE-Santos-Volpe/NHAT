@@ -8,10 +8,10 @@ import geopandas as gpd
 
 
 def get_all_csv_filenames(path: str, filetype: str = None) -> list[str]:
-    """Finds and returns the filenames (including the folder) of every CSV in the folder specified at `path`.
+    """Finds and returns the filenames (including the folder) of every `.csv` file in the folder specified at `path`.
 
     Args:
-        path: A string containing the path to the folder containing the .csv files
+        path: A string containing the path to the folder containing the `.csv` files
 
     Returns:
         A list of strings containing the file path to every csv in the folder at `path`
@@ -27,8 +27,8 @@ def get_all_filenames(path: str, pattern: str, recursive: bool = True) -> list[s
     """Finds and returns all filenames within a folder (optionally recursively) with the filename regex pattern match specified by `pattern`.
 
     Args:
-        path: A string containing the path to the folder containing the .csv files
-        pattern: S string specifying the regex match for the filename. For example, `pattern = "*.csv"` will return only files with the .csv extension
+        path: A string containing the path to the folder containing the `.csv` files
+        pattern: A string specifying the regex match for the filename. For example, `pattern = "*.csv"` will return only files with the `.csv` extension
         recursive: Whether to get filenames from subdirectories recursively. Default is True
 
     Returns:
@@ -48,8 +48,8 @@ def get_all_filenames(path: str, pattern: str, recursive: bool = True) -> list[s
 def get_all_subdirectories(path: str):
     """Recursively locates all subdirectories within a folder at `path`
 
-    This is necessary to find the subdirectory for each state of the SDS data. That structure is SDS/Data/{Folder for each state}/{file.csv for each year},
-    so this function returns a list containing each {Folder for each state}.
+    This is necessary to find the subdirectory for each state of the SDS data. That structure is `SDS/Data/{Folder for each state}/{file.csv for each year}`,
+    so this function returns a list containing each `{Folder for each state}`.
 
     Args:
         path: A string containing the path to the parent folder. The return is a list of all subdirectories of the parent folder.
@@ -69,25 +69,22 @@ def load_df_from_csv(path:str, **kwargs) -> pd.DataFrame:
     Convenience wrapper for `pd.read_csv` because Mira likes wrapping everything in their own helper function
 
     Args:
-        path: A string containing the path to a .csv file
-        **kwargs: Pass through other arguments to pd.read_csv
+        path: A string containing the path to a `.csv` file
+        **kwargs: Pass through other arguments to `pd.read_csv`
 
     Returns:
-        A `pd.DataFrame` loaded from the .csv
+        A `pd.DataFrame` loaded from the `.csv` file
     """
     df=pd.read_csv(path, **kwargs)
     return df
 
 def load_gdf_from_geojson(path:str, **kwargs) -> pd.DataFrame:
-    """Loads a geodataframe from the geojson at `path`.
+    """Loads a `gpd.GeoDataFrame` from the geojson at `path`.
 
     Args:
-        path: A string containing the path to a .geojson file
-        **kwargs: Pass through other arguments to pd.read_csv
-        # TODO: remove **kwargs
-
+        path: A string containing the path to a `.geojson` file
     Returns:
-        A GeoDataFrame loaded from the .geojson
+        A `god.GeoDataFrame` loaded from the `.geojson`
     """
     gdf = gpd.read_file(path)
     # print(gdf)
@@ -101,15 +98,15 @@ def load_gdf_from_geojson(path:str, **kwargs) -> pd.DataFrame:
 def get_all_dfs_from_csv(filenames: list[str], required_columns: list[str] = [], **kwargs) -> list[pd.DataFrame]:
     """Returns a list of dataframes loaded from the list of files `filename`.
 
-    If `required_columns` is set then will only load .csvs with every item in `required_columns` in their column names.
+    If `required_columns` is set then will only load `.csv`s with every item in `required_columns` in their column names.
 
 
     Args:
         filenames: A list of strings containing the filename for each file to load
-        required_columns: A list of strings that must be present in the .csv column headers for the csv to be loaded. Default is an empty list
+        required_columns: A list of strings that must be present in the `.csv` file column headers for the csv to be loaded. Default is an empty list
 
     Returns:
-        A list of dataframes containing the dataframe from every csv in the folder at `path`
+        A list of dataframes containing the dataframe from every `.csv` file in the folder at `path`
     """
     all_files = filenames
 
@@ -123,7 +120,7 @@ def get_all_dfs_from_csv(filenames: list[str], required_columns: list[str] = [],
     return dfs
 
 def concat_pandas_dfs(dfs: list[pd.DataFrame]) -> pd.DataFrame:
-    """Wrapper for pd.concat to make maintennance easier
+    """Wrapper for `pd.concat` to make maintennance easier
 
     Args:
         dfs: A list of `pd.DataFrame`
@@ -143,8 +140,6 @@ def write_dataframe_to_file(df: pd.DataFrame, filename: str):
     Returns:
         Returns the output of `df.to_csv(filename)`
     """
-
-    outname = 'name.csv'
 
     outdir = os.path.dirname(filename)
     if not os.path.exists(outdir):

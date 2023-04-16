@@ -8,20 +8,20 @@ import math
 import preprocess_utils
 import os
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 
 # Establish sqlalchemy connection
 sqlalchemy_conn = preprocess_utils.connect_to_sqlalchemy()
 
 
 def combine_geojsons_to_single_gdf(path = None):
-    """Load all .geojson files at path and concatenate into one gdf
+    """Load all `.geojson` files at `path` and concatenate into one `gpd.GeoDataFrame`
 
     Args:
-        path: a string specifying the path to either a folder containing .geojson files or a single .geojson file
+        path: a string specifying the path to either a folder containing `.geojson` files or a single `.geojson` file
 
     Returns:
-        A single gdf comprised of all the .geojson files
+        A single `gpd.GeoDataFrame` comprised of all the `.geojson` files
     """
     # Get list of all geojson paths
     if(os.path.isfile(path)):
@@ -46,15 +46,15 @@ def combine_geojsons_to_single_gdf(path = None):
 
 
 def separate_gdf_into_polygon_multipolygon(gdf: gpd.GeoDataFrame):
-    """Separate a single GeoDataFrame into two GeoDataFrames, with just polgons or multipolygons respectively.
+    """Separate a single `gpd.GeoDataFrame` into two `gpd.GeoDataFrames`, with just polgons or multipolygons respectively.
 
     Rows with geometry type MultiPolygon need to be separated from Polygon because they require different methods to be pushed to the database.
 
     Args:
-        gdf: a GeoDataFrame
+        gdf: a `gpd.GeoDataFrame`
 
     Returns:
-        Two GeoDataFrames, the first with only Polygon geometries, and the second with only MultiPolygon geometries.
+        Two `gpd.GeoDataFrame`s, the first with only Polygon geometries, and the second with only MultiPolygon geometries.
 
     """
 
@@ -71,13 +71,13 @@ def separate_gdf_into_polygon_multipolygon(gdf: gpd.GeoDataFrame):
     return polygon_gdf, multipoly_gdf
 
 def change_gdf_geometry_to_geom(gdf: gpd.GeoDataFrame):
-    """Renames the geometry column of a GeoDataFrame into geom, and does conversions I don't understand
+    """Renames the geometry column of a `gpd.GeoDataFrame` into geom, and does conversions I don't understand
 
     Args:
-        gdf: a GeoDataFrame
+        gdf: a `gpd.GeoDataFrame`
 
     Returns:
-        A GeoDataFrame with renamed geom column
+        A `gpd.GeoDataFrame` with renamed geom column
     """
     # Change geometry column to geom
     # Also convert it to a format recognized as geometry by the database
@@ -91,13 +91,13 @@ def change_gdf_geometry_to_geom(gdf: gpd.GeoDataFrame):
 
 
 def preprocess_state_boundaries_df(path = 'Shapefiles/raw_shapefiles/states_raw'):
-    """Preprocesses a GeoDataFrame containing state boundaries.
+    """Preprocesses a `gpd.GeoDataFrame` containing state boundaries.
 
     Args:
         path: a string pointing to a shapefile folder which should contain state boundaries
 
     Returns:
-        A processed GeoDataFrame with state boundaries
+        A processed `gpd.GeoDataFrame` with state boundaries
     """
 
     gdf = gpd.read_file(path)
@@ -113,13 +113,13 @@ def preprocess_state_boundaries_df(path = 'Shapefiles/raw_shapefiles/states_raw'
     return gdf
 
 def preprocess_mpo_boundaries_df(path = 'Shapefiles/raw_shapefiles/mpo_raw'):
-    """Preprocesses a GeoDataFrame containing MPO boundaries.
+    """Preprocesses a `gpd.GeoDataFrame` containing MPO boundaries.
 
     Args:
         path: a string pointing to a shapefile folder which should contain MPO boundaries
 
     Returns:
-        A processed GeoDataFrame with MPO boundaries
+        A processed `gpd.GeoDataFrame` with MPO boundaries
     """
     gdf = gpd.read_file(path)
 
@@ -141,13 +141,13 @@ def preprocess_mpo_boundaries_df(path = 'Shapefiles/raw_shapefiles/mpo_raw'):
     return gdf
 
 def preprocess_county_boundaries_df(path = 'Shapefiles/raw_shapefiles/counties_raw'):
-    """Preprocesses a GeoDataFrame containing county boundaries.
+    """Preprocesses a `gpd.GeoDataFrame` containing county boundaries.
 
     Args:
         path: a string pointing to a shapefile folder which should contain county boundaries
 
     Returns:
-        A processed GeoDataFrame with county boundaries
+        A processed `gpd.GeoDataFrame` with county boundaries
     """
 
     # Goal: ['STATE_ID', 'STATE_NAME', 'COUNTY_ID', 'COUNTY_NAME', 'geometry']
@@ -180,15 +180,15 @@ def preprocess_county_boundaries_df(path = 'Shapefiles/raw_shapefiles/counties_r
     return gdf
 
 def preprocess_census_tract_boundaries_df(path = 'Shapefiles/census_tracts_by_state/'):
-    """Loads a geodataframe or folder of geodataframes containing census tract boundaries, and preprocesses them.
+    """Loads a `gpd.GeoDataFrame` or folder of `gpd.GeoDataFrame`s containing census tract boundaries, and preprocesses them.
 
     Can do the full folder, but uploads time out doing all the tracts at once.
 
     Args:
-        path: a path to a geodataframe or folder of geodataframes containing census tract boundaries
+        path: a path to a `gpd.GeoDataFrame` or folder of `gpd.GeoDataFrame`s containing census tract boundaries
 
     Returns:
-        A processed GeoDataFrame with census tract boundaries
+        A processed `gpd.GeoDataFrame` with census tract boundaries
     """
 
     gdf = combine_geojsons_to_single_gdf(path)
@@ -291,7 +291,7 @@ def preprocess_HIN_df(gdf: gpd.GeoDataFrame):
     return gdf
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     # A bunch of stuff, this file should not really be run as main other than for testing
 
     # gdf = combine_geojsons_to_single_gdf(path = "_Shapefiles/state.geojson")
@@ -308,9 +308,9 @@ if __name__ == "__main__":
 
 
     # gdf = combine_geojsons_to_single_gdf(path = "_Shapefiles/census_tracts_by_state/census_tract_AK.geojson")
-    gdf = preprocess_census_tract_boundaries_df('Shapefiles/census_tracts_by_state/census_tract_AK.geojson')
+    # gdf = preprocess_census_tract_boundaries_df('Shapefiles/census_tracts_by_state/census_tract_AK.geojson')
     # print(gdf.columns)
-    polygon_gdf, multipolygon_gdf = separate_gdf_into_polygon_multipolygon(gdf)
+    # polygon_gdf, multipolygon_gdf = separate_gdf_into_polygon_multipolygon(gdf)
     # print("saving modified census tracts to file")
     # gdf.to_file('Shapefiles/clean_geojsons/census_tracts.geojson', driver='GeoJSON')
 

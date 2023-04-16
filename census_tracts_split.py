@@ -9,7 +9,7 @@ def load_states(path='states.csv'):
     """Loads state info and returns a dictionary mapping state names to state initial.
 
     Args:
-        path: A string defining where the states csv file is. Default is 'states.csv'.
+        path: A string defining where the states csv file is. Default is `states.csv`.
 
     Returns:
         A dictionary containing the state names as keys and the state initials as values
@@ -20,13 +20,13 @@ def load_states(path='states.csv'):
     return d_state_name2initial
 
 def load_all_tracts_geojson(path='Shapefiles/census_tracts.geojson'):
-    """Loads a geojson which should contain all census tracts nationwide.
+    """Loads a `.geojson` file which should contain all census tracts nationwide.
 
     Args:
-        path: A string defining where the geojson file containing all tracts is located. Default is 'Shapefiles/census_tracts.geojson'.
+        path: A string defining where the geojson file containing all tracts is located. Default is `Shapefiles/census_tracts.geojson`.
 
     Returns:
-        A dictionary containing the geojson information.
+        A dictionary containing the `.geojson` information.
     """
 
     # Opening JSON file
@@ -63,7 +63,7 @@ def categorize_tracts_by_state(tracts):
     return state_dict
 
 def write_files(state_dict, d_state_name2initial):
-    """Writes a geojson file for each state.
+    """Writes a `.geojson` file for each state.
 
     Args:
         state_dict: a dictionary returned by `categorize_tracts_by_state`

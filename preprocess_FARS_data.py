@@ -8,21 +8,21 @@ import geopandas as gpd
 import helper
 import preprocess_utils
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 
 # Establish sqlalchemy connection
 sqlalchemy_conn = preprocess_utils.connect_to_sqlalchemy()
 
 
 def combine_FARS_datasets(path: str = 'FARS/FARS CSVs/', output_filename: str = 'FARS/FARS_w_MPO_County_Identifiers.csv', min_year: int = 2015) -> pd.DataFrame:
-    """Combines FARS datasets in folder path into a single CSV file at output_filename.
+    """Combines FARS datasets in folder path into a single `.csv` file at `output_filename`.
 
     Calls a series of helper functions, see their docstrings for specifics.
 
     Args:
-        path: A string specifying the folder where the CSVs will be loaded from. Defaults to 'FARS CSVs/'
-        output_filename: A string specifying the filename where the combined CSV will be saved. Defaults to 'combined_FARS.csv'
-        min_year: An integer specifying the minimum year to be included. Defaults to 2015.
+        path: A string specifying the folder where the `.csv`s will be loaded from. Defaults to `FARS CSVs/`
+        output_filename: A string specifying the filename where the combined `.csv` will be saved. Defaults to `combined_FARS.csv`
+        min_year: An integer specifying the minimum year to be included. Defaults to `2015`.
     Returns:
         A `pd.DataFrame` object, which is the combined dataframe of all the FARS data
     """
@@ -43,7 +43,7 @@ def clean_FARS_dataset(df: pd.DataFrame, min_year: int) -> pd.DataFrame:
 
     Args:
         df: A `pd.DataFrame`
-        min_year: An `int` specifying the minimum year to be included
+        min_year: An integer specifying the minimum year to be included
     Returns:
         A `pd.DataFrame` with the cleaned FARS data
     """
@@ -163,7 +163,7 @@ def label_FARS_with_MPO_and_county_identifiers(df):
     """Take preprocessed FARS data and label it with MPO and county.
 
     Args:
-        df: a `pd.DataFrame` outputted by `clean_FARS_data`
+        df: a `pd.DataFrame` outputted by `clean_FARS_data()`
 
     Returns:
         A `pd.DataFrame` of FARS data, labeled by MPO and county

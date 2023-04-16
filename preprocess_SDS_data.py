@@ -293,11 +293,11 @@ def preprocess_SDS_datasets(path: str = 'SDS/Data/', output_path: str = 'SDS/Out
     """Combines folders of SDS datasets in folder `path` into a single CSV file for each folder in `output_path`. Also runs the appropriate preprocessing and labeling function for each state.
 
     Args:
-        path: A string specifying the folders where the CSVs will be loaded from. Defaults to 'SDS/Data/'
-        output_path: A string specifying the path to the directory where the combined CSV for each source folder will be saved. Defaults to 'SDS/Output_w_MPO_County_Identifiers/'
+        path: A string specifying the folders where the `.csv`s will be loaded from. Defaults to `SDS/Data/`
+        output_path: A string specifying the path to the directory where the combined `.csv` for each source folder will be saved. Defaults to `SDS/Output_w_MPO_County_Identifiers/`
 
     Returns:
-        A dictionary where the keys are the subdirectories of 'path' (which should be state names) and the values are the `pd.DataFrame` of all the CSV files contained within that folder.
+        A dictionary where the keys are the subdirectories of `path` (which should be state names) and the values are the `pd.DataFrame`s of all the `.csv` files contained within that folder.
     """
 
     all_dirs = helper.get_all_subdirectories(path = path)

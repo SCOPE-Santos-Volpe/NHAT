@@ -78,9 +78,9 @@ def create_point_column_from_lat_lon(df: pd.DataFrame, flip_lon_sign = False) ->
 
     Args:
         df: a `pd.DataFrame` of data to be converted
-        flip_lin_sign: a boolean defining whether to flip the sign of the longitude. Defaults to False.
+        flip_lin_sign: a boolean defining whether to flip the sign of the longitude. Defaults to `False`.
     Returns
-        A `gpd.GeoDataFrame` witgh the data from df
+        A `gpd.GeoDataFrame` witgh the data from `df`
     """
     if flip_lon_sign:
         gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(-df['LON'], df['LAT']), crs="EPSG:4269")
@@ -96,7 +96,7 @@ def connect_to_sqlalchemy():
         None
 
     Returns:
-        The result of db.connect()
+        The result of `db.connect()`
     """
     # Establish sqlalchemy connection
 
