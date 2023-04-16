@@ -13,31 +13,24 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 import pandas as pd
-import geopandas as gpd
-import postgis
 import itertools
 
 from geoalchemy2 import Geometry, WKTElement
 import psycopg2
 
 from config.config import config
-from sqlalchemy import create_engine, Table, Column, Integer, String
+from sqlalchemy import create_engine
 
-import json
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# import ../db.py
 import helper
 import preprocess_geojsons
-import preprocess_SDS_data
-import preprocess_Justice40_data
 from pathlib import Path
 
 # Establish sqlalchemy connection
 conn_string = 'postgresql://scope_team:greenTea123@database-1.ci75bfibgs4e.us-east-1.rds.amazonaws.com/FARS'
 db = create_engine(conn_string)
 sqlalchemy_conn = db.connect()
-print('Python connected to PostgreSQL via Sqlalchemy')
 
 # Establish psycogp2 connection
 params = config(config_db = 'database.ini')
@@ -150,31 +143,32 @@ def upload_county_boundaries_to_RDS():
 def upload_census_tract_boundaries_to_RDS():
     """
     """
-    uploaded_already = ["Shapefiles/census_tracts_by_state/census_tract_NE.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_IN.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_NY.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_DE.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_Northern Mariana Islands.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_American Samoa.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_SC.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_NM.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_UT.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_ND.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_CO.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_Guam.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_Virgin Islands.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_WY.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_AK.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_ID.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_PR.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_MI.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_OR.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_RI.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_GA.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_IL.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_LA.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_MA.geojson", 
-    "Shapefiles/census_tracts_by_state/census_tract_MT.geojson", ]
+    # uploaded_already = ["Shapefiles/census_tracts_by_state/census_tract_NE.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_IN.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_NY.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_DE.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_Northern Mariana Islands.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_American Samoa.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_SC.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_NM.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_UT.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_ND.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_CO.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_Guam.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_Virgin Islands.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_WY.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_AK.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_ID.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_PR.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_MI.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_OR.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_RI.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_GA.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_IL.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_LA.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_MA.geojson",
+    # "Shapefiles/census_tracts_by_state/census_tract_MT.geojson", ]
+
     # Drop the table if it already exists
     # if 'boundaries_census_tract' in table_names:
     #     query = "DROP TABLE {}".format('boundaries_census_tract')
@@ -189,12 +183,12 @@ def upload_census_tract_boundaries_to_RDS():
     print("got all geojson paths")
 
     print(len(geojson_paths))
-    for i, path in enumerate(geojson_paths):
-        if path not in uploaded_already:
-            upload_geojsons_to_RDS(table_name = 'boundaries_census_tract_v3', preprocessing_func = preprocess_geojsons.preprocess_census_tract_boundaries_df, single_geojson_path = path, drop_exisiting_table = False)
-            print("uploaded: ", path)
-            processed_paths.write(path)
-            processed_paths.write("\n")
+    for _, path in enumerate(geojson_paths):
+        # if path not in uploaded_already:
+        upload_geojsons_to_RDS(table_name = 'boundaries_census_tract_v3', preprocessing_func = preprocess_geojsons.preprocess_census_tract_boundaries_df, single_geojson_path = path, drop_exisiting_table = False)
+        print("uploaded: ", path)
+        processed_paths.write(path)
+        processed_paths.write("\n")
         # processed_paths.append(path)
     
     print("PROCESSED PATHS: ", processed_paths)

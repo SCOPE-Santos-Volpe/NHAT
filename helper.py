@@ -4,7 +4,6 @@
 import pandas as pd
 import glob
 import os
-import json
 import geopandas as gpd
 
 

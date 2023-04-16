@@ -62,9 +62,7 @@ import preprocess_utils
 from sqlalchemy import create_engine, text
 
 # Establish sqlalchemy connection
-conn_string = 'postgresql://scope_team:greenTea123@database-1.ci75bfibgs4e.us-east-1.rds.amazonaws.com/FARS'
-db = create_engine(conn_string)
-sqlalchemy_conn = db.connect()
+sqlalchemy_conn = preprocess_utils.connect_to_sqlalchemy()
 
 
 def preprocess_MA_SDS(df:pd.DataFrame) -> pd.DataFrame:

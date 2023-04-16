@@ -6,7 +6,6 @@ import pandas as pd
 import geopandas as gpd
 import helper
 import preprocess_utils
-import fiona
 
 def census_tract_shp_2_geojson():
     shp_file = gpd.read_file('Justice40/usa/usa.shp')
