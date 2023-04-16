@@ -48,7 +48,7 @@ table_names = list(itertools.chain(*table_names))
 cursor.execute('CREATE EXTENSION IF NOT EXISTS postgis')
 
 # Hardcoded boolean to define if uploading to testing table (to avoid issues with multiple people working at same time)
-testing = True
+testing = False
 
 def upload_FARS_data_to_RDS(path='FARS/FARS_w_MPO_County_Identifiers.csv'):
     """Uploads processed, cleaned, and labeled FARS data to RDS.

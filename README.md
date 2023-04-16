@@ -6,13 +6,13 @@ Docstring format is [Google Python Style Guide](https://github.com/google/styleg
 
 Note: This is not a complete list of files. This is all the files with code that is used in the final app.
 
+### [`generate_and_upload_everything.py ](generate_and_upload_everything.py)
+This file generates (or regenerates) all of the structured data from the raw data, and uploads all of the data to the RDS.
+
+Booleans do_uploading and do_generating select whether to upload and/or generate data.
+
 ### [`census_tracts_split.py`](census_tracts_split.py)
 Splits the single census tracts geojson into a geojson for each state.
-
-### [`dataset_categorize_shapefile.py`](dataset_categorize_shapefile.py)
-Categorizes each row of a dataframe into categories as defined by shapefiles. The main interface function is `categorize_df_to_shapefiles`.
-
-THIS FILE IS USELESS, CONFIRM THAT WE DONT NEED IT
 
 ### [`helper.py`](helper.py)
 This file is to hold a bunch of useful helper functions so that they can be imported into any file.
@@ -43,14 +43,14 @@ Functions to upload each type of table to the relational database.
 
 ## Base Data Files & Process Overview
 
-FARS/FARS CSVs/* > preprocess_FARS_data.py > FARS/FARS_w_MPO_County_Identifiers.csv
+FARS/FARS CSVs/* > preprocess_FARS_data.py > FARS/FARS_w_MPO_County_Identifiers.csv > upload
 
-SDS/Data/* > preprocess_SDS_data.py > SDS/Output/*
+SDS/Data/* > preprocess_SDS_data.py > SDS/Output/* > upload
 
-Justice40/justice_40_communities.csv > preprocess_Justice40_data.py > Justice40/justice_40_communities_clean.csv
+Justice40/justice_40_communities.csv > preprocess_Justice40_data.py > Justice40/justice_40_communities_clean.csv > upload
 
-? > ? > Shapefiles/mpo_boundaries_by_state/*
+Shapefiles/mpo_boundaries_by_state/* > upload
 
-? > ? > Shapefiles/county_by_state/*
+Shapefiles/county_by_state/* > upload
 
-Shapefiles/raw_shapefiles/census_tracts_raw > census_tracts_split.py > Shapefiles/census_tracts_by_state/*
+Shapefiles/raw_shapefiles/census_tracts_raw > census_tracts_split.py > Shapefiles/census_tracts_by_state/* > upload
