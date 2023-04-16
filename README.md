@@ -40,6 +40,9 @@ This file is to hold a bunch of useful helper functions for preprocessing so tha
 ### [`AWS/upload_data_to_RDS.py`](AWS/upload_data_to_RDS.py)
 Functions to upload each type of table to the relational database.
 
+### [`sqlalchemy_conn_string.txt`](sqlalchemy_conn_string.txt)
+Holds the secret connection string for the RDB. Not uploaded to GitHub.
+
 
 ## Base Data Files & Process Overview
 
