@@ -34,8 +34,8 @@ Combines all .csv datasets for each folder (intended for SDS data) into 1 `pd.Da
 Main function is combine_SDS_datasets. Helper functions take the folder path and get all .csv filenames, read a list of filenames into `pd.DataFrame` objects, and concatenate a list of `pd.DataFrame` objects into a single `pd.DataFrame`.
 
 ### [`preprocess_utils.py`](preprocess_utils.py)
-"""This file is to hold a bunch of useful helper functions for preprocessing so that they can be imported into any file.
-"""
+This file is to hold a bunch of useful helper functions for preprocessing so that they can be imported into any file.
+
 
 ### ['AWS/upload_data_to_RDS.py`](AWS/upload_data_to_RDS.py)
 Functions to upload each type of table to the relational database.
