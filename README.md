@@ -26,9 +26,7 @@ Main function is `combine_FARS_datasets`. Helper functions load and combine all 
 Provides code to preprocess state, county, MPO, and census tract boundaries. Functions called by upload_data_to_RDS.py.
 
 ### [`preprocess_Justice40_data.py`](preprocess_Justice40_data.py)
-No description yet
-
-TODO: Document this file
+Loads, cleans, and saves the Justice40 data.
 
 ### [`preprocess_SDS_data.py`](preprocess_SDS_data.py)
 Combines all .csv datasets for each folder (intended for SDS data) into 1 `pd.DataFrame` per folder and writes to a single .csv file per folder.
@@ -40,6 +38,4 @@ Main function is combine_SDS_datasets. Helper functions take the folder path and
 """
 
 ### ['AWS/upload_data_to_RDS.py`](AWS/upload_data_to_RDS.py)
-No description yet
-
-TODO: Document this file
+Functions to upload each type of table to the relational database.

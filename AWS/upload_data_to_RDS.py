@@ -1,24 +1,25 @@
-""" Resources:
+"""Functions to upload each type of table to the relational database.
+
+NOTE: this file must be run in the home directory Santos-Volpe-SCOPE-Project
+NOTE: Version of SQLAlchemy version needs to be 1.4.47
+Run: pip install sqlalchemy==1.4.47
+
+Resources:
 https://www.geeksforgeeks.org/how-to-insert-a-pandas-dataframe-to-an-existing-postgresql-table/
 https://blog.devgenius.io/3-easy-ways-to-import-a-shapefile-into-a-postgresql-database-c1a4c78104af
 https://stackoverflow.com/questions/38361336/write-geodataframe-into-sql-database
 https://gis.stackexchange.com/questions/239198/adding-geopandas-dataframe-to-postgis-table
 https://gis.stackexchange.com/questions/325415/writing-geopandas-data-frame-to-postgis
-
-NOTE: this file must be run in the home directory Santos-Volpe-SCOPE-Project
-NOTE: Version of SQLAlchemy version needs to be 1.4.47
-Run: pip install sqlalchemy==1.4.47
 """
 
 # Import libraries
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-import pandas as pd
-import itertools
-
 from geoalchemy2 import Geometry
 import psycopg2
+import pandas as pd
+import itertools
 
 from config.config import config
 
@@ -38,16 +39,18 @@ params = config(config_db = 'database.ini')
 conn = psycopg2.connect(**params)
 conn.autocommit = True
 cursor = conn.cursor()
-print('Python connected to PostgreSQL via Psycogp2!')
+# print('Python connected to PostgreSQL via Psycogp2!')
 
-# Print all table names in the database
+# Get all table names in the database
 query = """ SELECT table_name FROM information_schema.tables WHERE table_schema='public'"""
 table_names = pd.read_sql(query, con=sqlalchemy_conn).values.tolist()
 table_names = list(itertools.chain(*table_names))
-print(query, table_names)
+# print(query, table_names)
 
+# Dunno what this does but it looks important
 cursor.execute('CREATE EXTENSION IF NOT EXISTS postgis')
 
+# Hardcoded boolean to define if uploading to testing table (to avoid issues with multiple people working at same time)
 testing = True
 
 def upload_FARS_data_to_RDS(path='FARS/FARS_w_MPO_County_Identifiers.csv'):
