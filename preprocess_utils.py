@@ -3,7 +3,7 @@
 import helper
 import pandas as pd
 import geopandas as gpd
-from sqlalchemy import create_engine, Connection
+from sqlalchemy import create_engine
 
 states_df = helper.load_df_from_csv(path='states.csv', low_memory = False)
 # Dictionaries to convert the STATE_INITIAL to STATE_ID & STATE_NAME
@@ -89,14 +89,14 @@ def create_point_column_from_lat_lon(df: pd.DataFrame, flip_lon_sign = False) ->
 
     return gdf
 
-def connect_to_sqlalchemy() -> Connection:
+def connect_to_sqlalchemy():
     """Connects to sqlalchemy and returns the connection.
 
     Args:
         None
 
     Returns:
-        A `sqlalchemy.Connection` object
+        The result of db.connect()
     """
     # Establish sqlalchemy connection
 

@@ -5,7 +5,9 @@ https://stackoverflow.com/questions/38361336/write-geodataframe-into-sql-databas
 https://gis.stackexchange.com/questions/239198/adding-geopandas-dataframe-to-postgis-table
 https://gis.stackexchange.com/questions/325415/writing-geopandas-data-frame-to-postgis
 
-NOTE: this file must be run in the home directory Santos-Volpe-SCOPE-Project 
+NOTE: this file must be run in the home directory Santos-Volpe-SCOPE-Project
+NOTE: Version of SQLAlchemy version needs to be 1.4.47
+Run: pip install sqlalchemy==1.4.47
 """
 
 # Import libraries
@@ -15,22 +17,21 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 import itertools
 
-from geoalchemy2 import Geometry, WKTElement
+from geoalchemy2 import Geometry
 import psycopg2
 
 from config.config import config
-from sqlalchemy import create_engine
 
 import os, sys
+# To import helper
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import helper
 import preprocess_geojsons
 from pathlib import Path
+import preprocess_utils
 
 # Establish sqlalchemy connection
-conn_string = 'postgresql://scope_team:greenTea123@database-1.ci75bfibgs4e.us-east-1.rds.amazonaws.com/FARS'
-db = create_engine(conn_string)
-sqlalchemy_conn = db.connect()
+sqlalchemy_conn = preprocess_utils.connect_to_sqlalchemy()
 
 # Establish psycogp2 connection
 params = config(config_db = 'database.ini')
@@ -47,21 +48,41 @@ print(query, table_names)
 
 cursor.execute('CREATE EXTENSION IF NOT EXISTS postgis')
 
-def upload_FARS_data_to_RDS():
+testing = True
+
+def upload_FARS_data_to_RDS(path='FARS/FARS_w_MPO_County_Identifiers.csv'):
+    """Uploads processed, cleaned, and labeled FARS data to RDS.
+
+    Args:
+        path: a string defining where the processed FARS data is
+
+    Returns:
+        None
+    """
+    if(testing):
+        table_name = "test"
+    else:
+        table_name = "FARS"
     # Create FARS dataframe
     # fars = helper.load_df_from_csv(path='combined_FARS_preprocessed.csv', low_memory = False)
-    fars = helper.load_df_from_csv(path='FARS/FARS_w_MPO_County_Identifiers.csv', low_memory = False)
-    
+    fars = helper.load_df_from_csv(path=path, low_memory = False)
+
     # Load the FARS data into AWS RDS
-    fars.to_sql('FARS', con=sqlalchemy_conn, if_exists='replace',
+    fars.to_sql(table_name, con=sqlalchemy_conn, if_exists='replace',
             index=False)
     print("uploaded FARS data")
 
-def upload_SDS_data_to_RDS():
-    """ Upload combined SDS data to RDS. Currently, each state is in a separate table.
+def upload_SDS_data_to_RDS(path = 'SDS/Output_w_MPO_County_Identifiers/'):
+    """Uploads the combined and processed SDS data to RDS. Currently, each state is in a separate table.
+
+    Args:
+        path: a string defining where the folder containing all of the processed SDS data is
+
+    Returns:
+        None
     """
     # Get all processed SDS
-    all_csvs = helper.get_all_csv_filenames(path = 'SDS/Output_w_MPO_County_Identifiers/')
+    all_csvs = helper.get_all_csv_filenames(path = path)
     print("Full list of states: " + str(all_csvs))
 
     # Process each state's crash data one by one
@@ -73,33 +94,65 @@ def upload_SDS_data_to_RDS():
         # sds = helper.load_gdf_from_geojson(geojson_path) 
         # sds = preprocess_geojsons.change_gdf_geometry_to_geom()
 
-        # Upload SDS data into AWS RDSv    
-        sds.to_sql('SDS_'+state_name, con=sqlalchemy_conn, if_exists='replace',
-                index=False)
+        # Upload SDS data into AWS RDS
+        if(testing):
+            sds.to_sql("test", con=sqlalchemy_conn, if_exists='replace', index=False)
+        else:
+            sds.to_sql('SDS_'+state_name, con=sqlalchemy_conn, if_exists='replace', index=False)
         print("uploaded " + state_name + " SDS data.")
 
-def upload_Justice40_data_to_RDS():
-    """ Upload Justice40 data to RDS
-        Note: make sure to run the preprocessing script before this function
+def upload_Justice40_data_to_RDS(path = "Justice40/justice_40_communities_clean.csv"):
+    """Uploads the cleaned and processed Justice40 data to RDS.
+
+    Args:
+        path: a string defining where the cleaned Justice40 data csv is
+
+    Returns:
+        None
     """
-    justice40 = helper.load_df_from_csv(path = "Justice40/justice_40_communities_clean.csv", low_memory = False)
+    if(testing):
+        table_name = "test"
+    else:
+        table_name = "Justice40"
+    justice40 = helper.load_df_from_csv(path = path, low_memory = False)
     # justice40 = preprocess_Justice40_data.preprocess_justice40_data(justice40)
     
     # Load the FARS data into AWS RDS
-    justice40.to_sql('Justice40', con=sqlalchemy_conn, if_exists='replace',
+    justice40.to_sql(table_name, con=sqlalchemy_conn, if_exists='replace',
             index=False)
     print("uploaded justice40 data")
 
-def upload_states_to_RDS():
+def upload_states_to_RDS(path = 'states.csv'):
+    """Uploads the state information to RDS.
+
+    Args:
+        path: a string defining where the states.csv file is
+
+    Returns:
+        None
+    """
+    if(testing):
+        table_name = "test"
+    else:
+        table_name = "states"
     # Load state.csv data
-    states = helper.load_df_from_csv(path='states.csv', low_memory = False)
+    states = helper.load_df_from_csv(path=path, low_memory = False)
     # Load the FARS data into AWS RDS
-    states.to_sql('states', con=sqlalchemy_conn, if_exists='replace',
+    states.to_sql(table_name, con=sqlalchemy_conn, if_exists='replace',
             index=False)
     print("uploaded states data")
 
 def upload_geojsons_to_RDS(table_name, preprocessing_func, path = None, drop_exisiting_table = True):
-    """ Upload shapefiles to RDS
+    """Uploads shapefiles to RDS.
+
+    Args:
+        table_name: the table name of the RDS to upload into
+        preprocessing_func: the function to call to preprocess the data
+        path: the path to be passed into preprocessing_func(). Default is None.
+        drop_existing_table: a boolean defining whether to drop an existing table called table_name. Default is True.
+
+    Returns:
+        None
     """
     # Drop the table if it already exists
     if table_name in table_names and drop_exisiting_table:
@@ -125,87 +178,88 @@ def upload_geojsons_to_RDS(table_name, preprocessing_func, path = None, drop_exi
     
     print("uploaded {} table to RDS".format(table_name))
 
-def upload_state_boundaries_to_RDS():
-    """ 
-    """
-    upload_geojsons_to_RDS(table_name = 'boundaries_state', preprocessing_func = preprocess_geojsons.preprocess_state_boundaries_df, path = "Shapefiles/state.geojson")
+def upload_state_boundaries_to_RDS(path = "Shapefiles/state.geojson"):
+    """Uploads the state boundaries to RDS.
 
-def upload_mpo_boundaries_to_RDS():
-    """ 
-    """
-    upload_geojsons_to_RDS(table_name = 'boundaries_mpo', preprocessing_func = preprocess_geojsons.preprocess_mpo_boundaries_df, path = "Shapefiles/mpo_boundaries_by_state/")
+    Args:
+        path: a string containing the path to the state boundaries geojson
 
-def upload_county_boundaries_to_RDS():
-    """ 
+    Returns:
+        None
     """
-    upload_geojsons_to_RDS(table_name = 'boundaries_county', preprocessing_func = preprocess_geojsons.preprocess_county_boundaries_df, path = "Shapefiles/county_by_state/")
+    if(testing):
+        table_name = "test"
+    else:
+        table_name = "boundaries_state"
+    upload_geojsons_to_RDS(table_name = table_name, preprocessing_func = preprocess_geojsons.preprocess_state_boundaries_df, path = path)
 
-def upload_census_tract_boundaries_to_RDS():
+def upload_mpo_boundaries_to_RDS(path = "Shapefiles/mpo_boundaries_by_state/"):
+    """Uploads the MPO boundaries to RDS.
+
+    Args:
+        path: a string containing the path to the MPO boundaries geojson
+
+    Returns:
+        None
     """
+    if(testing):
+        table_name = "test"
+    else:
+        table_name = "boundaries_mpo"
+    upload_geojsons_to_RDS(table_name = table_name, preprocessing_func = preprocess_geojsons.preprocess_mpo_boundaries_df, path = path)
+
+def upload_county_boundaries_to_RDS(path = "Shapefiles/county_by_state/"):
+    """Uploads the county boundaries to RDS.
+
+    Args:
+        path: a string containing the path to the county boundaries geojson
+
+    Returns:
+        None
     """
-    # uploaded_already = ["Shapefiles/census_tracts_by_state/census_tract_NE.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_IN.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_NY.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_DE.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_Northern Mariana Islands.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_American Samoa.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_SC.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_NM.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_UT.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_ND.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_CO.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_Guam.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_Virgin Islands.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_WY.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_AK.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_ID.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_PR.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_MI.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_OR.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_RI.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_GA.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_IL.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_LA.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_MA.geojson",
-    # "Shapefiles/census_tracts_by_state/census_tract_MT.geojson", ]
+    if(testing):
+        table_name = "test"
+    else:
+        table_name = "boundaries_county"
+    upload_geojsons_to_RDS(table_name = table_name, preprocessing_func = preprocess_geojsons.preprocess_county_boundaries_df, path = path)
 
-    # Drop the table if it already exists
-    # if 'boundaries_census_tract' in table_names:
-    #     query = "DROP TABLE {}".format('boundaries_census_tract')
-    #     cursor.execute(query)
-    #     print("Dropped {} since it already exists ".format('boundaries_census_tract'))
+def upload_census_tract_boundaries_to_RDS(path = "Shapefiles/census_tracts_by_state"):
+    """Uploads the census boundaries to RDS.
 
-    # processed_paths = []
-    processed_paths = open("processed_census_tract_paths.txt", "w")
+    Args:
+        path: a string containing the path to the folder containing a census tracts geojson for each state
+
+    Returns:
+        None
+    """
+    if(testing):
+        table_name = "test"
+    else:
+        table_name = "boundaries_census_tract_v3"
+
 
     # Deal with census tracts separately
-    geojson_paths = helper.get_all_filenames(path = "Shapefiles/census_tracts_by_state", pattern = '*.geojson')
+    geojson_paths = helper.get_all_filenames(path = path, pattern = '*.geojson')
     print("got all geojson paths")
 
     print(len(geojson_paths))
     for _, path in enumerate(geojson_paths):
-        # if path not in uploaded_already:
-        upload_geojsons_to_RDS(table_name = 'boundaries_census_tract_v3', preprocessing_func = preprocess_geojsons.preprocess_census_tract_boundaries_df, single_geojson_path = path, drop_exisiting_table = False)
+        upload_geojsons_to_RDS(table_name = table_name, preprocessing_func = preprocess_geojsons.preprocess_census_tract_boundaries_df, single_geojson_path = path, drop_exisiting_table = False)
         print("uploaded: ", path)
-        processed_paths.write(path)
-        processed_paths.write("\n")
-        # processed_paths.append(path)
-    
-    print("PROCESSED PATHS: ", processed_paths)
-    processed_paths.close()
+
 
 
 if __name__=="__main__":
 
-    
-    # upload_FARS_data_to_RDS()
+
+    upload_FARS_data_to_RDS()
     # upload_SDS_data_to_RDS()
     # upload_Justice40_data_to_RDS()
     # upload_states_to_RDS()
-    
+
     # upload_state_boundaries_to_RDS()
     # upload_mpo_boundaries_to_RDS()
     # upload_county_boundaries_to_RDS()
-    upload_census_tract_boundaries_to_RDS()
+    # upload_census_tract_boundaries_to_RDS()
 
 

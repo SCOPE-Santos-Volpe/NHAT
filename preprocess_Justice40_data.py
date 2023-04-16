@@ -7,9 +7,9 @@ import geopandas as gpd
 import helper
 import preprocess_utils
 
-def census_tract_shp_2_geojson():
-    shp_file = gpd.read_file('Justice40/usa/usa.shp')
-    shp_file.to_file('Shapefiles/usa.geojson', driver='GeoJSON')
+def census_tract_shp_2_geojson(shp_path = 'Justice40/usa/usa.shp', geojson_path = 'Shapefiles/usa.geojson'):
+    shp_file = gpd.read_file(shp_path)
+    shp_file.to_file(geojson_path, driver='GeoJSON')
 
 def preprocess_census_tract_geojsons(geojson_path = "Shapefiles/usa.geojson"):
 

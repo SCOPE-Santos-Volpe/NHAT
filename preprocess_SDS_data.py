@@ -238,6 +238,11 @@ def preprocess_CA_SDS(df:pd.DataFrame) -> pd.DataFrame:
     }
     df = df.rename(columns = renames)
 
+    def negate_lon(row):
+        return -1*row['LON']
+
+    df['LON'] = df.apply(lambda row: negate_lon(row), axis=1)
+
     def is_fatal(row):
         if row['NUMBER_KILLED'] > 0:
             return 1
@@ -343,7 +348,7 @@ def label_SDS_with_MPO_and_county_identifiers(df, state_name):
 
     # Cursed magic, I blame Jackie
     if state_name == "California":
-        flip_lon_sign = True
+        flip_lon_sign = False
     else:
         flip_lon_sign = False
     SDS_gdf = preprocess_utils.create_point_column_from_lat_lon(SDS_df, flip_lon_sign)
