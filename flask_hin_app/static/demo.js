@@ -62,6 +62,7 @@ function makeMap() {
     const pA = new L.FeatureGroup();
     const pB = new L.FeatureGroup();
     const fars_points = new L.FeatureGroup();
+    const sds_points = new L.FeatureGroup();
     const selection_boundaries = new L.FeatureGroup(); // TODO: implement
     const mpo_boundaries = new L.FeatureGroup();
     const county_boundaries = new L.FeatureGroup();
@@ -81,65 +82,9 @@ function makeMap() {
         pB.addLayer(marker);
     }
 
-    var FARS_renderer = L.canvas({ padding: 0.5 }); // helps to fix slowness by plotting points on a canvas rather than individual layers
-
-    // d3.csv('https://raw.githubusercontent.com/Santos-Volpe-SCOPE/Santos-Volpe-SCOPE-Project/app-framework/FARS2020NationalCSV/accident.csv', function(data) {
-    //   for (var i = 0; i < data.length; i++) {
-    //     var row = data[i];
-    //     if (row.LATITUDENAME != "Not Available" & row.LONGITUDNAME != "Not Available" & row.LATITUDENAME != "Not Reported" & row.LONGITUDNAME != "Not Reported" & row.LATITUDENAME != "Reported as Unknown" & row.LONGITUDNAME != "Reported as Unknown"){
-    //       // renderer option helps to fix slowness by plotting points on a canvas rather than individual layers
-    //       var marker = L.circleMarker([row.LATITUDE, row.LONGITUD], {radius: 1, opacity: 0.9, color: '#0000ff', renderer: FARS_renderer}).bindPopup("Coordinates:<br/>" + [row.LATITUDENAME, row.LONGITUDNAME]); //.addTo(map);
-    //       fars_points.addLayer(marker);
-    //     }
-    //   }
-    // });
+    var SDS_renderer = L.canvas({ padding: 0.5 }); // helps to fix slowness by plotting points on a canvas rather than individual layers
 
 
-    // ------------------------------------------------------------------------------------
-    // POLYLINE TO HIGHLIGHT ROADS
-
-    // // define array of points to use for polyline
-    // const polyline_points = [
-    //   [45, -89],
-    //   [42, -89],
-    //   [42, -91],
-    //   [42, -93],
-    //   [43, -92],
-    //   [44, -91],
-    //   [45, -91],
-    // ];
-    // // add polyline to map
-    // var roadHighlight_polyline = L.polyline(polyline_points, {
-    //   color: "black",
-    //   opacity: 0.5,
-    //   weight: 5,
-    // }).bindPopup("polygon"); //.addTo(map);
-    // roadHighlight_polylineLayer.addLayer(roadHighlight_polyline);
-
-      // var geojson = 'https://raw.githubusercontent.com/SCOPE-Santos-Volpe/SCOPE-Santos-Volpe-Project/app-framework/hin_app/alameda_100_percent_hin.json';
-      // d3.json(geojson, function(data) { 
-      //   console.log("hin data", data);
-      //   const feature = L.geoJSON(data, {
-      //     style: function (feature) {
-      //       return {
-      //         color: "blue",
-      //         weight: 5,
-      //         opacity: 0.5,
-      //       };
-      //     },
-      //     onEachFeature: function (feature, layer) {
-      //       roadHighlight_polylineLayer.addLayer(layer);
-      //        const coordinates = feature.geometry.coordinates.toString();
-      //       // const result = coordinates.match(/[^,]+,[^,]+/g);
-      //       //const name = feature.properties.name.toString();
-      //       //console.log("street: ", name)
-      //       // layer.bindPopup(
-      //       //   "<span>Name:<br>" + name + "</span>"
-      //       //   // "<span>Coordinates:<br>" + result.join("<br>") + "</span>"
-      //       // );
-      //     },
-      //   }); //.addTo(map);
-      // }); 
 
     // ------------------------------------------------------------------------------------
     // HEATMAP EXAMPLE
@@ -551,8 +496,6 @@ function makeMap() {
         document.querySelector('.back-button2').style.display = 'none';
         document.querySelector('.after-region').style.display = 'none';
         document.querySelector('.btn-confirm').style.display = 'none';
-        // document.querySelector('.confirmation').style.display = 'block';
-        //confirmation.innerText = "Go to the HIN tab to generate the HIN map!";
 
         if (mpo_not_county_bool){
           console.log("clicked state", clicked_state)
@@ -560,8 +503,21 @@ function makeMap() {
             const mpo_census = obj;
             censusToMap(mpo_census);
             console.log("mpo census for ", selected_feature_name, "loaded");
-            // map.addLayer(census_boundaries);
           });
+          $.getJSON("/get_fars_data_by_mpo/"+clicked_state+selected_feature_name, function(obj) {
+            const mpo_fars = obj;
+            farsToMap(mpo_fars);
+            console.log("fars for ", selected_feature_name, "loaded");
+          });
+          if (clicked_state == 6 || clicked_state == 25){
+            console.log("IT IS CALIFORNIA!!!");
+            $.getJSON("/get_sds_data_by_mpo/"+clicked_state+selected_feature_name, function(obj) {
+              const mpo_sds = obj;
+              console.log(mpo_sds);
+              sdsToMap(mpo_sds);
+              console.log("sds for ", selected_feature_name, "loaded");
+            });
+          }
         }
         else {
           console.log("aaaaaaaaa");
@@ -569,14 +525,21 @@ function makeMap() {
             const county_census = obj;
             censusToMap(county_census);
             console.log("county census for ", selected_feature_name, "loaded");
-            // map.addLayer(census_boundaries);
           });
           $.getJSON("/get_fars_data_by_county/"+clicked_state+selected_feature_name, function(obj) {
             const county_fars = obj;
-            console.log(county_fars)
             farsToMap(county_fars);
             console.log("fars for ", selected_feature_name, "loaded");
           });
+          //If it's california or massachusetts, load sds crashes
+          if (clicked_state == 6 || clicked_state == 25){
+            console.log("IT IS CALIFORNIA!!!");
+            $.getJSON("/get_sds_data_by_county/"+clicked_state+selected_feature_name, function(obj) {
+              const county_sds = obj;
+              sdsToMap(county_sds);
+              console.log("sds for ", selected_feature_name, "loaded");
+            });
+          }
         }
 
         let filter_btn = document.querySelectorAll('.filter-btn');
@@ -603,6 +566,20 @@ function makeMap() {
       layer = L.layerGroup(markers);
 
       fars_points.addLayer(layer);
+      return layer;
+    }
+
+    // -----------------------------------------------------------------------------------------
+    // LOAD SDS DATA
+    function sdsToMap(sds_data){
+
+      var markers = sds_data.data.map(function(arr) {
+        return L.circleMarker([arr[0], arr[1]], {radius: 2, color: 'CadetBlue'}).bindPopup("Coordinates:<br>" + [arr[0], arr[1]]);
+      });
+
+      layer = L.layerGroup(markers);
+
+      sds_points.addLayer(layer);
       return layer;
     }
 
@@ -709,11 +686,13 @@ function makeMap() {
 
     // ----------------------------------------------------------------------------------------------------
     // CODE TO CHECK WHAT DATABASE IS CLICKED
-    function databaseClicked() {
+    function generateHIN() {
       const btn = document.querySelector('#rd-btn');        
       const radioButtons = document.querySelectorAll('input[name="database"]');
       var slider = document.getElementById("myRange");
       var sliderVal = document.getElementById("slidervalue");
+      var toggle = document.getElementById("toggle");
+
       sliderVal.innerHTML = slider.value; 
 
       slider.oninput = function() {
@@ -758,6 +737,8 @@ function makeMap() {
           console.log("percent_crash", percent_crash);
 
           var statVal = document.getElementById("stats");
+          var statHeader = document.getElementById("stat-header");
+          statHeader.innerText = "Statistics";
           statVal.innerText = `${percent_crash}% of the fatal traffic crashes occur on just ${percent_road}% of the Alameda streets`;
 
           const feature = L.geoJSON(data, {
@@ -783,21 +764,10 @@ function makeMap() {
           map.addLayer(roadHighlight_polylineLayer);
         }); 
 
-        // change the tab
-        let filter_btn = document.querySelectorAll('.filter-btn');
-        let tab_items = document.querySelectorAll('.tab-item');
-
-        for (let j = 0; j < filter_btn.length; j++) {
-          filter_btn[j].classList.remove('active');
-          tab_items[j].classList.remove('select_tab');
-        }
-        filter_btn[2].classList.add('active');
-        tab_items[2].classList.add('select_tab');
-
       });
     }
 
-    databaseClicked();
+    generateHIN();
  
     // ------------------------------------------------------------------------------------
     // Map behaviour
@@ -875,7 +845,8 @@ function makeMap() {
     const overlayMaps = {
       //"Circle Example": pA,
       //"Pin Example": pB,
-      "Crashes": fars_points,
+      "FARS Crashes": fars_points,
+      "SDS Crashes": sds_points,
       // "MPO Boundaries": mpo_boundaries,
       // "County Boundaries": county_boundaries,
       // "State Boundaries": state_boundaries,
@@ -1269,110 +1240,6 @@ function makeMap() {
         return new L.Control.GroupedLayers(baseLayers, groupedOverlays, options);
     };
 
-    // // ------------------------------------------------------------------------------------
-    // // CREATE CUSTOM BUTTONS CLASS
-
-    // L.Control.CustomButtons = L.Control.Layers.extend({
-    //   onAdd: function () {
-    //     this._initLayout();
-    //     this._addMarker();
-    //     this._removeMarker();
-    //     this._update();
-    //     return this._container;
-    //   },
-    //   _addMarker: function () {
-    //     this.createButton("add", "add-button");
-    //   },
-    //   _removeMarker: function () {
-    //     this.createButton("remove", "remove-button");
-    //   },
-    //   createButton: function (type, className) {
-    //     const elements = this._container.getElementsByClassName(
-    //       "leaflet-control-layers-list"
-    //     );
-    //     const button = L.DomUtil.create(
-    //       "button",
-    //       `btn-markers ${className}`,
-    //       elements[0]
-    //     );
-    //     button.textContent = `${type} markers`;
-
-    //     L.DomEvent.on(button, "click", function (e) {
-    //       const checkbox = document.querySelectorAll(
-    //         ".leaflet-control-layers-overlays input[type=checkbox]"
-    //       );
-
-    //       // Remove/add all layer from map when click on button
-    //       [].slice.call(checkbox).map((el) => {
-    //         el.checked = type === "add" ? false : true;
-    //         el.click();
-    //       });
-    //     });
-    //   },
-    // });
-
-    // // ------------------------------------------------------------------------------------
-    // // CREATE CUSTOM TOGGLE BUTTON CLASS
-
-    // L.Control.CustomToggle = L.Control.Layers.extend({
-    //   onAdd: function () {
-    //     this._initLayout();
-    //     this._addMarker();
-    //     this._removeMarker();
-    //     this._update();
-    //     return this._container;
-    //   },
-    //   _addMarker: function () {
-    //     this.createButton("Toggle County vs. MPO Boundaries", "add-button");
-    //   },
-    //   _removeMarker: function () {
-    //     // this.createButton("remove", "remove-button");
-    //   },
-    //   createButton: function (type, className) {
-    //     const elements = this._container.getElementsByClassName(
-    //       "leaflet-control-layers-list"
-    //     );
-
-    //     const button = L.DomUtil.create(
-    //       "button",
-    //       `btn-markers ${className}`,
-    //       elements[0]
-    //     );
-    //     button.textContent = `${type}`;
-
-    //     L.DomEvent.on(button, "click", function (e) {
-    //       toggle_county_vs_mpo = !toggle_county_vs_mpo;
-    //       console.log("toggle_county_vs_mpo changed to", toggle_county_vs_mpo);
-
-    //       map.removeLayer(state_boundaries);
-    //       map.removeLayer(county_boundaries); 
-    //       map.removeLayer(mpo_boundaries); 
-    //       map.removeLayer(selection_boundaries); 
-
-    //       if (toggle_county_vs_mpo) { // Shows counties instead of MPOs
-    //         // if (county_boundaries.getLayers().length == 0) {
-    //         //   d3.json('https://raw.githubusercontent.com/Santos-Volpe-SCOPE/Santos-Volpe-SCOPE-Project/app-framework/hin_app/county_data/county.geojson', function(data) {
-    //         //     const geojson = data;
-    //         //     var clicked_state = "NONE";
-    //         //     setCountiesToMap(geojson, clicked_state);
-    //         //     console.log("county boundaries for state", clicked_state, "loaded");
-    //         //   });
-    //         // }
-    //         map.addLayer(county_boundaries); // makes states transition to mpo/county
-    //       } else { // Shows MPOs instead of counties
-    //         // if (mpo_boundaries.getLayers().length == 0) {
-    //         //   d3.json('https://raw.githubusercontent.com/Santos-Volpe-SCOPE/Santos-Volpe-SCOPE-Project/app-framework/hin_app/mpo_data/mpo_boundaries.geojson', function(data) {
-    //         //     const geojson = data;
-    //         //     var clicked_state = "NONE";
-    //         //     setMposToMap(geojson, clicked_state);
-    //         //     console.log("mpo boundaries for state", clicked_state, "loaded");
-    //         //   });
-    //         // }
-    //         map.addLayer(mpo_boundaries); // makes states transition to mpo/county
-    //       }  
-    //     });
-    //   },
-    // });
 
       
     // -----------------------------------------------------------------------------------------
@@ -1385,13 +1252,6 @@ function makeMap() {
           "MPO Boundaries":mpo_boundaries,
           //"Selected Boundaries":selection_boundaries,
       },
-      // "Examples":{
-      //   "Circle Example": pA,
-      //   "Pin Example": pB,
-      //   "FARS 2020 Crashes": fars_points,
-      //   "Heatmap Example": heatmapLayer,
-      //   "Polyline Example": roadHighlight_polylineLayer,
-      // }
     }
     var options = {
       // Make the overlay group is exclusive (use radio inputs)
@@ -1480,92 +1340,12 @@ function make_tab() {
   }
 }
 
-// ----------------------------------------------------------------------------------------------------
-// CODE TO CREATE SIDEBAR
-function make_sidebar() {
-  const menuItems = document.querySelectorAll(".menu-item");
-  const sidebar = document.querySelector(".sidebar");
-  const buttonClose = document.querySelector(".close-button");
-
-
-  menuItems.forEach((item) => {
-    item.addEventListener("click", (e) => {
-      const target = e.target;
-
-      if (
-        target.classList.contains("active-item") ||
-        !document.querySelector(".active-sidebar")
-      ) {
-        document.body.classList.toggle("active-sidebar");
-      }
-
-      // show content
-      showContent(target.dataset.item);
-      // add active class to menu item
-      addRemoveActiveItem(target, "active-item");
-    });
-  });
-
-  // close sidebar when click on close button
-  buttonClose.addEventListener("click", () => {
-    closeSidebar();
-  });
-
-  // remove active class from menu item and content
-  function addRemoveActiveItem(target, className) {
-    const element = document.querySelector(`.${className}`);
-    target.classList.add(className);
-    if (!element) return;
-    element.classList.remove(className);
-  }
-
-  // show specific content
-  function showContent(dataContent) {
-    const idItem = document.querySelector(`#${dataContent}`);
-    addRemoveActiveItem(idItem, "active-content");
-  }
-
-  // --------------------------------------------------
-  // close when click esc
-  document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape") {
-      closeSidebar();
-    }
-  });
-
-  // close sidebar when click outside
-  // document.addEventListener("click", (e) => {
-  //   if (!e.target.closest(".sidebar")) {
-  //     closeSidebar();
-  //   }
-  // });
-  // --------------------------------------------------
-  // close sidebar
-
-  function closeSidebar() {
-    document.body.classList.remove("active-sidebar");
-    const element = document.querySelector(".active-item");
-    const activeContent = document.querySelector(".active-content");
-    if (!element) return;
-    element.classList.remove("active-item");
-    activeContent.classList.remove("active-content");
-  }
-
-  // --------------------------------------------------
-  // close popup
-  document.querySelector("#close").addEventListener
-  ("click", function(){
-    document.querySelector(".popup").style.display = "none";
-  });
-  // ----------------------------------------------------
-}
 
 $(function() {
     map = makeMap();
     // make_sidebar();
     make_tab();
     getFarsDataByState('0');
-    // getStateBoundaries('1');
 
     // $('#statesel').change(function() {
     //     var val = $('#statesel option:selected').val();

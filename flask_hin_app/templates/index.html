@@ -89,10 +89,10 @@
         <ion-icon name="options-outline"></ion-icon>
         HIN
       </li>
-      <li class="filter-btn" data-tab="stat">
+      <!-- <li class="filter-btn" data-tab="stat">
         <ion-icon name="stats-chart-outline"></ion-icon>
         Statistic
-      </li>
+      </li> -->
     </div>
     <div class="tab-filter-item-container">
       <div class="tab-item intro select_tab">
@@ -124,8 +124,9 @@
       <div class="tab-item hin">
         <h3 class="tab-heading">Generate High Injury Network</h1>
         <h4>
-          Databases
+          Database
         </h4>
+        <p> Choose a database</p>
         <div>
           <div class="radio-box">
             <input type="radio" name="database" value="fars" id="fars" checked>
@@ -143,85 +144,34 @@
         <h4>
           Threshold
         </h4>
+        <p> Threshold will change the statistics. </p>
+
         <div class="slidecontainer">
           <input type="range" min="0.000" max="0.005" value="0.003" step = "0.001" class="slider" id="myRange">
         </div>
         <div class="slider-value" id = "slidervalue"></div>
 
+        <h4>
+          Equity Weighting
+        </h4>
+        <label class="switch">
+          <input type="checkbox" id = "toggle">
+          <span class="toggle round"></span>
+        </label>
+        
         <button class="button" id="rd-btn">Generate HIN map</button>
-
         <p id="output"></p>
+
+        <h3 class = "stat-header" id = "stat-header"></h3>
+        <p class = "stats" id = "stats"></p>
+
       </div>
-      <div class="tab-item stat">
+      <!-- <div class="tab-item stat">
         <h2 class="tab-heading"> Statistic Page</h1>
         <div class = "stats" id = "stats"></div>
-      </div>
+      </div> -->
     </div>
   </div>
-  <!-- <div class = "popup">
-    <button id="close">&times;</button>
-    <h2>NHAT (National HIN Aanalysis Tool)</h2>
-    <p> Welcome to NHAT website! You can create High Injury Network for any counties or MPO region across the US. </p>
-  </div> -->
-
-  <!-- <div class="sidebar">
-    <button aria-label="close sidebar" type="button" class="close-button">
-      <svg>
-        <use xlink:href="#icon-clear" />
-      </svg>
-    </button>
-
-    <ul class="sidebar-menu">
-      <li class="menu-item active-item" data-item="menu">
-        <svg><use xlink:href="#icon-menu"></use></svg>
-      </li>
-      <li class="menu-item" data-item="person">
-        <svg><use xlink:href="#icon-person"></use></svg>
-      </li>
-      <li class="menu-item" data-item="email">
-        <svg><use xlink:href="#icon-email"></use></svg>
-      </li>
-      <li class="menu-item" data-item="settings">
-        <svg><use xlink:href="#icon-settings"></use></svg>
-      </li>
-    </ul>
-
-    <div class="sidebar-content">
-      <div class="item-content" id="menu">
-        <h2>Sidebar without plugins</h2>
-        <div class="content">
-          Such a menu is not difficult to create on your own.<br /><br />You really don't need any plugin to do something like this.
-          <br /><br />FARS
-          <br />SDS
-          <br />OpenStreetMaps
-          <br />Census
-        </div>
-      </div>
-      <div class="item-content" id="person">
-        <h2>Person</h2>
-        <div class="content">
-          FARS
-          <br /><br />Bike
-          <br />Pedestrian
-          <br />Drunk Driving
-          <br />School Bus involved
-          <br />Road type
-          <br />Intersection
-        </div>
-      </div>
-      <div class="item-content" id="email">
-        <h2>Email</h2>
-        <div class="content">
-          email - Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-          Nobis nostrum incidunt, ab explicabo expedita aliquam officiis vitae
-        </div>
-      </div>
-      <div class="item-content" id="settings">
-        <h2>Settings</h2>
-        <div class="content">settings</div>
-      </div>
-    </div>
-  </div> -->
   
   <div id="llmap"></div>
 

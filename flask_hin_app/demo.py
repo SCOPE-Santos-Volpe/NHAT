@@ -51,7 +51,8 @@ class Fars_accident_2020(db.Model):
     def get_longitude(self):
         return self.longitude
 
-class Fars_testing(db.Model):
+class FARS(db.Model):
+    __tablename__ = 'FARS'
     YEAR = db.Column(db.Integer)
     STATE_ID = db.Column(db.Integer)
     STATE_NAME = db.Column(db.String(80))
@@ -78,6 +79,9 @@ class Fars_testing(db.Model):
         self.LAT = LAT
         self.LON = LON
 
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
     def __repr__(self):
         return "<State %d: Lat %s Lng %s>" % (self.STATE_ID, self.LAT, self.LON)
 
@@ -85,11 +89,117 @@ class Fars_testing(db.Model):
 def get_fars_data_by_county(state_id, county_name):
     # Filter data points by a particular state id
     print("getting fars data for state: ", state_id, " county_name: ", county_name)
-    fars_state_data = Fars_testing.query.filter(Fars_testing.STATE_ID == state_id).\
-                                        filter(Fars_testing.COUNTY_NAME == county_name).all()
-    fars_state_coords = [[point.LAT, point.LON] for point in fars_state_data]
-    print(fars_state_coords)
-    return jsonify({"data": fars_state_coords})
+    fars_state_county_data = FARS.query.filter(FARS.STATE_ID == state_id).\
+                                        filter(FARS.COUNTY_NAME == county_name).all()
+    fars_state_county_coords = [[point.LAT, point.LON] for point in fars_state_county_data]
+    print(fars_state_county_coords)
+    return jsonify({"data": fars_state_county_coords})
+
+
+@app.route('/get_fars_data_by_mpo/<int:state_id><string:mpo_name>')
+def get_fars_data_by_mpo(state_id, mpo_name):
+    # Filter data points by a particular state id
+    print("getting fars data for state: ", state_id, " mpo_name: ", mpo_name)
+    fars_state_mpo_data = FARS.query.filter(FARS.STATE_ID == state_id).\
+                                        filter(FARS.MPO_NAME == mpo_name).all()
+    fars_state_mpo_data_coords = [[point.LAT, point.LON] for point in fars_state_mpo_data]
+    print(fars_state_mpo_data_coords)
+    return jsonify({"data": fars_state_mpo_data_coords})
+
+
+class SDS_California(db.Model):
+    __tablename__ = 'SDS_California'
+    YEAR = db.Column(db.Integer)
+    COUNTY_ID = db.Column(db.Float)
+    COUNTY_NAME = db.Column(db.String(80))
+    MPO_ID = db.Column(db.Float)
+    MPO_NAME = db.Column(db.String(80))
+    IS_FATAL =  db.Column(db.Integer)
+    SEVERITY = db.Column(db.Integer)
+    IS_PED = db.Column(db.Integer)
+    IS_CYC = db.Column(db.Integer)
+    WEATHER_COND = db.Column(db.String(80))
+    LIGHT_COND = db.Column(db.String(80))
+    ROAD_COND = db.Column(db.String(80))
+    ROAD_NAME = db.Column(db.String(80))
+    IS_INTERSECTION = db.Column(db.Integer)
+    LAT = db.Column(db.Float, primary_key=True)
+    LON = db.Column(db.Float)
+
+    def __init__(self, STATE_ID, COUNTY_ID, LAT, LON):
+        print("init point")
+        self.COUNTY_ID = COUNTY_ID
+        self.LAT = LAT
+        self.LON = LON
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+    def __repr__(self):
+        return "<State %d: Lat %s Lng %s>" % (self.LAT, self.LON)
+
+class SDS_Massachusetts(db.Model):
+    __tablename__ = 'SDS_Massachusetts'
+    YEAR = db.Column(db.Integer)
+    COUNTY_ID = db.Column(db.Float)
+    COUNTY_NAME = db.Column(db.String(80))
+    MPO_ID = db.Column(db.Float)
+    MPO_NAME = db.Column(db.String(80))
+    IS_FATAL =  db.Column(db.Integer)
+    SEVERITY = db.Column(db.Integer)
+    IS_PED = db.Column(db.Integer)
+    IS_CYC = db.Column(db.Integer)
+    WEATHER_COND = db.Column(db.String(80))
+    LIGHT_COND = db.Column(db.String(80))
+    ROAD_COND = db.Column(db.String(80))
+    ROAD_NAME = db.Column(db.String(80))
+    IS_INTERSECTION = db.Column(db.Integer)
+    LAT = db.Column(db.Float, primary_key=True)
+    LON = db.Column(db.Float)
+
+    def __init__(self, STATE_ID, COUNTY_ID, LAT, LON):
+        print("init point")
+        self.COUNTY_ID = COUNTY_ID
+        self.LAT = LAT
+        self.LON = LON
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+    def __repr__(self):
+        return "<State %d: Lat %s Lng %s>" % (self.LAT, self.LON)
+
+
+SDS_database_name_dict = {
+    6: SDS_California,
+    25: SDS_Massachusetts
+}
+
+@app.route('/get_sds_data_by_county/<int:state_id><string:county_name>')
+def get_sds_data_by_county(state_id, county_name):
+    # Filter data points by a particular state id
+    print("getting fars data for state: ", state_id, " county_name: ", county_name)
+    SDS_table = SDS_database_name_dict[state_id]
+    SDS_county_data = SDS_table.query.filter(SDS_table.COUNTY_NAME == county_name).all()
+    if state_id == 6:
+            SDS_coords = [[point.LAT, -point.LON] for point in SDS_county_data]
+    else:
+        SDS_coords = [[point.LAT, point.LON] for point in SDS_county_data]
+    print(SDS_coords)
+    return jsonify({"data": SDS_coords})
+
+@app.route('/get_sds_data_by_mpo/<int:state_id><string:mpo_name>')
+def get_sds_data_by_mpo(state_id, mpo_name):
+    # Filter data points by a particular state id
+    print("getting fars data for state: ", state_id, " mpo_name: ", mpo_name)
+    SDS_table = SDS_database_name_dict[state_id]
+    SDS_mpo_data = SDS_table.query.filter(SDS_table.MPO_NAME == mpo_name).all()
+    if state_id == 6:
+            SDS_coords = [[point.LAT, -point.LON] for point in SDS_mpo_data]
+    else:
+        SDS_coords = [[point.LAT, point.LON] for point in SDS_mpo_data]
+    print(SDS_coords)
+    return jsonify({"data": SDS_coords})
 
 class States(db.Model):
     id = db.Column(db.Integer, primary_key=True)
