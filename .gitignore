@@ -17,3 +17,4 @@ FARS/
 Shapefiles/*
 __pycache__
 AWS/config/__pycache__
+sqlalchemy_conn_string.txt

@@ -89,15 +89,18 @@ def create_point_column_from_lat_lon(df: pd.DataFrame, flip_lon_sign = False) ->
 
     return gdf
 
-def connect_to_sqlalchemy(conn_string:str = 'postgresql://scope_team:greenTea123@database-1.ci75bfibgs4e.us-east-1.rds.amazonaws.com/FARS') -> Connection:
+def connect_to_sqlalchemy() -> Connection:
     """Connects to sqlalchemy and returns the connection.
 
     Args:
-        conn_string: a string containing the connection string for create_engine. Defaults to our database.
+        None
 
     Returns:
         A `sqlalchemy.Connection` object
     """
     # Establish sqlalchemy connection
+
+    f = open('sqlalchemy_conn_string.txt','r')
+    conn_string = f.read()
     db = create_engine(conn_string)
     return db.connect()
