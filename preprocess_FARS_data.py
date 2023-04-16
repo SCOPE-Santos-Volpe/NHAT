@@ -159,7 +159,7 @@ def clean_FARS_dataset(df: pd.DataFrame, min_year: int) -> pd.DataFrame:
 
     return df
 
-def label_FARS_with_MPO_and_county_identifiers(df):
+def label_FARS_with_MPO_and_county_identifiers(df: pd.DataFrame) -> pd.DataFrame:
     """Take preprocessed FARS data and label it with MPO and county.
 
     Args:

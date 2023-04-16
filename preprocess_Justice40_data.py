@@ -3,12 +3,12 @@
 https://screeningtool.geoplatform.gov/en/#3/33.47/-97.5
 """
 
-# import pandas as pd
+import pandas as pd
 import geopandas as gpd
 import helper
 import preprocess_utils
 
-def preprocess_justice40_data(path = "Justice40/justice_40_communities.csv", output_path = "Justice40/justice_40_communities_clean"):
+def preprocess_justice40_data(path: str = "Justice40/justice_40_communities.csv", output_path: str = "Justice40/justice_40_communities_clean") -> pd.DataFrame:
     """Load and preprocess Justice40 data.
 
     Args:

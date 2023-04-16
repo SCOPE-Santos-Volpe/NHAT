@@ -334,7 +334,7 @@ def preprocess_SDS_datasets(path: str = 'SDS/Data/', output_path: str = 'SDS/Out
     # Return output dictionary
     return output
 
-def label_SDS_with_MPO_and_county_identifiers(df, state_name):
+def label_SDS_with_MPO_and_county_identifiers(df: pd.DataFrame, state_name: str) -> pd.DataFrame:
     """Loops through all MPO and county shapefiles and check whether each point is inside the polygon boundary.
 
     Args:

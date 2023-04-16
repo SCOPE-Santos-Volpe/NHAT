@@ -14,7 +14,7 @@ from sqlalchemy import text
 sqlalchemy_conn = preprocess_utils.connect_to_sqlalchemy()
 
 
-def combine_geojsons_to_single_gdf(path = None):
+def combine_geojsons_to_single_gdf(path: str = None) -> gpd.GeoDataFrame:
     """Load all `.geojson` files at `path` and concatenate into one `gpd.GeoDataFrame`
 
     Args:
@@ -45,7 +45,7 @@ def combine_geojsons_to_single_gdf(path = None):
     return gdf
 
 
-def separate_gdf_into_polygon_multipolygon(gdf: gpd.GeoDataFrame):
+def separate_gdf_into_polygon_multipolygon(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """Separate a single `gpd.GeoDataFrame` into two `gpd.GeoDataFrames`, with just polgons or multipolygons respectively.
 
     Rows with geometry type MultiPolygon need to be separated from Polygon because they require different methods to be pushed to the database.
@@ -70,7 +70,7 @@ def separate_gdf_into_polygon_multipolygon(gdf: gpd.GeoDataFrame):
 
     return polygon_gdf, multipoly_gdf
 
-def change_gdf_geometry_to_geom(gdf: gpd.GeoDataFrame):
+def change_gdf_geometry_to_geom(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """Renames the geometry column of a `gpd.GeoDataFrame` into geom, and does conversions I don't understand
 
     Args:
@@ -90,7 +90,7 @@ def change_gdf_geometry_to_geom(gdf: gpd.GeoDataFrame):
 
 
 
-def preprocess_state_boundaries_df(path = 'Shapefiles/raw_shapefiles/states_raw'):
+def preprocess_state_boundaries_df(path: str = 'Shapefiles/raw_shapefiles/states_raw') -> gpd.GeoDataFrame:
     """Preprocesses a `gpd.GeoDataFrame` containing state boundaries.
 
     Args:
@@ -112,7 +112,7 @@ def preprocess_state_boundaries_df(path = 'Shapefiles/raw_shapefiles/states_raw'
     # NOTE: DOESN'T HAVE STATE_INITIAL
     return gdf
 
-def preprocess_mpo_boundaries_df(path = 'Shapefiles/raw_shapefiles/mpo_raw'):
+def preprocess_mpo_boundaries_df(path: str= 'Shapefiles/raw_shapefiles/mpo_raw') -> gpd.GeoDataFrame:
     """Preprocesses a `gpd.GeoDataFrame` containing MPO boundaries.
 
     Args:
@@ -140,7 +140,7 @@ def preprocess_mpo_boundaries_df(path = 'Shapefiles/raw_shapefiles/mpo_raw'):
     gdf = gdf.astype(convert_column_type_dict)
     return gdf
 
-def preprocess_county_boundaries_df(path = 'Shapefiles/raw_shapefiles/counties_raw'):
+def preprocess_county_boundaries_df(path: str = 'Shapefiles/raw_shapefiles/counties_raw') -> gpd.GeoDataFrame:
     """Preprocesses a `gpd.GeoDataFrame` containing county boundaries.
 
     Args:
@@ -179,7 +179,7 @@ def preprocess_county_boundaries_df(path = 'Shapefiles/raw_shapefiles/counties_r
     gdf = gdf.astype(convert_column_type_dict)
     return gdf
 
-def preprocess_census_tract_boundaries_df(path = 'Shapefiles/census_tracts_by_state/'):
+def preprocess_census_tract_boundaries_df(path: str = 'Shapefiles/census_tracts_by_state/') -> gpd.GeoDataFrame:
     """Loads a `gpd.GeoDataFrame` or folder of `gpd.GeoDataFrame`s containing census tract boundaries, and preprocesses them.
 
     Can do the full folder, but uploads time out doing all the tracts at once.
@@ -284,7 +284,7 @@ def preprocess_census_tract_boundaries_df(path = 'Shapefiles/census_tracts_by_st
 
     return gdf
 
-def preprocess_HIN_df(gdf: gpd.GeoDataFrame):
+def preprocess_HIN_df(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """Waiting on Sam and Lilo to provide this
     """
 

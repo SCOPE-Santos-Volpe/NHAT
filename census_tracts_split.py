@@ -5,7 +5,7 @@ import helper
 import geopandas as gpd
 import os
 
-def load_states(path='states.csv'):
+def load_states(path: str = 'states.csv') -> dict:
     """Loads state info and returns a dictionary mapping state names to state initial.
 
     Args:
@@ -19,7 +19,7 @@ def load_states(path='states.csv'):
 
     return d_state_name2initial
 
-def load_all_tracts_geojson(path='Shapefiles/census_tracts.geojson'):
+def load_all_tracts_geojson(path: str = 'Shapefiles/census_tracts.geojson') -> dict:
     """Loads a `.geojson` file which should contain all census tracts nationwide.
 
     Args:
@@ -40,7 +40,7 @@ def load_all_tracts_geojson(path='Shapefiles/census_tracts.geojson'):
     return tracts
 
 
-def categorize_tracts_by_state(tracts):
+def categorize_tracts_by_state(tracts: dict) -> dict:
     """Categorizes all census tracts into the state they're located within.
 
     Args:
@@ -62,7 +62,7 @@ def categorize_tracts_by_state(tracts):
 
     return state_dict
 
-def write_files(state_dict, d_state_name2initial):
+def write_files(state_dict: dict, d_state_name2initial: dict) -> None:
     """Writes a `.geojson` file for each state.
 
     Args:
@@ -70,7 +70,7 @@ def write_files(state_dict, d_state_name2initial):
         d_state_name2initial: a dictionary returned by `load_states`
 
     Returns:
-        none
+        None
     """
     outdir = 'Shapefiles/census_tracts_by_state/'
     if not os.path.exists(outdir):
@@ -86,18 +86,27 @@ def write_files(state_dict, d_state_name2initial):
             # print("writing to file for ", state_name)
             outfile.write(string)
 
-def shp_2_geojson(shp_path = 'Shapefiles/raw_shapefiles/census_tracts_raw', geojson_path = 'Shapefiles/census_tracts.geojson'):
+def shp_2_geojson(shp_path: str = 'Shapefiles/raw_shapefiles/census_tracts_raw', geojson_path: str = 'Shapefiles/census_tracts.geojson') -> None:
+    """Converts a shapefile (`.shp`) file to a `.geojson` file
+
+    Args:
+        shp_path: the path to a shapefile to be read
+        geojson_path: the path to where to write the geojson
+
+    Returns:
+        None
+    """
     shp_file = gpd.read_file(shp_path)
     shp_file.to_file(geojson_path, driver='GeoJSON')
 
-def split_census_tracts():
+def split_census_tracts() -> None:
     """Main function combining each of the above helper functions.
 
     Args:
-        none
+        None
 
     Returns:
-        none
+        None
     """
     d_state_name2initial = load_states()
 

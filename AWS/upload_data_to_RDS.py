@@ -50,7 +50,7 @@ cursor.execute('CREATE EXTENSION IF NOT EXISTS postgis')
 # Hardcoded boolean to define if uploading to testing table (to avoid issues with multiple people working at same time)
 testing = False
 
-def upload_FARS_data_to_RDS(path='FARS/FARS_w_MPO_County_Identifiers.csv'):
+def upload_FARS_data_to_RDS(path: str = 'FARS/FARS_w_MPO_County_Identifiers.csv') -> None:
     """Uploads processed, cleaned, and labeled FARS data to RDS.
 
     Args:
@@ -72,7 +72,7 @@ def upload_FARS_data_to_RDS(path='FARS/FARS_w_MPO_County_Identifiers.csv'):
             index=False)
     print("uploaded FARS data")
 
-def upload_SDS_data_to_RDS(path = 'SDS/Output_w_MPO_County_Identifiers/'):
+def upload_SDS_data_to_RDS(path: str = 'SDS/Output_w_MPO_County_Identifiers/') -> None:
     """Uploads the combined and processed SDS data to RDS. Currently, each state is in a separate table.
 
     Args:
@@ -101,7 +101,7 @@ def upload_SDS_data_to_RDS(path = 'SDS/Output_w_MPO_County_Identifiers/'):
             sds.to_sql('SDS_'+state_name, con=sqlalchemy_conn, if_exists='replace', index=False)
         print("uploaded " + state_name + " SDS data.")
 
-def upload_Justice40_data_to_RDS(path = "Justice40/justice_40_communities_clean.csv"):
+def upload_Justice40_data_to_RDS(path: str = "Justice40/justice_40_communities_clean.csv") -> None:
     """Uploads the cleaned and processed Justice40 data to RDS.
 
     Args:
@@ -122,7 +122,7 @@ def upload_Justice40_data_to_RDS(path = "Justice40/justice_40_communities_clean.
             index=False)
     print("uploaded justice40 data")
 
-def upload_states_to_RDS(path = 'states.csv'):
+def upload_states_to_RDS(path: str = 'states.csv') -> None:
     """Uploads the state information to RDS.
 
     Args:
@@ -142,7 +142,7 @@ def upload_states_to_RDS(path = 'states.csv'):
             index=False)
     print("uploaded states data")
 
-def upload_geojsons_to_RDS(table_name, preprocessing_func, path = None, drop_exisiting_table = True):
+def upload_geojsons_to_RDS(table_name: str, preprocessing_func: function, path: str = None, drop_exisiting_table: bool = True) -> None:
     """Uploads shapefiles to RDS.
 
     Args:
@@ -179,7 +179,7 @@ def upload_geojsons_to_RDS(table_name, preprocessing_func, path = None, drop_exi
     print("uploaded {} table to RDS".format(table_name))
 
 
-def upload_state_boundaries_to_RDS(path = "Shapefiles/raw_shapefiles/states_raw"):
+def upload_state_boundaries_to_RDS(path: str = "Shapefiles/raw_shapefiles/states_raw") -> None:
     """Uploads the state boundaries to RDS.
 
     Args:
@@ -194,7 +194,7 @@ def upload_state_boundaries_to_RDS(path = "Shapefiles/raw_shapefiles/states_raw"
         table_name = "boundaries_state"
     upload_geojsons_to_RDS(table_name = table_name, preprocessing_func = preprocess_geojsons.preprocess_state_boundaries_df, path = path)
 
-def upload_mpo_boundaries_to_RDS(path = "Shapefiles/raw_shapefiles/mpo_raw"):
+def upload_mpo_boundaries_to_RDS(path: str = "Shapefiles/raw_shapefiles/mpo_raw") -> None:
     """Uploads the MPO boundaries to RDS.
 
     Args:
@@ -209,7 +209,7 @@ def upload_mpo_boundaries_to_RDS(path = "Shapefiles/raw_shapefiles/mpo_raw"):
         table_name = "boundaries_mpo"
     upload_geojsons_to_RDS(table_name = table_name, preprocessing_func = preprocess_geojsons.preprocess_mpo_boundaries_df, path = path)
 
-def upload_county_boundaries_to_RDS(path = "Shapefiles/raw_shapefiles/counties_raw"):
+def upload_county_boundaries_to_RDS(path: str = "Shapefiles/raw_shapefiles/counties_raw") -> None:
     """Uploads the county boundaries to RDS.
 
     Args:
@@ -224,7 +224,7 @@ def upload_county_boundaries_to_RDS(path = "Shapefiles/raw_shapefiles/counties_r
         table_name = "boundaries_county"
     upload_geojsons_to_RDS(table_name = table_name, preprocessing_func = preprocess_geojsons.preprocess_county_boundaries_df, path = path)
 
-def upload_census_tract_boundaries_to_RDS(path = "Shapefiles/census_tracts_by_state"):
+def upload_census_tract_boundaries_to_RDS(path: str = "Shapefiles/census_tracts_by_state") -> None:
     """Uploads the census boundaries to RDS.
 
     Args:
