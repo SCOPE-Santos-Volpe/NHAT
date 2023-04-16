@@ -259,7 +259,7 @@ def upload_census_tract_boundaries_to_RDS(path = "Shapefiles/census_tracts_by_st
 if __name__=="__main__":
 
 
-    # upload_FARS_data_to_RDS()
+    upload_FARS_data_to_RDS()
     # upload_SDS_data_to_RDS()
     # upload_Justice40_data_to_RDS()
     # upload_states_to_RDS()
@@ -267,6 +267,6 @@ if __name__=="__main__":
     # upload_state_boundaries_to_RDS()
     # upload_mpo_boundaries_to_RDS()
     # upload_county_boundaries_to_RDS()
-    upload_census_tract_boundaries_to_RDS()
+    # upload_census_tract_boundaries_to_RDS()
 
 

@@ -209,4 +209,4 @@ def label_FARS_with_MPO_and_county_identifiers(df):
 
 if __name__=="__main__":
     df = combine_FARS_datasets()
-    print("Ding!")
+    # print("Ding!")
