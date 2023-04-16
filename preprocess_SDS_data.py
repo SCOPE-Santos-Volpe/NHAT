@@ -305,7 +305,7 @@ def preprocess_SDS_datasets(path: str = 'SDS/Data/', output_path: str = 'SDS/Out
     # Dictionary to store all preprocessed dataframes with state names as keys
     output = {}
     for state in all_dirs:
-        print("Processing: "+state)
+        # print("Processing: "+state)
         # Get all SDS filenames within that state (files for different years)
         all_filenames = helper.get_all_filenames(path+state,"*.csv")
 

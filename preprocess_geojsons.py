@@ -138,7 +138,6 @@ def preprocess_mpo_boundaries_df(path = 'Shapefiles/raw_shapefiles/mpo_raw'):
                                 "MPO_NAME"            : str
     }
     gdf = gdf.astype(convert_column_type_dict)
-    print(gdf.columns)
     return gdf
 
 def preprocess_county_boundaries_df(path = 'Shapefiles/raw_shapefiles/counties_raw'):
@@ -178,7 +177,6 @@ def preprocess_county_boundaries_df(path = 'Shapefiles/raw_shapefiles/counties_r
                                 "COUNTY_NAME"         : str
     }
     gdf = gdf.astype(convert_column_type_dict)
-    print(gdf.columns)
     return gdf
 
 def preprocess_census_tract_boundaries_df(path = 'Shapefiles/census_tracts_by_state/'):

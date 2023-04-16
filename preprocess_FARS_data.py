@@ -28,7 +28,7 @@ def combine_FARS_datasets(path: str = 'FARS/FARS CSVs/', output_filename: str = 
     """
 
     all_filenames = helper.get_all_filenames(path, "*.CSV")
-    all_dfs = helper.get_all_dfs_from_csv(all_filenames, requiredcolumns_=['LATITUDE', 'LONGITUD'], index_col=None, encoding_errors='ignore', low_memory=False)
+    all_dfs = helper.get_all_dfs_from_csv(all_filenames, required_columns=['LATITUDE', 'LONGITUD'], index_col=None, encoding_errors='ignore', low_memory=False)
     combined_df = helper.concat_pandas_dfs(all_dfs)
     cleaned_df = clean_FARS_dataset(combined_df, min_year)
     labeled_df = label_FARS_with_MPO_and_county_identifiers(cleaned_df)
@@ -47,6 +47,14 @@ def clean_FARS_dataset(df: pd.DataFrame, min_year: int) -> pd.DataFrame:
     Returns:
         A `pd.DataFrame` with the cleaned FARS data
     """
+    # Rename columns for consistency
+    renames = {
+        'LATITUDE' : 'LAT',
+        'LONGITUD' : 'LON',
+        'STATE'    : 'STATE_ID'
+    }
+    df.rename(columns = renames,inplace = True)
+
     # Remove invalid lat/lon values
     df = preprocess_utils.remove_invalid_lat_lon(df)
     # Filter data for the past 5 years
@@ -57,22 +65,14 @@ def clean_FARS_dataset(df: pd.DataFrame, min_year: int) -> pd.DataFrame:
     df = df.dropna(axis=1, how='all')
 
     # Select which columns we're keeping
-    columns = ['YEAR', 'STATE',                                         # Metadata
+    columns = ['YEAR', 'STATE_ID',                                      # Metadata
                 'LGT_COND', 'WEATHER',                                  # Accident conditions
                 'TYP_INT',                                              # Road type
-                'LATITUDE', 'LONGITUD',                                 # Geolocation
+                'LAT', 'LON',                                           # Geolocation
                 'PEDS',                                                 # Parties involved
     ]
     columns = [x.upper() for x in columns]
     df = df[columns]
-
-    # Rename columns for consistency
-    renames = {
-        'LATITUDE' : 'LAT',
-        'LONGITUD' : 'LON',
-        'STATE'    : 'STATE_ID'
-    }
-    df.rename(columns = renames,inplace = True)
 
     # Section to make columns align with SDS columns
 

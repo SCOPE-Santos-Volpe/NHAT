@@ -5,6 +5,8 @@ import preprocess_SDS_data
 import AWS.upload_data_to_RDS
 
 if __name__ == "__main__":
+    # NOTE: We have not fully tested deleting everything from the database and re-uploading everything, because that would take a while and we have stuff to do.
+
     AWS.upload_data_to_RDS.upload_state_boundaries_to_RDS()
     AWS.upload_data_to_RDS.upload_mpo_boundaries_to_RDS()
     AWS.upload_data_to_RDS.upload_county_boundaries_to_RDS()

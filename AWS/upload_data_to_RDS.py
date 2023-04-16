@@ -20,17 +20,15 @@ from geoalchemy2 import Geometry
 import psycopg2
 import pandas as pd
 import itertools
-
-from config.config import config
-
 import os, sys
+
 # To import helper
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from AWS.config.config import config
 import helper
 import preprocess_geojsons
 from pathlib import Path
 import preprocess_utils
-import time
 
 # Establish sqlalchemy connection
 sqlalchemy_conn = preprocess_utils.connect_to_sqlalchemy()
@@ -40,13 +38,11 @@ params = config(config_db = 'database.ini')
 conn = psycopg2.connect(**params)
 conn.autocommit = True
 cursor = conn.cursor()
-# print('Python connected to PostgreSQL via Psycogp2!')
 
 # Get all table names in the database
 query = """ SELECT table_name FROM information_schema.tables WHERE table_schema='public'"""
 table_names = pd.read_sql(query, con=sqlalchemy_conn).values.tolist()
 table_names = list(itertools.chain(*table_names))
-# print(query, table_names)
 
 # Dunno what this does but it looks important
 cursor.execute('CREATE EXTENSION IF NOT EXISTS postgis')
@@ -87,7 +83,7 @@ def upload_SDS_data_to_RDS(path = 'SDS/Output_w_MPO_County_Identifiers/'):
     """
     # Get all processed SDS
     all_csvs = helper.get_all_csv_filenames(path = path)
-    print("Full list of states: " + str(all_csvs))
+    # print("Full list of states: " + str(all_csvs))
 
     # Process each state's crash data one by one
     for csv in all_csvs:
@@ -162,7 +158,7 @@ def upload_geojsons_to_RDS(table_name, preprocessing_func, path = None, drop_exi
     if table_name in table_names and drop_exisiting_table:
         query = "DROP TABLE {}".format(table_name)
         cursor.execute(query)
-        print("Dropped {} since it already exists ".format(table_name))
+        # print("Dropped {} since it already exists ".format(table_name))
 
     # gdf = preprocess_geojsons.combine_geojsons_to_single_gdf(path)
     # gdf = combine_geojsons_to_single_gdf(single_geojson_path = "Shapefiles/census_tracts.geojson")

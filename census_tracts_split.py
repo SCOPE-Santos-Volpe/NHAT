@@ -58,7 +58,7 @@ def categorize_tracts_by_state(tracts):
             state_dict[state_name] = []
         state_dict[state_name].append(tracts['features'][i])
 
-    print("Finished categorizing census tracts into different states")
+    # print("Finished categorizing census tracts into different states")
 
     return state_dict
 
@@ -83,7 +83,7 @@ def write_files(state_dict, d_state_name2initial):
         if state_name in d_state_name2initial:
             label = d_state_name2initial[state_name]
         with open(f"Shapefiles/census_tracts_by_state/census_tract_{label}.geojson", "w") as outfile:
-            print("writing to file for ", state_name)
+            # print("writing to file for ", state_name)
             outfile.write(string)
 
 def shp_2_geojson(shp_path = 'Shapefiles/raw_shapefiles/census_tracts_raw', geojson_path = 'Shapefiles/census_tracts.geojson'):
