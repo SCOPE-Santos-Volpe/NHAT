@@ -6,7 +6,7 @@ Docstring format is [Google Python Style Guide](https://github.com/google/styleg
 
 Note: This is not a complete list of files. This is all the files with code that is used in the final app.
 
-### [`generate_and_upload_everything.py ](generate_and_upload_everything.py)
+### [`generate_and_upload_everything.py`](generate_and_upload_everything.py)
 This file generates (or regenerates) all of the structured data from the raw data, and uploads all of the data to the RDS.
 
 Booleans do_uploading and do_generating select whether to upload and/or generate data.
@@ -37,7 +37,7 @@ Main function is combine_SDS_datasets. Helper functions take the folder path and
 This file is to hold a bunch of useful helper functions for preprocessing so that they can be imported into any file.
 
 
-### ['AWS/upload_data_to_RDS.py`](AWS/upload_data_to_RDS.py)
+### [`AWS/upload_data_to_RDS.py`](AWS/upload_data_to_RDS.py)
 Functions to upload each type of table to the relational database.
 
 
