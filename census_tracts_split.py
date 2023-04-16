@@ -2,6 +2,8 @@
 """
 import json
 import helper
+import geopandas as gpd
+import os
 
 def load_states(path='states.csv'):
     """Loads state info and returns a dictionary mapping state names to state initial.
@@ -26,6 +28,7 @@ def load_all_tracts_geojson(path='Shapefiles/census_tracts.geojson'):
     Returns:
         A dictionary containing the geojson information.
     """
+
     # Opening JSON file
     f = open(path)
 
@@ -69,6 +72,10 @@ def write_files(state_dict, d_state_name2initial):
     Returns:
         none
     """
+    outdir = 'Shapefiles/census_tracts_by_state/'
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
+
     for state_name in state_dict.keys():
         string = '{"type":"FeatureCollection","name":"census_tracts_split","features":' + json.dumps(state_dict[state_name]) + '}'
 
@@ -79,6 +86,9 @@ def write_files(state_dict, d_state_name2initial):
             print("writing to file for ", state_name)
             outfile.write(string)
 
+def shp_2_geojson(shp_path = 'Shapefiles/raw_shapefiles/census_tracts_raw', geojson_path = 'Shapefiles/census_tracts.geojson'):
+    shp_file = gpd.read_file(shp_path)
+    shp_file.to_file(geojson_path, driver='GeoJSON')
 
 def split_census_tracts():
     """Main function combining each of the above helper functions.
@@ -90,6 +100,11 @@ def split_census_tracts():
         none
     """
     d_state_name2initial = load_states()
+
+    shp_2_geojson()
+    # This is cursed. We're reading a shapefile and writing to a geojson, then loading the geojson as a json
+    # This happened cuz we had the json state splitter written, and we didn't go back and do this better
+    # Sorry
 
     tracts = load_all_tracts_geojson()
 

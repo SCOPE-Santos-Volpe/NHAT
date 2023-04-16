@@ -8,11 +8,16 @@ import geopandas as gpd
 import helper
 import preprocess_utils
 
-def census_tract_shp_2_geojson(shp_path = 'Justice40/usa/usa.shp', geojson_path = 'Shapefiles/usa.geojson'):
-    shp_file = gpd.read_file(shp_path)
-    shp_file.to_file(geojson_path, driver='GeoJSON')
-
 def preprocess_justice40_data(path = "Justice40/justice_40_communities.csv", output_path = "Justice40/justice_40_communities_clean"):
+    """Load and preprocess Justice40 data.
+
+    Args:
+        path: a string path pointing to the base data
+        output_path: a string path pointing to where to save the updated data
+
+    Returns:
+        A `pd.DataFrame` with the cleaned Justice40 data
+    """
     # Load the Justice40 data
     df = helper.load_df_from_csv(path = path, low_memory = False)
 
@@ -55,5 +60,5 @@ def preprocess_justice40_data(path = "Justice40/justice_40_communities.csv", out
     return df
 
 if __name__ == "__main__":
-    # preprocess_census_tract_geojsons()
+    # census_tract_shp_2_geojson()
     preprocess_justice40_data()

@@ -39,3 +39,18 @@ This file is to hold a bunch of useful helper functions for preprocessing so tha
 
 ### ['AWS/upload_data_to_RDS.py`](AWS/upload_data_to_RDS.py)
 Functions to upload each type of table to the relational database.
+
+
+## Base Data Files & Process Overview
+
+FARS/FARS CSVs/* > preprocess_FARS_data.py > FARS/FARS_w_MPO_County_Identifiers.csv
+
+SDS/Data/* > preprocess_SDS_data.py > SDS/Output/*
+
+Justice40/justice_40_communities.csv > preprocess_Justice40_data.py > Justice40/justice_40_communities_clean.csv
+
+? > ? > Shapefiles/mpo_boundaries_by_state/*
+
+? > ? > Shapefiles/county_by_state/*
+
+Shapefiles/raw_shapefiles/census_tracts_raw > census_tracts_split.py > Shapefiles/census_tracts_by_state/*

@@ -85,37 +85,43 @@ def change_gdf_geometry_to_geom(gdf: gpd.GeoDataFrame):
     gdf.drop(columns='geometry', axis=1, inplace=True)
     return gdf
 
-def preprocess_state_boundaries_df(gdf: gpd.GeoDataFrame):
+
+
+
+
+
+def preprocess_state_boundaries_df(path = 'Shapefiles/raw_shapefiles/states_raw'):
     """Preprocesses a GeoDataFrame containing state boundaries.
 
     Args:
-        gdf: a GeoDataFrame, which should contain state boundaries
+        path: a string pointing to a shapefile folder which should contain state boundaries
 
     Returns:
         A processed GeoDataFrame with state boundaries
     """
+
+    gdf = gpd.read_file(path)
+
+    gdf = gdf.rename(columns = {"STATEFP": "STATE_ID",
+                                "NAME": "STATE_NAME"})
+    # gdf = gdf.drop(columns=['LSAD', 'GEO_ID', 'CENSUSAREA'])
+    gdf = gdf[["STATE_ID","STATE_NAME","geometry"]]
     # Change STATE_ID column type to int
     # Needs both conversions for some reason
-    gdf['STATE'] = gdf['STATE'].astype(str).astype(int)
-    gdf = gdf.rename(columns = {"STATE": "STATE_ID",
-                                "NAME": "STATE_NAME"})
-    gdf = gdf.drop(columns=['LSAD', 'GEO_ID', 'CENSUSAREA'])
+    gdf['STATE_ID'] = gdf['STATE_ID'].astype(str).astype(int)
     # NOTE: DOESN'T HAVE STATE_INITIAL
-    # print(gdf.columns)
     return gdf
 
-def preprocess_mpo_boundaries_df(gdf: gpd.GeoDataFrame ):
+def preprocess_mpo_boundaries_df(path = 'Shapefiles/raw_shapefiles/mpo_raw'):
     """Preprocesses a GeoDataFrame containing MPO boundaries.
 
     Args:
-        gdf: a GeoDataFrame, which should contain MPO boundaries
+        path: a string pointing to a shapefile folder which should contain MPO boundaries
 
     Returns:
         A processed GeoDataFrame with MPO boundaries
     """
-
-    # Drop unnecessary columns
-    gdf = gdf.drop(columns=['ID', 'AREA', 'DATA'])
+    gdf = gpd.read_file(path)
 
     # Process state initial into ID and name
     gdf = gdf.rename(columns={ "STATE": "STATE_INITIAL"})
@@ -132,21 +138,22 @@ def preprocess_mpo_boundaries_df(gdf: gpd.GeoDataFrame ):
                                 "MPO_NAME"            : str
     }
     gdf = gdf.astype(convert_column_type_dict)
-
+    print(gdf.columns)
     return gdf
 
-def preprocess_county_boundaries_df(gdf: gpd.GeoDataFrame ):
+def preprocess_county_boundaries_df(path = 'Shapefiles/raw_shapefiles/counties_raw'):
     """Preprocesses a GeoDataFrame containing county boundaries.
 
     Args:
-        gdf: a GeoDataFrame, which should contain county boundaries
+        path: a string pointing to a shapefile folder which should contain county boundaries
 
     Returns:
         A processed GeoDataFrame with county boundaries
     """
 
-    # Drop unnecessary columns
-    gdf = gdf.drop(columns=['COUNTYNS', 'AFFGEOID', 'GEOID', 'LSAD', 'ALAND', 'AWATER'])
+    # Goal: ['STATE_ID', 'STATE_NAME', 'COUNTY_ID', 'COUNTY_NAME', 'geometry']
+
+    gdf = gpd.read_file(path)
 
     # Clean up some column names
     gdf = gdf.rename(columns={  "STATEFP": "STATE_ID", 
@@ -171,18 +178,22 @@ def preprocess_county_boundaries_df(gdf: gpd.GeoDataFrame ):
                                 "COUNTY_NAME"         : str
     }
     gdf = gdf.astype(convert_column_type_dict)
-
+    print(gdf.columns)
     return gdf
 
-def preprocess_census_tract_boundaries_df(gdf: gpd.GeoDataFrame ):
-    """Preprocesses a GeoDataFrame containing census tract boundaries.
+def preprocess_census_tract_boundaries_df(path = 'Shapefiles/census_tracts_by_state/'):
+    """Loads a geodataframe or folder of geodataframes containing census tract boundaries, and preprocesses them.
+
+    Can do the full folder, but uploads time out doing all the tracts at once.
 
     Args:
-        gdf: a GeoDataFrame, which should contain census tract boundaries
+        path: a path to a geodataframe or folder of geodataframes containing census tract boundaries
 
     Returns:
         A processed GeoDataFrame with census tract boundaries
     """
+
+    gdf = combine_geojsons_to_single_gdf(path)
 
     # Rename unclear columns
     renames = {
@@ -285,28 +296,30 @@ def preprocess_HIN_df(gdf: gpd.GeoDataFrame):
 if __name__ == "__main__":
     # A bunch of stuff, this file should not really be run as main other than for testing
 
-    gdf = combine_geojsons_to_single_gdf(path = "Shapefiles/state.geojson")
-    gdf = preprocess_state_boundaries_df(gdf)
-    polygon_gdf, multipolygon_gdf = separate_gdf_into_polygon_multipolygon(gdf)
+    # gdf = combine_geojsons_to_single_gdf(path = "_Shapefiles/state.geojson")
+    # gdf = preprocess_state_boundaries_df(gdf)
+    # polygon_gdf, multipolygon_gdf = separate_gdf_into_polygon_multipolygon(gdf)
 
-    gdf = combine_geojsons_to_single_gdf(path = "Shapefiles/county_by_state/")
-    gdf = preprocess_county_boundaries_df(gdf)
-    polygon_gdf, multipolygon_gdf = separate_gdf_into_polygon_multipolygon(gdf)
+    # gdf = combine_geojsons_to_single_gdf(path = "_Shapefiles/mpo_boundaries_by_state/")
+    # gdf = preprocess_mpo_boundaries_df(gdf)
+    # polygon_gdf, multipolygon_gdf = separate_gdf_into_polygon_multipolygon(gdf)
 
-    gdf = combine_geojsons_to_single_gdf(path = "Shapefiles/mpo_boundaries_by_state/")
-    gdf = preprocess_mpo_boundaries_df(gdf)
-    polygon_gdf, multipolygon_gdf = separate_gdf_into_polygon_multipolygon(gdf)
+    # gdf = combine_geojsons_to_single_gdf(path = "_Shapefiles/county_by_state/")
+    # gdf = preprocess_county_boundaries_df(gdf)
+    # polygon_gdf, multipolygon_gdf = separate_gdf_into_polygon_multipolygon(gdf)
 
-    gdf = combine_geojsons_to_single_gdf(path = "Shapefiles/census_tracts_by_state/census_tract_CO.geojson")
-    gdf = preprocess_census_tract_boundaries_df(gdf)
+
+    # gdf = combine_geojsons_to_single_gdf(path = "_Shapefiles/census_tracts_by_state/census_tract_AK.geojson")
+    gdf = preprocess_census_tract_boundaries_df('Shapefiles/census_tracts_by_state/census_tract_AK.geojson')
+    # print(gdf.columns)
     polygon_gdf, multipolygon_gdf = separate_gdf_into_polygon_multipolygon(gdf)
     # print("saving modified census tracts to file")
     # gdf.to_file('Shapefiles/clean_geojsons/census_tracts.geojson', driver='GeoJSON')
 
     # helper.write_geodataframe_to_file(gdf, "filename")
 
-    gdf = combine_geojsons_to_single_gdf(path = "Shapefiles/HIN/alameda_000_threshold_hin.geojson")
-    gdf = preprocess_HIN_df(gdf)
-    polygon_gdf, multipolygongdf = separate_gdf_into_polygon_multipolygon(gdf)
+    # gdf = combine_geojsons_to_single_gdf(path = "Shapefiles/HIN/alameda_000_threshold_hin.geojson")
+    # gdf = preprocess_HIN_df(gdf)
+    # polygon_gdf, multipolygongdf = separate_gdf_into_polygon_multipolygon(gdf)
 
 

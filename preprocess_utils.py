@@ -104,3 +104,4 @@ def connect_to_sqlalchemy():
     conn_string = f.read()
     db = create_engine(conn_string)
     return db.connect()
+

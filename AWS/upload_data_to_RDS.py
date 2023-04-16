@@ -30,6 +30,7 @@ import helper
 import preprocess_geojsons
 from pathlib import Path
 import preprocess_utils
+import time
 
 # Establish sqlalchemy connection
 sqlalchemy_conn = preprocess_utils.connect_to_sqlalchemy()
@@ -163,12 +164,12 @@ def upload_geojsons_to_RDS(table_name, preprocessing_func, path = None, drop_exi
         cursor.execute(query)
         print("Dropped {} since it already exists ".format(table_name))
 
-    gdf = preprocess_geojsons.combine_geojsons_to_single_gdf(path)
+    # gdf = preprocess_geojsons.combine_geojsons_to_single_gdf(path)
     # gdf = combine_geojsons_to_single_gdf(single_geojson_path = "Shapefiles/census_tracts.geojson")
     # gdf = preprocess_census_tract_boundaries_df(gdf)
 
-    print("preprocessing")
-    gdf = preprocessing_func(gdf)
+    # print("preprocessing")
+    gdf = preprocessing_func(path)
     polygon_gdf, multipoly_gdf = preprocess_geojsons.separate_gdf_into_polygon_multipolygon(gdf)
 
     # Upload polygon_gdf to RDS
@@ -181,11 +182,12 @@ def upload_geojsons_to_RDS(table_name, preprocessing_func, path = None, drop_exi
     
     print("uploaded {} table to RDS".format(table_name))
 
-def upload_state_boundaries_to_RDS(path = "Shapefiles/state.geojson"):
+
+def upload_state_boundaries_to_RDS(path = "Shapefiles/raw_shapefiles/states_raw"):
     """Uploads the state boundaries to RDS.
 
     Args:
-        path: a string containing the path to the state boundaries geojson
+        path: a string containing the path to the state boundaries shapefile
 
     Returns:
         None
@@ -196,11 +198,11 @@ def upload_state_boundaries_to_RDS(path = "Shapefiles/state.geojson"):
         table_name = "boundaries_state"
     upload_geojsons_to_RDS(table_name = table_name, preprocessing_func = preprocess_geojsons.preprocess_state_boundaries_df, path = path)
 
-def upload_mpo_boundaries_to_RDS(path = "Shapefiles/mpo_boundaries_by_state/"):
+def upload_mpo_boundaries_to_RDS(path = "Shapefiles/raw_shapefiles/mpo_raw"):
     """Uploads the MPO boundaries to RDS.
 
     Args:
-        path: a string containing the path to the MPO boundaries geojson
+        path: a string containing the path to the MPO boundaries shapefile
 
     Returns:
         None
@@ -211,11 +213,11 @@ def upload_mpo_boundaries_to_RDS(path = "Shapefiles/mpo_boundaries_by_state/"):
         table_name = "boundaries_mpo"
     upload_geojsons_to_RDS(table_name = table_name, preprocessing_func = preprocess_geojsons.preprocess_mpo_boundaries_df, path = path)
 
-def upload_county_boundaries_to_RDS(path = "Shapefiles/county_by_state/"):
+def upload_county_boundaries_to_RDS(path = "Shapefiles/raw_shapefiles/counties_raw"):
     """Uploads the county boundaries to RDS.
 
     Args:
-        path: a string containing the path to the county boundaries geojson
+        path: a string containing the path to the county boundaries shapefile
 
     Returns:
         None
@@ -237,17 +239,19 @@ def upload_census_tract_boundaries_to_RDS(path = "Shapefiles/census_tracts_by_st
     """
     if(testing):
         table_name = "test"
+        query = "DROP TABLE {}".format(table_name)
+        cursor.execute(query)
     else:
         table_name = "boundaries_census_tract_v3"
 
 
     # Deal with census tracts separately
     geojson_paths = helper.get_all_filenames(path = path, pattern = '*.geojson')
-    print("got all geojson paths")
+    # print("got all geojson paths")
 
-    print(len(geojson_paths))
+    # print(len(geojson_paths))
     for _, path in enumerate(geojson_paths):
-        upload_geojsons_to_RDS(table_name = table_name, preprocessing_func = preprocess_geojsons.preprocess_census_tract_boundaries_df, single_geojson_path = path, drop_exisiting_table = False)
+        upload_geojsons_to_RDS(table_name = table_name, preprocessing_func = preprocess_geojsons.preprocess_census_tract_boundaries_df, path = path, drop_exisiting_table = False)
         print("uploaded: ", path)
 
 
@@ -255,7 +259,7 @@ def upload_census_tract_boundaries_to_RDS(path = "Shapefiles/census_tracts_by_st
 if __name__=="__main__":
 
 
-    upload_FARS_data_to_RDS()
+    # upload_FARS_data_to_RDS()
     # upload_SDS_data_to_RDS()
     # upload_Justice40_data_to_RDS()
     # upload_states_to_RDS()
@@ -263,6 +267,6 @@ if __name__=="__main__":
     # upload_state_boundaries_to_RDS()
     # upload_mpo_boundaries_to_RDS()
     # upload_county_boundaries_to_RDS()
-    # upload_census_tract_boundaries_to_RDS()
+    upload_census_tract_boundaries_to_RDS()
 
 
