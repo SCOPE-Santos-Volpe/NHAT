@@ -21,6 +21,7 @@ import psycopg2
 import pandas as pd
 import itertools
 import os, sys
+import json
 
 # To import helper
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -142,7 +143,7 @@ def upload_states_to_RDS(path: str = 'states.csv') -> None:
             index=False)
     print("uploaded states data")
 
-def upload_geojsons_to_RDS(table_name: str, preprocessing_func: function, path: str = None, drop_exisiting_table: bool = True) -> None:
+def upload_geojsons_to_RDS(table_name: str, preprocessing_func, path: str = None, drop_exisiting_table: bool = True) -> None:
     """Uploads shapefiles to RDS.
 
     Args:
@@ -250,12 +251,45 @@ def upload_census_tract_boundaries_to_RDS(path: str = "Shapefiles/census_tracts_
         upload_geojsons_to_RDS(table_name = table_name, preprocessing_func = preprocess_geojsons.preprocess_census_tract_boundaries_df, path = path, drop_exisiting_table = False)
         print("uploaded: ", path)
 
+def upload_hin_to_RDS(path = "Shapefiles/hin/new_hins"):
+    """
+    Take generated hin and upload it to the RDS
+    """
 
+    # Get all HIN paths
+    hin_paths = helper.get_all_filenames(path = path, pattern = '*.geojson')
+    print("got all hin paths")
+
+    # Get initial hin id
+    if "hin_properties_test" not in table_names:
+        hin_id = 0
+    else:
+        query = """SELECT MAX("ID") FROM hin_properties_test;"""
+        cursor.execute(query)
+        result = cursor.fetchall()
+        hin_id = int(result[0][0]) + 1
+
+    print(len(hin_paths))
+    for _, path in enumerate(hin_paths):
+        print("PATH: ", path)
+        properties_df, gdf = preprocess_geojsons.preprocess_HIN_df(path, hin_id)
+
+
+        print(gdf.columns)
+        print(gdf.head)
+        print(len(gdf))
+
+        properties_df.to_sql("hin_properties_test", con=sqlalchemy_conn, if_exists='append', index=False)
+
+        table_name = "hin_test"
+        gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False, dtype={'geom': Geometry(geometry_type='LINESTRING', srid=4269)})
+
+        hin_id += 1
 
 if __name__=="__main__":
 
 
-    upload_FARS_data_to_RDS()
+    # upload_FARS_data_to_RDS()
     # upload_SDS_data_to_RDS()
     # upload_Justice40_data_to_RDS()
     # upload_states_to_RDS()
@@ -266,3 +300,4 @@ if __name__=="__main__":
     # upload_census_tract_boundaries_to_RDS()
 
 
+    upload_hin_to_RDS()

@@ -7,7 +7,7 @@ import helper
 import math
 import preprocess_utils
 import os
-
+import json
 from sqlalchemy import text
 
 # Establish sqlalchemy connection
@@ -284,12 +284,45 @@ def preprocess_census_tract_boundaries_df(path: str = 'Shapefiles/census_tracts_
 
     return gdf
 
-def preprocess_HIN_df(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+def preprocess_HIN_df(path, hin_id):
     """Waiting on Sam and Lilo to provide this
+
+    Load the HIN properties (and place into a Pandas Dataframe with a single row  
+    Properties: ['state_id', 'county_id', 'mpo_id', 'threshold', 'length', 'num_crashes',
+                 'total_length', 'total_crashes', 'percent_length', 'percent_crashes']
+
     """
+    # path = "Shapefiles/HIN/alameda_000_threshold_hin.geojson"
 
-    return gdf
+    def add_hin_id(row: pd.Series, hin_id):
+        return hin_id
 
+    # Load the HIN properties (and place into a Pandas Dataframe with a single row  
+    f = open(path)
+    data = json.load(f)
+    print("FEATURE COLLECTION PROPERTIES: ", data["properties"])
+    hin_properties_df = pd.DataFrame.from_dict([data["properties"]])
+    hin_properties_df.columns = map(str.upper, hin_properties_df.columns)
+    # Add ID column
+    hin_properties_df['ID'] = hin_properties_df.apply(lambda row: add_hin_id(row, hin_id), axis=1)
+    print("HIN PROPERTY COLUMNS: ", hin_properties_df.columns)
+
+    # Load the HIN LineStrings into a geodataframe 
+    gdf = helper.load_gdf_from_geojson(path)     # load geojson into a geodataframe
+    # Cast the type of the geodataframe to linestring
+    gdf = gpd.GeoDataFrame(gdf[gdf['geometry'].geom_type == "LineString"])
+    gdf = gdf[['type', 'geometry']]
+    gdf = change_gdf_geometry_to_geom(gdf)
+    # # Trim gdf to geom column
+    # gdf = gdf
+    # Add id column
+    gdf['ID'] = gdf.apply(lambda row: add_hin_id(row, hin_id), axis=1)
+
+
+    # Add a singular column for the identifier
+    # Add the 
+
+    return hin_properties_df, gdf
 
 # if __name__ == "__main__":
     # A bunch of stuff, this file should not really be run as main other than for testing
@@ -319,5 +352,3 @@ def preprocess_HIN_df(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     # gdf = combine_geojsons_to_single_gdf(path = "Shapefiles/HIN/alameda_000_threshold_hin.geojson")
     # gdf = preprocess_HIN_df(gdf)
     # polygon_gdf, multipolygongdf = separate_gdf_into_polygon_multipolygon(gdf)
-
-
