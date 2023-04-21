@@ -285,11 +285,14 @@ def preprocess_census_tract_boundaries_df(path: str = 'Shapefiles/census_tracts_
     return gdf
 
 def preprocess_HIN_df(path, hin_id):
-    """Waiting on Sam and Lilo to provide this
+    """Takes a path to a generated HIN and the associated HIN_id and preprocesses the hin at the given path. 
 
-    Load the HIN properties (and place into a Pandas Dataframe with a single row  
-    Properties: ['state_id', 'county_id', 'mpo_id', 'threshold', 'length', 'num_crashes',
-                 'total_length', 'total_crashes', 'percent_length', 'percent_crashes']
+        Args:
+            path: a path to a `.geojson` 
+
+        Returns: 
+            hin_properties_df: a single row `pd.DataFrame` containing properties of the HIN
+            hin_df: a processed `gpd.GeoDataFrame` with polylines a
 
     """
     # path = "Shapefiles/HIN/alameda_000_threshold_hin.geojson"
