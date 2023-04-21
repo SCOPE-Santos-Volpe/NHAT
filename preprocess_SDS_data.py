@@ -45,9 +45,7 @@ Desired columns:
         C - Snowy / Icy / Slush
         D - Slippery (Muddy, Oily, etc.)
         -  - Not Stated
-    ROAD_NAME :         str 
-    # ROAD_TYPE :         int (functional class)
-    # VEHC_DIR :          char (E/W/N/S)
+    ROAD_NAME :         str
     IS_INTERSECTION :   int (one-hot)
     LAT:                int
     LON:                int
