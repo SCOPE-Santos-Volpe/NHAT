@@ -199,6 +199,7 @@ function makeMap() {
             // // if (map_state_codes_to_nums[state_of_mpo] != clicked_state) {
             // // TODO: what to do here for map navigation. For now do exact same as if state is highlighted
             var mpo_name = this.feature.properties.MPO_NAME;
+            var mpo_id = this.feature.properties.MPO_ID;
             var mpo_not_county_bool = true;
 
             //show in the tab what county the users clicked
@@ -217,7 +218,7 @@ function makeMap() {
             // Get the geojson for the selected MPO
             $.getJSON("/get_mpo_boundaries_by_state_id_and_mpo_name/"+clicked_state+mpo_name, function(obj) {
               const mpogeojson = obj;
-              setSelectionToMap(mpo_name, mpo_not_county_bool, mpogeojson, selectedLayer, clicked_state);
+              setSelectionToMap(mpo_name, mpo_id, mpo_not_county_bool, mpogeojson, selectedLayer, clicked_state);
               console.log("mpo boundaries for state", clicked_state, "loaded");
             });
 
@@ -229,13 +230,6 @@ function makeMap() {
       mpo_boundaries.addLayer(geojson_mpo_boundaries_layer);
       return geojson_mpo_boundaries_layer;
     }
-
-    // d3.json('https://raw.githubusercontent.com/Santos-Volpe-SCOPE/Santos-Volpe-SCOPE-Project/app-framework/hin_app/mpo_data/mpo_boundaries.geojson', function(data) {
-    //   const geojson = data;
-    //   var clicked_state = "NONE";
-    //   setMposToMap(geojson, clicked_state);
-    //   console.log("mpo boundaries loaded");
-    // });
 
     // -----------------------------------------------------------------------------------------
     // LOAD GEOJSON OF COUNTIES
@@ -316,6 +310,7 @@ function makeMap() {
             // if (state_of_county != clicked_state) {
             // // TODO: what to do here for map navigation. For now do exact same as if state is highlighted
             var county_name = this.feature.properties.COUNTY_NAME;
+            var county_id = this.feature.properties.COUNTY_ID;
             var mpo_not_county_bool = false;
 
             //show in the tab what county the users clicked
@@ -335,7 +330,7 @@ function makeMap() {
             // Get the geojson for the selected MPO/county
             $.getJSON("/get_county_boundaries_by_state_id_and_county_name/"+clicked_state+county_name, function(obj) {
               const county_geojson = obj;
-              setSelectionToMap(county_name, mpo_not_county_bool, county_geojson, selectedLayer, clicked_state);
+              setSelectionToMap(county_name, county_id, mpo_not_county_bool, county_geojson, selectedLayer, clicked_state);
               console.log("county boundaries for state", county_name, "loaded");
             });
             
@@ -376,8 +371,9 @@ function makeMap() {
     // -----------------------------------------------------------------------------------------
     // LOAD LAYER HIGHLIGHTING THE SELECTED AREA
 
-    function setSelectionToMap(selected_feature_name, mpo_not_county_bool, geojson, thisLayer, clicked_state) {
-      console.log("geojson", selected_feature_name);
+    function setSelectionToMap(selected_feature_name, selected_feature_id, mpo_not_county_bool, geojson, thisLayer, clicked_state) {
+      console.log("checking the id is right", selected_feature_id);
+
       var geojson_selection_boundaries_layer = L.geoJSON(geojson, {
         style: function (feature) {
           if (mpo_not_county_bool) {
@@ -479,7 +475,7 @@ function makeMap() {
       }
 
       backButtonRegionClicked();
-      confirmClicked(mpo_not_county_bool, selected_feature_name, clicked_state);
+      confirmClicked(mpo_not_county_bool, selected_feature_name, selected_feature_id, clicked_state);
 
       // console.log("geojson_selection_boundaries_layer", geojson_selection_boundaries_layer);
       selection_boundaries.addLayer(geojson_selection_boundaries_layer);
@@ -490,7 +486,7 @@ function makeMap() {
 
     //------------------------------------------------------------------------------------------
     // CODE WHEN CONFIRM IS CLICKED
-    function confirmClicked(mpo_not_county_bool, selected_feature_name, clicked_state){
+    function confirmClicked(mpo_not_county_bool, selected_feature_name, selected_feature_id, clicked_state){
       const conf = document.querySelector('#btnconfirm');
       conf.addEventListener("click", () => {
         document.querySelector('.back-button2').style.display = 'none';
@@ -551,6 +547,8 @@ function makeMap() {
         }
         filter_btn[1].classList.add('active');
         tab_items[1].classList.add('select_tab');
+
+        generateHIN(clicked_state, selected_feature_id);
 
       })
     }
@@ -686,7 +684,7 @@ function makeMap() {
 
     // ----------------------------------------------------------------------------------------------------
     // CODE TO CHECK WHAT DATABASE IS CLICKED
-    function generateHIN() {
+    function generateHIN(clicked_state, selected_feature_id) {
       const btn = document.querySelector('#rd-btn');        
       const radioButtons = document.querySelectorAll('input[name="database"]');
       var slider = document.getElementById("myRange");
@@ -718,9 +716,11 @@ function makeMap() {
         // show the output:
         output.innerText = selectedData ? `You selected ${selectedData} and ${slider.value}` : `You haven't selected any database`;
       
+        console.log("IDDDDD", selected_feature_id);
+
         let threshold;
         if (slider.value == 0){
-          threshold = 0;
+          threshold = parseFloat(0).toFixed(1);
         }
         else if (slider.value == 1){
           threshold = 0.0005;
@@ -733,13 +733,13 @@ function makeMap() {
         }
 
 
-        $.getJSON("/get_hin_by_county_id_and_properties/"+6+1+threshold, function(obj) {
+        $.getJSON("/get_hin_by_county_id_and_properties/"+clicked_state+selected_feature_id+threshold, function(obj) {
           var hin_geojson = obj;
           console.log('HIN GEOJSON INSIDE', hin_geojson);
           hinToMap(hin_geojson);
         });
 
-        $.getJSON("/get_hin_properties/"+6+1+threshold, function(obj) {
+        $.getJSON("/get_hin_properties/"+clicked_state+selected_feature_id+threshold, function(obj) {
           var hin_properties = obj;
           console.log('HIN PROPERTIES', hin_properties);
         });
@@ -780,7 +780,7 @@ function makeMap() {
         style: function (feature) {
           return {
             color: "darkblue",
-            weight: 1,
+            weight: 4,
             opacity: 0.5,
             clickable: true
           };
@@ -792,8 +792,6 @@ function makeMap() {
 
       return geojson_hin_layer;
     }
-
-    generateHIN();
  
     // ------------------------------------------------------------------------------------
     // Map behaviour

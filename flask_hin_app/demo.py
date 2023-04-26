@@ -195,6 +195,9 @@ class hin_properties(db.Model):
         self.COUNTY_ID = COUNTY_ID
         self.MPO_ID = MPO_ID
         self.MPO_ID = THRESHOLD
+    
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 @app.route('/get_sds_data_by_county/<int:state_id><string:county_name>')
 def get_sds_data_by_county(state_id, county_name):
@@ -344,7 +347,7 @@ def get_hin_by_county_id_and_properties(state_id, county_id, threshold):
 def get_hin_properties(state_id, county_id, threshold):
     print("getting hin properties for {} in # {} for threshold {}".format(state_id, county_id, threshold))
     hin_properties = get_hin_properties_from_rds(state_id, threshold = threshold, county_id = county_id)
-    return hin_properties
+    return jsonify(hin_properties.as_dict())
 
 
 # Query fars accident data by state
