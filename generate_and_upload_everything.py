@@ -32,6 +32,6 @@ if __name__ == "__main__":
 
     if(do_uploading):
         AWS.upload_data_to_RDS.upload_FARS_data_to_RDS()
-        AWS.upload_data_to_RDS.upload_SDS_data_to_RDS
+        AWS.upload_data_to_RDS.upload_SDS_data_to_RDS()
         AWS.upload_data_to_RDS.upload_Justice40_data_to_RDS()
         AWS.upload_data_to_RDS.upload_census_tract_boundaries_to_RDS()
