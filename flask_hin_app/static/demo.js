@@ -61,8 +61,7 @@ function makeMap() {
     // Extended `LayerGroup` that makes it easy to do the same for all layers of its members
     const pA = new L.FeatureGroup();
     const pB = new L.FeatureGroup();
-    const fars_points = new L.FeatureGroup();
-    const sds_points = new L.FeatureGroup();
+    const crash_points = new L.FeatureGroup();
     const selection_boundaries = new L.FeatureGroup(); // TODO: implement
     const mpo_boundaries = new L.FeatureGroup();
     const county_boundaries = new L.FeatureGroup();
@@ -84,6 +83,8 @@ function makeMap() {
 
     var SDS_renderer = L.canvas({ padding: 0.5 }); // helps to fix slowness by plotting points on a canvas rather than individual layers
 
+    var fars_layer;
+    var sds_layer;
 
 
     // ------------------------------------------------------------------------------------
@@ -101,7 +102,6 @@ function makeMap() {
     
     d3.json('https://raw.githubusercontent.com/SCOPE-Santos-Volpe/SCOPE-Santos-Volpe-Project/app-framework/hin_app/federal_hill_sales.json', function(data) { 
     // $.getJSON('../federal_hill_sales.json', function(data){
-      console.log("data", data);
 
       // Add data (from JSON data exposed as variable in sales.js) to the heatmap.js layer
       heatmapLayer.setData({
@@ -506,21 +506,21 @@ function makeMap() {
           });
           $.getJSON("/get_fars_data_by_mpo/"+clicked_state+selected_feature_name, function(obj) {
             const mpo_fars = obj;
-            farsToMap(mpo_fars);
+            fars_layer = farsToMap(mpo_fars);
             console.log("fars for ", selected_feature_name, "loaded");
           });
           if (clicked_state == 6 || clicked_state == 25){
-            console.log("IT IS CALIFORNIA!!!");
             $.getJSON("/get_sds_data_by_mpo/"+clicked_state+selected_feature_name, function(obj) {
               const mpo_sds = obj;
               console.log(mpo_sds);
-              sdsToMap(mpo_sds);
+              sds_layer = sdsToMap(mpo_sds);
               console.log("sds for ", selected_feature_name, "loaded");
             });
+
+            document.getElementById("sds").disabled = false;
           }
         }
         else {
-          console.log("aaaaaaaaa");
           $.getJSON("/get_census_tract_boundaries_by_state_id_and_county_name/"+clicked_state+selected_feature_name, function(obj) {
             const county_census = obj;
             censusToMap(county_census);
@@ -528,17 +528,17 @@ function makeMap() {
           });
           $.getJSON("/get_fars_data_by_county/"+clicked_state+selected_feature_name, function(obj) {
             const county_fars = obj;
-            farsToMap(county_fars);
+            fars_layer = farsToMap(county_fars);
             console.log("fars for ", selected_feature_name, "loaded");
           });
           //If it's california or massachusetts, load sds crashes
           if (clicked_state == 6 || clicked_state == 25){
-            console.log("IT IS CALIFORNIA!!!");
             $.getJSON("/get_sds_data_by_county/"+clicked_state+selected_feature_name, function(obj) {
               const county_sds = obj;
-              sdsToMap(county_sds);
+              sds_layer = sdsToMap(county_sds);
               console.log("sds for ", selected_feature_name, "loaded");
             });
+            document.getElementById("sds").disabled = false;
           }
         }
 
@@ -565,7 +565,7 @@ function makeMap() {
 
       layer = L.layerGroup(markers);
 
-      fars_points.addLayer(layer);
+      //fars_points.addLayer(layer);
       return layer;
     }
 
@@ -579,7 +579,7 @@ function makeMap() {
 
       layer = L.layerGroup(markers);
 
-      sds_points.addLayer(layer);
+      //sds_points.addLayer(layer);
       return layer;
     }
 
@@ -701,70 +701,96 @@ function makeMap() {
 
       btn.addEventListener("click", () => {
         map.addControl(startLayer);
-        let selectedSize;
+        let selectedData;
         for (const radioButton of radioButtons) {
             if (radioButton.checked) {
-                selectedSize = radioButton.value;
+              selectedData = radioButton.value;
                 break;
             }
         }
+        //choose what crash data to display
+        if (selectedData == "fars"){
+          crash_points.addLayer(fars_layer);
+        }
+        else if (selectedData == "sds"){
+          crash_points.addLayer(sds_layer);
+        }
         // show the output:
-        output.innerText = selectedSize ? `You selected ${selectedSize} and ${slider.value}` : `You haven't selected any database`;
-        if (slider.value == 0.000){
-          var hin_geojson = 'https://raw.githubusercontent.com/SCOPE-Santos-Volpe/SCOPE-Santos-Volpe-Project/data/hin/alameda_000_threshold_hin.json';
+        output.innerText = selectedData ? `You selected ${selectedData} and ${slider.value}` : `You haven't selected any database`;
+      
+        let threshold;
+        if (slider.value == 0){
+          threshold = 0;
         }
-        else if (slider.value == 0.001){
-          var hin_geojson = 'https://raw.githubusercontent.com/SCOPE-Santos-Volpe/SCOPE-Santos-Volpe-Project/data/hin/alameda_001_threshold_hin.json';
+        else if (slider.value == 1){
+          threshold = 0.0005;
         }
-        else if (slider.value == 0.002){
-          var hin_geojson = 'https://raw.githubusercontent.com/SCOPE-Santos-Volpe/SCOPE-Santos-Volpe-Project/data/hin/alameda_002_threshold_hin.json';
+        else if (slider.value == 2){
+          threshold = 0.001;
         }
-        else if (slider.value == 0.003){
-          var hin_geojson = 'https://raw.githubusercontent.com/SCOPE-Santos-Volpe/SCOPE-Santos-Volpe-Project/data/hin/alameda_003_threshold_hin.json';
+        else if (slider.value == 3){
+          threshold = 0.002;
         }
-        else if (slider.value == 0.004){
-          var hin_geojson = 'https://raw.githubusercontent.com/SCOPE-Santos-Volpe/SCOPE-Santos-Volpe-Project/data/hin/alameda_004_threshold_hin.json';
-        }
-        else if (slider.value == 0.005){
-          var hin_geojson = 'https://raw.githubusercontent.com/SCOPE-Santos-Volpe/SCOPE-Santos-Volpe-Project/data/hin/alameda_005_threshold_hin.json';
-        }
-        
+
+
+        $.getJSON("/get_hin_by_county_id_and_properties/"+6+1+threshold, function(obj) {
+          var hin_geojson = obj;
+          console.log('HIN GEOJSON INSIDE', hin_geojson);
+          hinToMap(hin_geojson);
+        });
+
+        $.getJSON("/get_hin_properties/"+6+1+threshold, function(obj) {
+          var hin_properties = obj;
+          console.log('HIN PROPERTIES', hin_properties);
+        });
+
         // get hin from the output
-        d3.json(hin_geojson, function(data) { 
-          let percent_road = data.properties.percent_length.toFixed(3);
-          let percent_crash = data.properties.percent_crashes.toFixed(3);
-          console.log("percent_road", percent_road);
-          console.log("percent_crash", percent_crash);
+        // d3.json(hin_geojson, function(data) { 
+        //   let percent_road = data.properties.percent_length.toFixed(2);
+        //   let percent_crash = data.properties.percent_crashes.toFixed(2);
+        //   console.log("percent_road", percent_road);
+        //   console.log("percent_crash", percent_crash);
 
-          var statVal = document.getElementById("stats");
-          var statHeader = document.getElementById("stat-header");
-          statHeader.innerText = "Statistics";
-          statVal.innerText = `${percent_crash}% of the fatal traffic crashes occur on just ${percent_road}% of the Alameda streets`;
+        //   var statVal = document.getElementById("stats");
+        //   var statHeader = document.getElementById("stat-header");
+        //   statHeader.innerText = "Statistics";
+        //   statVal.innerText = `${percent_crash}% of the fatal traffic crashes occur on just ${percent_road}% of the Alameda streets`;
 
-          const feature = L.geoJSON(data, {
-            style: function (feature) {
-              return {
-                color: "blue",
-                weight: 5,
-                opacity: 0.5,
-              };
-            },
-            onEachFeature: function (feature, layer) {
-              roadHighlight_polylineLayer.addLayer(layer);
-              const coordinates = feature.geometry.coordinates.toString();
-              // const result = coordinates.match(/[^,]+,[^,]+/g);
-              //const name = feature.properties.name.toString();
-              //console.log("street: ", name)
-              // layer.bindPopup(
-              //   "<span>Name:<br>" + name + "</span>"
-              //   // "<span>Coordinates:<br>" + result.join("<br>") + "</span>"
-              // );
-            },
-          });
-          map.addLayer(roadHighlight_polylineLayer);
-        }); 
+        //   const feature = L.geoJSON(data, {
+        //     style: function (feature) {
+        //       return {
+        //         color: "blue",
+        //         weight: 5,
+        //         opacity: 0.5,
+        //       };
+        //     },
+        //     onEachFeature: function (feature, layer) {
+        //       roadHighlight_polylineLayer.addLayer(layer);
+        //       const coordinates = feature.geometry.coordinates.toString();
+        //     },
+        //   });
+        //   map.addLayer(roadHighlight_polylineLayer);
+        // }); 
 
       });
+    }
+
+    function hinToMap(geojson){
+      var geojson_hin_layer = L.geoJSON(geojson, {
+        style: function (feature) {
+          return {
+            color: "darkblue",
+            weight: 1,
+            opacity: 0.5,
+            clickable: true
+          };
+        }
+      });
+
+      roadHighlight_polylineLayer.addLayer(geojson_hin_layer);
+      map.addLayer(roadHighlight_polylineLayer);
+
+      return geojson_hin_layer;
     }
 
     generateHIN();
@@ -845,11 +871,7 @@ function makeMap() {
     const overlayMaps = {
       //"Circle Example": pA,
       //"Pin Example": pB,
-      "FARS Crashes": fars_points,
-      "SDS Crashes": sds_points,
-      // "MPO Boundaries": mpo_boundaries,
-      // "County Boundaries": county_boundaries,
-      // "State Boundaries": state_boundaries,
+      "Crash Points": crash_points,
       //"Heatmap Example": heatmapLayer,
       "Census Boundaries": census_boundaries,
       "HIN": roadHighlight_polylineLayer,
@@ -1286,17 +1308,6 @@ var layer = L.layerGroup();
 This function gets the FARS data by state by querying the python file
 It also plots the fars data on the map. 
 */
-function getFarsDataByState(state_id) {
-    $.getJSON("/get_fars_data/" + state_id, function(obj) {
-       console.log ("fars data: ", obj.data)
-        var markers = obj.data.map(function(arr) {
-            return L.circleMarker([arr[0], arr[1]], {radius: 2, color: 'red'}).bindPopup("Coordinates:<br>" + [arr[0], arr[1]]);
-        });
-        map.removeLayer(layer);
-        layer = L.layerGroup(markers);
-        map.addLayer(layer);
-    });
-}
 
 function getStateBoundariesByState(state_id) {
   $.getJSON("/get_state_boundaries_by_state_id/" + state_id, function(obj) {
@@ -1345,7 +1356,7 @@ $(function() {
     map = makeMap();
     // make_sidebar();
     make_tab();
-    getFarsDataByState('0');
+    //getFarsDataByState('0');
 
     // $('#statesel').change(function() {
     //     var val = $('#statesel option:selected').val();

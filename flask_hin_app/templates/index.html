@@ -126,28 +126,26 @@
         <h4>
           Database
         </h4>
-        <p> Choose a database</p>
         <div>
           <div class="radio-box">
             <input type="radio" name="database" value="fars" id="fars" checked>
             <label for = "fars"> FARS </label>
           </div>
           <div>
-            <input type="radio" name="database" value="sds" id="sds" >
+            <input type="radio" name="database" value="sds" id="sds" disabled>
             <label for = "sds"> SDS</label>
           </div>
-          <div>
+          <!-- <div>
             <input type="radio" name="database" value="own" id="own" disabled>
             <label for = "own"> Your Own Database</label>
-          </div>
+          </div> -->
         </div>
         <h4>
           Threshold
         </h4>
-        <p> Threshold will change the statistics. </p>
 
         <div class="slidecontainer">
-          <input type="range" min="0.000" max="0.005" value="0.003" step = "0.001" class="slider" id="myRange">
+          <input type="range" min="0" max="3" value="0" step = "1" class="slider" id="myRange">
         </div>
         <div class="slider-value" id = "slidervalue"></div>
 
