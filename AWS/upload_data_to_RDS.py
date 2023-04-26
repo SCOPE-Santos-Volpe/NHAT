@@ -251,7 +251,7 @@ def upload_census_tract_boundaries_to_RDS(path: str = "Shapefiles/census_tracts_
         upload_geojsons_to_RDS(table_name = table_name, preprocessing_func = preprocess_geojsons.preprocess_census_tract_boundaries_df, path = path, drop_exisiting_table = False)
         print("uploaded: ", path)
 
-def upload_hin_to_RDS(path = "Shapefiles/hin/new_hins"):
+def upload_hin_to_RDS(path = "Shapefiles/hin/state_6"):
     """
     Take generated hin and upload it to the RDS
     """
@@ -261,7 +261,7 @@ def upload_hin_to_RDS(path = "Shapefiles/hin/new_hins"):
     print("got all hin paths")
 
     # Get initial hin id
-    if "hin_properties_test" not in table_names:
+    if "hin_properties" not in table_names:
         hin_id = 0
     else:
         query = """SELECT MAX("ID") FROM hin_properties_test;"""
@@ -279,9 +279,9 @@ def upload_hin_to_RDS(path = "Shapefiles/hin/new_hins"):
         print(gdf.head)
         print(len(gdf))
 
-        properties_df.to_sql("hin_properties_test", con=sqlalchemy_conn, if_exists='append', index=False)
+        properties_df.to_sql("hin_properties", con=sqlalchemy_conn, if_exists='append', index=False)
 
-        table_name = "hin_test"
+        table_name = "hin"
         gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False, dtype={'geom': Geometry(geometry_type='LINESTRING', srid=4269)})
 
         hin_id += 1

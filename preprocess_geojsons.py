@@ -314,7 +314,7 @@ def preprocess_HIN_df(path, hin_id):
     gdf = helper.load_gdf_from_geojson(path)     # load geojson into a geodataframe
     # Cast the type of the geodataframe to linestring
     gdf = gpd.GeoDataFrame(gdf[gdf['geometry'].geom_type == "LineString"])
-    gdf = gdf[['type', 'geometry']]
+    gdf = gdf[['type', 'MPO_ID', 'IN_J40', 'geometry']]
     gdf = change_gdf_geometry_to_geom(gdf)
     # # Trim gdf to geom column
     # gdf = gdf
