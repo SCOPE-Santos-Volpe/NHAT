@@ -92,7 +92,6 @@ def get_fars_data_by_county(state_id, county_name):
     fars_state_county_data = FARS.query.filter(FARS.STATE_ID == state_id).\
                                         filter(FARS.COUNTY_NAME == county_name).all()
     fars_state_county_coords = [[point.LAT, point.LON] for point in fars_state_county_data]
-    print(fars_state_county_coords)
     return jsonify({"data": fars_state_county_coords})
 
 
@@ -103,7 +102,6 @@ def get_fars_data_by_mpo(state_id, mpo_name):
     fars_state_mpo_data = FARS.query.filter(FARS.STATE_ID == state_id).\
                                         filter(FARS.MPO_NAME == mpo_name).all()
     fars_state_mpo_data_coords = [[point.LAT, point.LON] for point in fars_state_mpo_data]
-    print(fars_state_mpo_data_coords)
     return jsonify({"data": fars_state_mpo_data_coords})
 
 
@@ -209,7 +207,6 @@ def get_sds_data_by_county(state_id, county_name):
             SDS_coords = [[point.LAT, -point.LON] for point in SDS_county_data]
     else:
         SDS_coords = [[point.LAT, point.LON] for point in SDS_county_data]
-    print(SDS_coords)
     return jsonify({"data": SDS_coords})
 
 @app.route('/get_sds_data_by_mpo/<int:state_id><string:mpo_name>')
@@ -222,7 +219,6 @@ def get_sds_data_by_mpo(state_id, mpo_name):
             SDS_coords = [[point.LAT, -point.LON] for point in SDS_mpo_data]
     else:
         SDS_coords = [[point.LAT, point.LON] for point in SDS_mpo_data]
-    print(SDS_coords)
     return jsonify({"data": SDS_coords})
 
 class States(db.Model):
