@@ -733,11 +733,16 @@ function makeMap() {
         }
 
 
-        $.getJSON("/get_hin_by_county_id_and_properties/"+clicked_state+selected_feature_id+threshold, function(obj) {
+        $.getJSON({
+          url: "/get_hin_by_county_id_and_properties", 
+          data: {state_id: clicked_state, county_id: selected_feature_id, threshold: threshold}, 
+          success: function(obj) {
           var hin_geojson = obj;
           console.log('HIN GEOJSON INSIDE', hin_geojson);
           hinToMap(hin_geojson);
+          }
         });
+
 
         $.getJSON("/get_hin_properties/"+clicked_state+selected_feature_id+threshold, function(obj) {
           var hin_properties = obj;

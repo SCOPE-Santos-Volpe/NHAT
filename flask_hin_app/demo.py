@@ -332,8 +332,11 @@ def get_hin_by_mpo_id_and_properties(state_id, mpo_id, threshold):
     return hin_geojson
 
 # Get HIN by County and properties
-@app.route('/get_hin_by_county_id_and_properties/<int:state_id><int:county_id><float:threshold>')
-def get_hin_by_county_id_and_properties(state_id, county_id, threshold):
+@app.route('/get_hin_by_county_id_and_properties', methods = ['GET'])
+def get_hin_by_county_id_and_properties():
+    state_id = request.args.get('state_id')
+    county_id = request.args.get('county_id')
+    threshold = request.args.get('threshold')
     print("getting hin boundaries for {} in # {} for threshold {}".format(state_id, county_id, threshold))
     hin_geojson = get_hin_from_rds(state_id, threshold = threshold, county_id = county_id)
     return hin_geojson
