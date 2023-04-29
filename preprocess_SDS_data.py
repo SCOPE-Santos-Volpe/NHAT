@@ -53,11 +53,12 @@ Desired columns:
 
 """
 
-import pandas as pd
 import geopandas as gpd
+import pandas as pd
+from sqlalchemy import create_engine, text
+
 import helper
 import preprocess_utils
-from sqlalchemy import create_engine, text
 
 # Establish sqlalchemy connection
 sqlalchemy_conn = preprocess_utils.connect_to_sqlalchemy()

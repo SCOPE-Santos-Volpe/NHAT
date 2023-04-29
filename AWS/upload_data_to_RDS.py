@@ -12,20 +12,22 @@ https://gis.stackexchange.com/questions/239198/adding-geopandas-dataframe-to-pos
 https://gis.stackexchange.com/questions/325415/writing-geopandas-data-frame-to-postgis
 """
 
-# Import libraries
-import sys
-import os
-import preprocess_utils
-from pathlib import Path
-import preprocess_geojsons
-import helper
-from AWS.config.config import config
-import json
 import itertools
+import json
+import os
+import sys
+import warnings
+from pathlib import Path
+
 import pandas as pd
 import psycopg2
 from geoalchemy2 import Geometry
-import warnings
+
+import helper
+import preprocess_geojsons
+import preprocess_utils
+from AWS.config.config import config
+
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 

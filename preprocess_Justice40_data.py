@@ -3,8 +3,9 @@
 https://screeningtool.geoplatform.gov/en/#3/33.47/-97.5
 """
 
-import pandas as pd
 import geopandas as gpd
+import pandas as pd
+
 import helper
 import preprocess_utils
 

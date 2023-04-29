@@ -3,12 +3,12 @@
 Main function is `combine_FARS_datasets`. Helper functions load and combine all .csv files in the folder path and get all .csv filenames, clean the data, and label by county and MPO region.
 """
 
-import pandas as pd
 import geopandas as gpd
+import pandas as pd
+from sqlalchemy import text
+
 import helper
 import preprocess_utils
-
-from sqlalchemy import text
 
 # Establish sqlalchemy connection
 sqlalchemy_conn = preprocess_utils.connect_to_sqlalchemy()

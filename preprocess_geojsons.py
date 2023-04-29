@@ -1,14 +1,16 @@
 """Provides code to preprocess state, county, MPO, and census tract boundaries. Functions called by upload_data_to_RDS.py.
 """
-import pandas as pd
-import geopandas as gpd
-from geoalchemy2 import WKTElement
-import helper
-import math
-import preprocess_utils
-import os
 import json
+import math
+import os
+
+import geopandas as gpd
+import pandas as pd
+from geoalchemy2 import WKTElement
 from sqlalchemy import text
+
+import helper
+import preprocess_utils
 
 # Establish sqlalchemy connection
 sqlalchemy_conn = preprocess_utils.connect_to_sqlalchemy()

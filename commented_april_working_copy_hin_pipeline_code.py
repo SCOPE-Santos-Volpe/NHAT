@@ -17,29 +17,28 @@ Original file is located at
 # !pip install osmnx==1.2.0
 # !pip install geojson
 
-import osmnx as ox
-from scipy.interpolate import interp1d
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
-import scipy.stats as st
-from shapely.geometry import Polygon, LineString, Point, MultiPolygon
-import geopandas as gpd
-from shapely.ops import unary_union
-import multiprocessing
 import math
-from geojson import Feature, FeatureCollection, dump
+import multiprocessing
+import os
+
 import geojson
-import sqlalchemy as db
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import numpy as np
+import osmnx as ox
+import pandas as pd
 # NOTE: sqlalchemy version <2 is required
 import pyproj
-from shapely.ops import transform
-import os
-from matplotlib import pyplot as plt, patches
+import scipy.stats as st
+import sqlalchemy as db
+from geojson import Feature, FeatureCollection, dump
+from matplotlib import patches
+from matplotlib import pyplot as plt
+from scipy.interpolate import interp1d
+from shapely.geometry import LineString, MultiPolygon, Point, Polygon
+from shapely.ops import transform, unary_union
 
 import preprocess_utils
-
-"""## Get Graph of Geographic Area"""
 
 
 def get_county_boundaries_from_rds(state_id: int, county_id: int = None, mpo_id: int = None) -> gpd.GeoDataFrame:

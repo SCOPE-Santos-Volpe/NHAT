@@ -2,11 +2,11 @@
 
 Booleans do_uploading and do_generating select whether to upload and/or generate data.
 """
+import AWS.upload_data_to_RDS
 import census_tracts_split
 import preprocess_FARS_data
 import preprocess_Justice40_data
 import preprocess_SDS_data
-import AWS.upload_data_to_RDS
 
 # Whether to upload to the real tables
 AWS.upload_data_to_RDS.testing = False

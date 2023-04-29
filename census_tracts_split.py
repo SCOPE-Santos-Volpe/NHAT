@@ -1,9 +1,11 @@
 """Splits the single census tracts geojson into a geojson for each state.
 """
 import json
-import helper
-import geopandas as gpd
 import os
+
+import geopandas as gpd
+
+import helper
 
 
 def load_states(path: str = 'states.csv') -> dict:

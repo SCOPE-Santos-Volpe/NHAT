@@ -1,10 +1,11 @@
 """This file is to hold a bunch of useful helper functions so that they can be imported into any file.
 """
 
-import pandas as pd
 import glob
 import os
+
 import geopandas as gpd
+import pandas as pd
 
 
 def get_all_csv_filenames(path: str, filetype: str = None) -> list[str]:
