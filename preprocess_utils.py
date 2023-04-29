@@ -3,7 +3,7 @@
 import helper
 import pandas as pd
 import geopandas as gpd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, MetaData
 
 states_df = helper.load_df_from_csv(path='states.csv', low_memory = False)
 # Dictionaries to convert the STATE_INITIAL to STATE_ID & STATE_NAME
@@ -89,19 +89,30 @@ def create_point_column_from_lat_lon(df: pd.DataFrame, flip_lon_sign = False) ->
 
     return gdf
 
-def connect_to_sqlalchemy():
+def connect_to_sqlalchemy(include_metadata: bool = False, include_engine: bool = False):
     """Connects to sqlalchemy and returns the connection.
 
     Args:
-        None
+        include_metadata: A boolean specifying whether to include metadata in the return, default False
+        include_engine: A boolean specifying whether to include engine in the return, default False
 
     Returns:
-        The result of `db.connect()`
+        The result of `db.connect()`, the result of `sqlalchemy.MetaData()`, and/or the result of `create_engine()`.
+        The results are in the order connection, metadata, engine, and metadata and engine are only included if the respective booleans are True
     """
     # Establish sqlalchemy connection
 
     f = open('sqlalchemy_conn_string.txt','r')
     conn_string = f.read()
-    db = create_engine(conn_string)
-    return db.connect()
+    engine = create_engine(conn_string)
+    connection = engine.connect()
+    metadata = MetaData()
+    if(include_metadata and include_engine):
+        return connection, metadata, engine
+    elif(include_metadata):
+        return connection, metadata
+    elif(include_engine):
+        return connection, engine
+    else:
+        return connection
 

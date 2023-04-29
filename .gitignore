@@ -7,6 +7,10 @@ NEMSIS/2021 ASCII/*
 
 .DS_Store
 
+cache/**
+
+state_**
+
 SDS/**
 SDS/Data/**
 SDS/Output/**
