@@ -19,18 +19,18 @@ do_generating = True
 if __name__ == "__main__":
     # NOTE: We have not fully tested deleting everything from the database and re-uploading everything, because that would take a while and we have stuff to do.
 
-    if(do_uploading):
+    if (do_uploading):
         AWS.upload_data_to_RDS.upload_state_boundaries_to_RDS()
         AWS.upload_data_to_RDS.upload_mpo_boundaries_to_RDS()
         AWS.upload_data_to_RDS.upload_county_boundaries_to_RDS()
 
-    if(do_generating):
+    if (do_generating):
         preprocess_FARS_data.combine_FARS_datasets()
         preprocess_SDS_data.preprocess_SDS_datasets()
         preprocess_Justice40_data.preprocess_justice40_data()
         census_tracts_split.split_census_tracts()
 
-    if(do_uploading):
+    if (do_uploading):
         AWS.upload_data_to_RDS.upload_FARS_data_to_RDS()
         AWS.upload_data_to_RDS.upload_SDS_data_to_RDS()
         AWS.upload_data_to_RDS.upload_Justice40_data_to_RDS()

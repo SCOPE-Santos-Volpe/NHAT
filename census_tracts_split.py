@@ -5,6 +5,7 @@ import helper
 import geopandas as gpd
 import os
 
+
 def load_states(path: str = 'states.csv') -> dict:
     """Loads state info and returns a dictionary mapping state names to state initial.
 
@@ -14,10 +15,11 @@ def load_states(path: str = 'states.csv') -> dict:
     Returns:
         A dictionary containing the state names as keys and the state initials as values
     """
-    states_df = helper.load_df_from_csv(path=path, low_memory = False)
+    states_df = helper.load_df_from_csv(path=path, low_memory=False)
     d_state_name2initial = dict(zip(states_df.name, states_df.state))
 
     return d_state_name2initial
+
 
 def load_all_tracts_geojson(path: str = 'Shapefiles/census_tracts.geojson') -> dict:
     """Loads a `.geojson` file which should contain all census tracts nationwide.
@@ -54,13 +56,14 @@ def categorize_tracts_by_state(tracts: dict) -> dict:
     # Iterating through the json list
     for i, tract in enumerate(tracts['features']):
         state_name = str(tract["properties"]["SF"])
-        if(state_name not in state_dict):
+        if (state_name not in state_dict):
             state_dict[state_name] = []
         state_dict[state_name].append(tracts['features'][i])
 
     # print("Finished categorizing census tracts into different states")
 
     return state_dict
+
 
 def write_files(state_dict: dict, d_state_name2initial: dict) -> None:
     """Writes a `.geojson` file for each state.
@@ -77,7 +80,8 @@ def write_files(state_dict: dict, d_state_name2initial: dict) -> None:
         os.mkdir(outdir)
 
     for state_name in state_dict.keys():
-        string = '{"type":"FeatureCollection","name":"census_tracts_split","features":' + json.dumps(state_dict[state_name]) + '}'
+        string = '{"type":"FeatureCollection","name":"census_tracts_split","features":' + \
+            json.dumps(state_dict[state_name]) + '}'
 
         label = state_name
         if state_name in d_state_name2initial:
@@ -85,6 +89,7 @@ def write_files(state_dict: dict, d_state_name2initial: dict) -> None:
         with open(f"Shapefiles/census_tracts_by_state/census_tract_{label}.geojson", "w") as outfile:
             # print("writing to file for ", state_name)
             outfile.write(string)
+
 
 def shp_2_geojson(shp_path: str = 'Shapefiles/raw_shapefiles/census_tracts_raw', geojson_path: str = 'Shapefiles/census_tracts.geojson') -> None:
     """Converts a shapefile (`.shp`) file to a `.geojson` file
@@ -98,6 +103,7 @@ def shp_2_geojson(shp_path: str = 'Shapefiles/raw_shapefiles/census_tracts_raw',
     """
     shp_file = gpd.read_file(shp_path)
     shp_file.to_file(geojson_path, driver='GeoJSON')
+
 
 def split_census_tracts() -> None:
     """Main function combining each of the above helper functions.
@@ -119,7 +125,8 @@ def split_census_tracts() -> None:
 
     state_dict = categorize_tracts_by_state(tracts)
 
-    write_files(state_dict,d_state_name2initial)
+    write_files(state_dict, d_state_name2initial)
+
 
 if __name__ == "__main__":
     split_census_tracts()

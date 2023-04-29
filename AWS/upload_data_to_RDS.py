@@ -13,29 +13,30 @@ https://gis.stackexchange.com/questions/325415/writing-geopandas-data-frame-to-p
 """
 
 # Import libraries
+import sys
+import os
+import preprocess_utils
+from pathlib import Path
+import preprocess_geojsons
+import helper
+from AWS.config.config import config
+import json
+import itertools
+import pandas as pd
+import psycopg2
+from geoalchemy2 import Geometry
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-from geoalchemy2 import Geometry
-import psycopg2
-import pandas as pd
-import itertools
-import os, sys
-import json
 
 # To import helper
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from AWS.config.config import config
-import helper
-import preprocess_geojsons
-from pathlib import Path
-import preprocess_utils
 
 # Establish sqlalchemy connection
 sqlalchemy_conn = preprocess_utils.connect_to_sqlalchemy()
 
 # Establish psycogp2 connection
-params = config(config_db = 'database.ini')
+params = config(config_db='database.ini')
 conn = psycopg2.connect(**params)
 conn.autocommit = True
 cursor = conn.cursor()
@@ -51,6 +52,7 @@ cursor.execute('CREATE EXTENSION IF NOT EXISTS postgis')
 # Hardcoded boolean to define if uploading to testing table (to avoid issues with multiple people working at same time)
 testing = False
 
+
 def upload_FARS_data_to_RDS(path: str = 'FARS/FARS_w_MPO_County_Identifiers.csv') -> None:
     """Uploads processed, cleaned, and labeled FARS data to RDS.
 
@@ -60,18 +62,19 @@ def upload_FARS_data_to_RDS(path: str = 'FARS/FARS_w_MPO_County_Identifiers.csv'
     Returns:
         None
     """
-    if(testing):
+    if (testing):
         table_name = "test"
     else:
         table_name = "FARS"
     # Create FARS dataframe
     # fars = helper.load_df_from_csv(path='combined_FARS_preprocessed.csv', low_memory = False)
-    fars = helper.load_df_from_csv(path=path, low_memory = False)
+    fars = helper.load_df_from_csv(path=path, low_memory=False)
 
     # Load the FARS data into AWS RDS
     fars.to_sql(table_name, con=sqlalchemy_conn, if_exists='replace',
-            index=False)
+                index=False)
     print("uploaded FARS data")
+
 
 def upload_SDS_data_to_RDS(path: str = 'SDS/Output_w_MPO_County_Identifiers/') -> None:
     """Uploads the combined and processed SDS data to RDS. Currently, each state is in a separate table.
@@ -83,24 +86,27 @@ def upload_SDS_data_to_RDS(path: str = 'SDS/Output_w_MPO_County_Identifiers/') -
         None
     """
     # Get all processed SDS
-    all_csvs = helper.get_all_csv_filenames(path = path)
+    all_csvs = helper.get_all_csv_filenames(path=path)
     # print("Full list of states: " + str(all_csvs))
 
     # Process each state's crash data one by one
     for csv in all_csvs:
         # Get state name and state initial
         state_name = Path(csv).stem
-        
-        sds = helper.load_df_from_csv(path = csv, low_memory = False)
-        # sds = helper.load_gdf_from_geojson(geojson_path) 
+
+        sds = helper.load_df_from_csv(path=csv, low_memory=False)
+        # sds = helper.load_gdf_from_geojson(geojson_path)
         # sds = preprocess_geojsons.change_gdf_geometry_to_geom()
 
         # Upload SDS data into AWS RDS
-        if(testing):
-            sds.to_sql("test", con=sqlalchemy_conn, if_exists='replace', index=False)
+        if (testing):
+            sds.to_sql("test", con=sqlalchemy_conn,
+                       if_exists='replace', index=False)
         else:
-            sds.to_sql('SDS_'+state_name, con=sqlalchemy_conn, if_exists='replace', index=False)
+            sds.to_sql('SDS_'+state_name, con=sqlalchemy_conn,
+                       if_exists='replace', index=False)
         print("uploaded " + state_name + " SDS data.")
+
 
 def upload_Justice40_data_to_RDS(path: str = "Justice40/justice_40_communities_clean.csv") -> None:
     """Uploads the cleaned and processed Justice40 data to RDS.
@@ -111,17 +117,18 @@ def upload_Justice40_data_to_RDS(path: str = "Justice40/justice_40_communities_c
     Returns:
         None
     """
-    if(testing):
+    if (testing):
         table_name = "test"
     else:
         table_name = "Justice40"
-    justice40 = helper.load_df_from_csv(path = path, low_memory = False)
+    justice40 = helper.load_df_from_csv(path=path, low_memory=False)
     # justice40 = preprocess_Justice40_data.preprocess_justice40_data(justice40)
-    
+
     # Load the FARS data into AWS RDS
     justice40.to_sql(table_name, con=sqlalchemy_conn, if_exists='replace',
-            index=False)
+                     index=False)
     print("uploaded justice40 data")
+
 
 def upload_states_to_RDS(path: str = 'states.csv') -> None:
     """Uploads the state information to RDS.
@@ -132,16 +139,17 @@ def upload_states_to_RDS(path: str = 'states.csv') -> None:
     Returns:
         None
     """
-    if(testing):
+    if (testing):
         table_name = "test"
     else:
         table_name = "states"
     # Load state.csv data
-    states = helper.load_df_from_csv(path=path, low_memory = False)
+    states = helper.load_df_from_csv(path=path, low_memory=False)
     # Load the FARS data into AWS RDS
     states.to_sql(table_name, con=sqlalchemy_conn, if_exists='replace',
-            index=False)
+                  index=False)
     print("uploaded states data")
+
 
 def upload_geojsons_to_RDS(table_name: str, preprocessing_func, path: str = None, drop_exisiting_table: bool = True) -> None:
     """Uploads shapefiles to RDS.
@@ -167,16 +175,20 @@ def upload_geojsons_to_RDS(table_name: str, preprocessing_func, path: str = None
 
     # print("preprocessing")
     gdf = preprocessing_func(path)
-    polygon_gdf, multipoly_gdf = preprocess_geojsons.separate_gdf_into_polygon_multipolygon(gdf)
+    polygon_gdf, multipoly_gdf = preprocess_geojsons.separate_gdf_into_polygon_multipolygon(
+        gdf)
 
     # Upload polygon_gdf to RDS
-    polygon_gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False, dtype={'geom': Geometry(geometry_type='POLYGON', srid=4269)})
+    polygon_gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False, dtype={
+                       'geom': Geometry(geometry_type='POLYGON', srid=4269)})
     # Alter table so that the geom column accepts any type
-    query = "ALTER TABLE {} ALTER COLUMN geom TYPE geometry(Geometry,4269);".format(table_name)
+    query = "ALTER TABLE {} ALTER COLUMN geom TYPE geometry(Geometry,4269);".format(
+        table_name)
     cursor.execute(query)
     # Upload multipolygon_gdf to RDS
-    multipoly_gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False, dtype={'geom': Geometry(geometry_type='MULTIPOLYGON', srid=4269)})
-    
+    multipoly_gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False, dtype={
+                         'geom': Geometry(geometry_type='MULTIPOLYGON', srid=4269)})
+
     print("uploaded {} table to RDS".format(table_name))
 
 
@@ -189,11 +201,13 @@ def upload_state_boundaries_to_RDS(path: str = "Shapefiles/raw_shapefiles/states
     Returns:
         None
     """
-    if(testing):
+    if (testing):
         table_name = "test"
     else:
         table_name = "boundaries_state"
-    upload_geojsons_to_RDS(table_name = table_name, preprocessing_func = preprocess_geojsons.preprocess_state_boundaries_df, path = path)
+    upload_geojsons_to_RDS(
+        table_name=table_name, preprocessing_func=preprocess_geojsons.preprocess_state_boundaries_df, path=path)
+
 
 def upload_mpo_boundaries_to_RDS(path: str = "Shapefiles/raw_shapefiles/mpo_raw") -> None:
     """Uploads the MPO boundaries to RDS.
@@ -204,11 +218,13 @@ def upload_mpo_boundaries_to_RDS(path: str = "Shapefiles/raw_shapefiles/mpo_raw"
     Returns:
         None
     """
-    if(testing):
+    if (testing):
         table_name = "test"
     else:
         table_name = "boundaries_mpo"
-    upload_geojsons_to_RDS(table_name = table_name, preprocessing_func = preprocess_geojsons.preprocess_mpo_boundaries_df, path = path)
+    upload_geojsons_to_RDS(
+        table_name=table_name, preprocessing_func=preprocess_geojsons.preprocess_mpo_boundaries_df, path=path)
+
 
 def upload_county_boundaries_to_RDS(path: str = "Shapefiles/raw_shapefiles/counties_raw") -> None:
     """Uploads the county boundaries to RDS.
@@ -219,11 +235,13 @@ def upload_county_boundaries_to_RDS(path: str = "Shapefiles/raw_shapefiles/count
     Returns:
         None
     """
-    if(testing):
+    if (testing):
         table_name = "test"
     else:
         table_name = "boundaries_county"
-    upload_geojsons_to_RDS(table_name = table_name, preprocessing_func = preprocess_geojsons.preprocess_county_boundaries_df, path = path)
+    upload_geojsons_to_RDS(
+        table_name=table_name, preprocessing_func=preprocess_geojsons.preprocess_county_boundaries_df, path=path)
+
 
 def upload_census_tract_boundaries_to_RDS(path: str = "Shapefiles/census_tracts_by_state") -> None:
     """Uploads the census boundaries to RDS.
@@ -234,30 +252,31 @@ def upload_census_tract_boundaries_to_RDS(path: str = "Shapefiles/census_tracts_
     Returns:
         None
     """
-    if(testing):
+    if (testing):
         table_name = "test"
         query = "DROP TABLE {}".format(table_name)
         cursor.execute(query)
     else:
         table_name = "boundaries_census_tract_v3"
 
-
     # Deal with census tracts separately
-    geojson_paths = helper.get_all_filenames(path = path, pattern = '*.geojson')
+    geojson_paths = helper.get_all_filenames(path=path, pattern='*.geojson')
     # print("got all geojson paths")
 
     # print(len(geojson_paths))
     for _, path in enumerate(geojson_paths):
-        upload_geojsons_to_RDS(table_name = table_name, preprocessing_func = preprocess_geojsons.preprocess_census_tract_boundaries_df, path = path, drop_exisiting_table = False)
+        upload_geojsons_to_RDS(
+            table_name=table_name, preprocessing_func=preprocess_geojsons.preprocess_census_tract_boundaries_df, path=path, drop_exisiting_table=False)
         print("uploaded: ", path)
 
-def upload_hin_to_RDS(path = "Shapefiles/hin/state_6"):
+
+def upload_hin_to_RDS(path="Shapefiles/hin/state_6"):
     """
     Take generated hin and upload it to the RDS
     """
 
     # Get all HIN paths
-    hin_paths = helper.get_all_filenames(path = path, pattern = '*.geojson')
+    hin_paths = helper.get_all_filenames(path=path, pattern='*.geojson')
     print("got all hin paths")
 
     # Get initial hin id
@@ -272,22 +291,24 @@ def upload_hin_to_RDS(path = "Shapefiles/hin/state_6"):
     print(len(hin_paths))
     for _, path in enumerate(hin_paths):
         print("PATH: ", path)
-        properties_df, gdf = preprocess_geojsons.preprocess_HIN_df(path, hin_id)
-
+        properties_df, gdf = preprocess_geojsons.preprocess_HIN_df(
+            path, hin_id)
 
         print(gdf.columns)
         print(gdf.head)
         print(len(gdf))
 
-        properties_df.to_sql("hin_properties", con=sqlalchemy_conn, if_exists='append', index=False)
+        properties_df.to_sql(
+            "hin_properties", con=sqlalchemy_conn, if_exists='append', index=False)
 
         table_name = "hin"
-        gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False, dtype={'geom': Geometry(geometry_type='LINESTRING', srid=4269)})
+        gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False, dtype={
+                   'geom': Geometry(geometry_type='LINESTRING', srid=4269)})
 
         hin_id += 1
 
-if __name__=="__main__":
 
+if __name__ == "__main__":
 
     # upload_FARS_data_to_RDS()
     # upload_SDS_data_to_RDS()
@@ -298,6 +319,5 @@ if __name__=="__main__":
     # upload_mpo_boundaries_to_RDS()
     # upload_county_boundaries_to_RDS()
     # upload_census_tract_boundaries_to_RDS()
-
 
     upload_hin_to_RDS()

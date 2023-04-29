@@ -28,13 +28,15 @@ def combine_FARS_datasets(path: str = 'FARS/FARS CSVs/', output_filename: str = 
     """
 
     all_filenames = helper.get_all_filenames(path, "*.CSV")
-    all_dfs = helper.get_all_dfs_from_csv(all_filenames, required_columns=['LATITUDE', 'LONGITUD'], index_col=None, encoding_errors='ignore', low_memory=False)
+    all_dfs = helper.get_all_dfs_from_csv(all_filenames, required_columns=[
+                                          'LATITUDE', 'LONGITUD'], index_col=None, encoding_errors='ignore', low_memory=False)
     combined_df = helper.concat_pandas_dfs(all_dfs)
     cleaned_df = clean_FARS_dataset(combined_df, min_year)
     labeled_df = label_FARS_with_MPO_and_county_identifiers(cleaned_df)
     # Write updated geojson to file
     helper.write_dataframe_to_file(labeled_df, output_filename)
     return labeled_df
+
 
 def clean_FARS_dataset(df: pd.DataFrame, min_year: int) -> pd.DataFrame:
     """Perform cleaning steps for FARS dataset.
@@ -49,11 +51,11 @@ def clean_FARS_dataset(df: pd.DataFrame, min_year: int) -> pd.DataFrame:
     """
     # Rename columns for consistency
     renames = {
-        'LATITUDE' : 'LAT',
-        'LONGITUD' : 'LON',
-        'STATE'    : 'STATE_ID'
+        'LATITUDE': 'LAT',
+        'LONGITUD': 'LON',
+        'STATE': 'STATE_ID'
     }
-    df.rename(columns = renames,inplace = True)
+    df.rename(columns=renames, inplace=True)
 
     # Remove invalid lat/lon values
     df = preprocess_utils.remove_invalid_lat_lon(df)
@@ -66,11 +68,11 @@ def clean_FARS_dataset(df: pd.DataFrame, min_year: int) -> pd.DataFrame:
 
     # Select which columns we're keeping
     columns = ['YEAR', 'STATE_ID',                                      # Metadata
-                'LGT_COND', 'WEATHER',                                  # Accident conditions
-                'TYP_INT',                                              # Road type
-                'LAT', 'LON',                                           # Geolocation
-                'PEDS',                                                 # Parties involved
-    ]
+               'LGT_COND', 'WEATHER',                                  # Accident conditions
+               'TYP_INT',                                              # Road type
+               'LAT', 'LON',                                           # Geolocation
+               'PEDS',                                                 # Parties involved
+               ]
     columns = [x.upper() for x in columns]
     df = df[columns]
 
@@ -78,7 +80,7 @@ def clean_FARS_dataset(df: pd.DataFrame, min_year: int) -> pd.DataFrame:
 
     # All crashes are fatal
     def is_fatal(row):
-            return 1
+        return 1
     df['IS_FATAL'] = df.apply(lambda row: is_fatal(row), axis=1)
 
     # Severity 1 is fatal
@@ -152,12 +154,14 @@ def clean_FARS_dataset(df: pd.DataFrame, min_year: int) -> pd.DataFrame:
     df['IS_INTERSECTION'] = df.apply(lambda row: is_intersection(row), axis=1)
 
     # Trim columns again
-    new_columns = ["YEAR", 'STATE_ID', "IS_FATAL", "SEVERITY", "IS_PED", "IS_CYC", "WEATHER_COND", "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON"]
+    new_columns = ["YEAR", 'STATE_ID', "IS_FATAL", "SEVERITY", "IS_PED", "IS_CYC",
+                   "WEATHER_COND", "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON"]
     df = df[new_columns]
 
     df = preprocess_utils.convert_columns_to_proper_types(df)
 
     return df
+
 
 def label_FARS_with_MPO_and_county_identifiers(df: pd.DataFrame) -> pd.DataFrame:
     """Take preprocessed FARS data and label it with MPO and county.
@@ -187,26 +191,31 @@ def label_FARS_with_MPO_and_county_identifiers(df: pd.DataFrame) -> pd.DataFrame
 
     # Perform a spatial join between FARS and county boundaries.
     # This adds a column of which county the point is in.
-    FARS_with_county = gpd.sjoin(df,county_boundaries, predicate='intersects', how='left')
-    columns = ["YEAR", 'STATE_ID_left', 'STATE_NAME_left', 'COUNTY_ID', "COUNTY_NAME", "IS_FATAL", "SEVERITY", "IS_PED", "IS_CYC", "WEATHER_COND", "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON", "geometry"]
+    FARS_with_county = gpd.sjoin(
+        df, county_boundaries, predicate='intersects', how='left')
+    columns = ["YEAR", 'STATE_ID_left', 'STATE_NAME_left', 'COUNTY_ID', "COUNTY_NAME", "IS_FATAL", "SEVERITY", "IS_PED",
+               "IS_CYC", "WEATHER_COND", "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON", "geometry"]
     FARS_with_county = FARS_with_county[columns]
-    
+
     # Perform a spatial join between FARS and MPO boundaries
     # This adds a column of which MPO region the point is in.
     # Also removes the geometry column
-    FARS_with_MPOs = gpd.sjoin(FARS_with_county,mpo_boundaries, predicate='intersects', how='left')
-    columns = ["YEAR", 'STATE_ID_left', 'STATE_NAME_left', 'COUNTY_ID', "COUNTY_NAME", "MPO_ID", "MPO_NAME", "IS_FATAL", "SEVERITY", "IS_PED", "IS_CYC", "WEATHER_COND", "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON"]
+    FARS_with_MPOs = gpd.sjoin(
+        FARS_with_county, mpo_boundaries, predicate='intersects', how='left')
+    columns = ["YEAR", 'STATE_ID_left', 'STATE_NAME_left', 'COUNTY_ID', "COUNTY_NAME", "MPO_ID", "MPO_NAME", "IS_FATAL",
+               "SEVERITY", "IS_PED", "IS_CYC", "WEATHER_COND", "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON"]
     FARS_altered = FARS_with_MPOs[columns]
 
     # Rename from joins
     renames = {
-        'STATE_ID_left'   : 'STATE_ID',
-        'STATE_NAME_left' : 'STATE_NAME',
+        'STATE_ID_left': 'STATE_ID',
+        'STATE_NAME_left': 'STATE_NAME',
     }
-    FARS_altered = FARS_altered.rename(columns = renames)
+    FARS_altered = FARS_altered.rename(columns=renames)
 
     return FARS_altered
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     df = combine_FARS_datasets()
     # print("Ding!")

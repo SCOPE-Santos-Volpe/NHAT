@@ -24,10 +24,11 @@ def combine_geojsons_to_single_gdf(path: str = None) -> gpd.GeoDataFrame:
         A single `gpd.GeoDataFrame` comprised of all the `.geojson` files
     """
     # Get list of all geojson paths
-    if(os.path.isfile(path)):
+    if (os.path.isfile(path)):
         geojson_paths = [path]
-    elif(os.path.isdir(path)):
-        geojson_paths = helper.get_all_filenames(path = path, pattern = '*.geojson')
+    elif (os.path.isdir(path)):
+        geojson_paths = helper.get_all_filenames(
+            path=path, pattern='*.geojson')
     else:
         print("Something got very messed up in a call to combine_geojsons_to_single_gdf")
 
@@ -36,7 +37,8 @@ def combine_geojsons_to_single_gdf(path: str = None) -> gpd.GeoDataFrame:
 
     # Load all geojsons into gdf_list
     for geojson_path in geojson_paths:
-        single_gdf = helper.load_gdf_from_geojson(geojson_path)     # load geojson into a geodataframe
+        single_gdf = helper.load_gdf_from_geojson(
+            geojson_path)     # load geojson into a geodataframe
         gdf_list.append(single_gdf)
 
     # Concatenate the gdf
@@ -58,17 +60,18 @@ def separate_gdf_into_polygon_multipolygon(gdf: gpd.GeoDataFrame) -> gpd.GeoData
 
     """
 
-    # Rows with geometry type MultiPolygon need to be separated from Polygon because they 
+    # Rows with geometry type MultiPolygon need to be separated from Polygon because they
     # require different methods to be pushed to the database.
     polygon_gdf = gpd.GeoDataFrame(gdf[gdf['geometry'].geom_type == "Polygon"])
-    multipoly_gdf = gpd.GeoDataFrame(gdf[gdf['geometry'].geom_type == "MultiPolygon"])
-
+    multipoly_gdf = gpd.GeoDataFrame(
+        gdf[gdf['geometry'].geom_type == "MultiPolygon"])
 
     # Trying to use a function
     polygon_gdf = change_gdf_geometry_to_geom(polygon_gdf)
     multipoly_gdf = change_gdf_geometry_to_geom(multipoly_gdf)
 
     return polygon_gdf, multipoly_gdf
+
 
 def change_gdf_geometry_to_geom(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """Renames the geometry column of a `gpd.GeoDataFrame` into geom, and does conversions I don't understand
@@ -86,10 +89,6 @@ def change_gdf_geometry_to_geom(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     return gdf
 
 
-
-
-
-
 def preprocess_state_boundaries_df(path: str = 'Shapefiles/raw_shapefiles/states_raw') -> gpd.GeoDataFrame:
     """Preprocesses a `gpd.GeoDataFrame` containing state boundaries.
 
@@ -102,17 +101,18 @@ def preprocess_state_boundaries_df(path: str = 'Shapefiles/raw_shapefiles/states
 
     gdf = gpd.read_file(path)
 
-    gdf = gdf.rename(columns = {"STATEFP": "STATE_ID",
-                                "NAME": "STATE_NAME"})
+    gdf = gdf.rename(columns={"STATEFP": "STATE_ID",
+                              "NAME": "STATE_NAME"})
     # gdf = gdf.drop(columns=['LSAD', 'GEO_ID', 'CENSUSAREA'])
-    gdf = gdf[["STATE_ID","STATE_NAME","geometry"]]
+    gdf = gdf[["STATE_ID", "STATE_NAME", "geometry"]]
     # Change STATE_ID column type to int
     # Needs both conversions for some reason
     gdf['STATE_ID'] = gdf['STATE_ID'].astype(str).astype(int)
     # NOTE: DOESN'T HAVE STATE_INITIAL
     return gdf
 
-def preprocess_mpo_boundaries_df(path: str= 'Shapefiles/raw_shapefiles/mpo_raw') -> gpd.GeoDataFrame:
+
+def preprocess_mpo_boundaries_df(path: str = 'Shapefiles/raw_shapefiles/mpo_raw') -> gpd.GeoDataFrame:
     """Preprocesses a `gpd.GeoDataFrame` containing MPO boundaries.
 
     Args:
@@ -124,21 +124,24 @@ def preprocess_mpo_boundaries_df(path: str= 'Shapefiles/raw_shapefiles/mpo_raw')
     gdf = gpd.read_file(path)
 
     # Process state initial into ID and name
-    gdf = gdf.rename(columns={ "STATE": "STATE_INITIAL"})
-    gdf['STATE_ID'] = gdf['STATE_INITIAL'].map(preprocess_utils.d_state_initial2id)
-    gdf['STATE_NAME'] = gdf['STATE_INITIAL'].map(preprocess_utils.d_state_initial2name)
+    gdf = gdf.rename(columns={"STATE": "STATE_INITIAL"})
+    gdf['STATE_ID'] = gdf['STATE_INITIAL'].map(
+        preprocess_utils.d_state_initial2id)
+    gdf['STATE_NAME'] = gdf['STATE_INITIAL'].map(
+        preprocess_utils.d_state_initial2name)
 
     # Select necessary columns
     gdf = gdf[['STATE_ID', 'STATE_NAME', 'MPO_ID', 'MPO_NAME', 'geometry']]
 
     # Convert column types
-    convert_column_type_dict = {"STATE_ID"            : int, 
-                                "STATE_NAME"          : str, 
-                                "MPO_ID"              : int, 
-                                "MPO_NAME"            : str
-    }
+    convert_column_type_dict = {"STATE_ID": int,
+                                "STATE_NAME": str,
+                                "MPO_ID": int,
+                                "MPO_NAME": str
+                                }
     gdf = gdf.astype(convert_column_type_dict)
     return gdf
+
 
 def preprocess_county_boundaries_df(path: str = 'Shapefiles/raw_shapefiles/counties_raw') -> gpd.GeoDataFrame:
     """Preprocesses a `gpd.GeoDataFrame` containing county boundaries.
@@ -155,10 +158,10 @@ def preprocess_county_boundaries_df(path: str = 'Shapefiles/raw_shapefiles/count
     gdf = gpd.read_file(path)
 
     # Clean up some column names
-    gdf = gdf.rename(columns={  "STATEFP": "STATE_ID", 
-                                "NAME": "COUNTY_NAME",
-                                "COUNTYFP" : "COUNTY_ID"
-                            })
+    gdf = gdf.rename(columns={"STATEFP": "STATE_ID",
+                              "NAME": "COUNTY_NAME",
+                              "COUNTYFP": "COUNTY_ID"
+                              })
 
     # Convert state ID to int
     # Needs both conversions for some reason
@@ -171,13 +174,14 @@ def preprocess_county_boundaries_df(path: str = 'Shapefiles/raw_shapefiles/count
     gdf = gdf[['STATE_ID', 'STATE_NAME', 'COUNTY_ID', 'COUNTY_NAME', 'geometry']]
 
     # Convert types
-    convert_column_type_dict = {"STATE_ID"            : int,
-                                "STATE_NAME"          : str,
-                                "COUNTY_ID"           : int,
-                                "COUNTY_NAME"         : str
-    }
+    convert_column_type_dict = {"STATE_ID": int,
+                                "STATE_NAME": str,
+                                "COUNTY_ID": int,
+                                "COUNTY_NAME": str
+                                }
     gdf = gdf.astype(convert_column_type_dict)
     return gdf
+
 
 def preprocess_census_tract_boundaries_df(path: str = 'Shapefiles/census_tracts_by_state/') -> gpd.GeoDataFrame:
     """Loads a `gpd.GeoDataFrame` or folder of `gpd.GeoDataFrame`s containing census tract boundaries, and preprocesses them.
@@ -195,11 +199,11 @@ def preprocess_census_tract_boundaries_df(path: str = 'Shapefiles/census_tracts_
 
     # Rename unclear columns
     renames = {
-        'SF' : 'STATE_NAME',
-        'CF' : 'COUNTY_NAME',
-        'GEOID10' : 'CENSUS_TRACT_ID'
+        'SF': 'STATE_NAME',
+        'CF': 'COUNTY_NAME',
+        'GEOID10': 'CENSUS_TRACT_ID'
     }
-    gdf.rename(columns = renames,inplace = True)
+    gdf.rename(columns=renames, inplace=True)
 
     # Get state ID from name
     gdf['STATE_ID'] = gdf['STATE_NAME'].map(preprocess_utils.d_state_name2id)
@@ -210,21 +214,23 @@ def preprocess_census_tract_boundaries_df(path: str = 'Shapefiles/census_tracts_
             return 0
         else:
             return row['STATE_ID']
-    gdf['STATE_ID'] = gdf.apply(lambda row: convert_invalid_state_ids_to_0(row), axis=1)
+    gdf['STATE_ID'] = gdf.apply(
+        lambda row: convert_invalid_state_ids_to_0(row), axis=1)
 
     # Select only necessary columns
-    gdf = gdf[['STATE_ID', 'STATE_NAME', 'COUNTY_NAME', 'CENSUS_TRACT_ID', 'geometry']]
+    gdf = gdf[['STATE_ID', 'STATE_NAME',
+               'COUNTY_NAME', 'CENSUS_TRACT_ID', 'geometry']]
     # Make sure column types are correct
-    column_type_dict = {"STATE_ID"                      : int, 
-                        "STATE_NAME"                    : str, 
-                        "CENSUS_TRACT_ID"               : int, 
-                        "COUNTY_NAME"                   : str,  
-    }
+    column_type_dict = {"STATE_ID": int,
+                        "STATE_NAME": str,
+                        "CENSUS_TRACT_ID": int,
+                        "COUNTY_NAME": str,
+                        }
     gdf = gdf.astype(column_type_dict)
 
     # Remove the str "County" from each entry in the county column
     def remove_county_str(row):
-            return row['COUNTY_NAME'].rsplit(' ', 1)[0]
+        return row['COUNTY_NAME'].rsplit(' ', 1)[0]
     gdf['COUNTY_NAME'] = gdf.apply(lambda row: remove_county_str(row), axis=1)
 
     # Don't know why the data started out like this
@@ -238,51 +244,59 @@ def preprocess_census_tract_boundaries_df(path: str = 'Shapefiles/census_tracts_
             # If county name is ', change it to ''
             if "'" in county_name:
                 county_name = county_name.replace("'", "''")
-            sql = text(""" SELECT * FROM "boundaries_county" WHERE "STATE_ID" = {} AND "COUNTY_NAME" = '{}' LIMIT 1 """.format(state_id, county_name))
+            sql = text(
+                """ SELECT * FROM "boundaries_county" WHERE "STATE_ID" = {} AND "COUNTY_NAME" = '{}' LIMIT 1 """.format(state_id, county_name))
             county_boundaries = gpd.read_postgis(sql, con=sqlalchemy_conn)
             if not county_boundaries.empty:
                 county_id = county_boundaries['COUNTY_ID'][0]
             else:
                 county_id = None
         else:
-            county_id = None   
+            county_id = None
         return county_id
 
     gdf['COUNTY_ID'] = gdf.apply(lambda row: set_county_id(row), axis=1)
 
     # Join census tract data with MPO data
-    if state_id != 0: 
+    if state_id != 0:
         # Get MPO boundaries for this state
-        sql = text(""" SELECT * FROM "boundaries_mpo" WHERE "STATE_ID" = {} """.format(state_id))
+        sql = text(
+            """ SELECT * FROM "boundaries_mpo" WHERE "STATE_ID" = {} """.format(state_id))
         mpo_boundaries = gpd.read_postgis(sql, con=sqlalchemy_conn)
 
         # Perform spatial join between MPO boundaries and county boundaries
         gdf = gdf.to_crs(4269)
-        gdf = gpd.sjoin(gdf,mpo_boundaries, predicate='intersects', how='left')
+        gdf = gpd.sjoin(gdf, mpo_boundaries,
+                        predicate='intersects', how='left')
 
-        columns = ['STATE_ID_left', 'STATE_NAME_left', 'COUNTY_ID', 'COUNTY_NAME', 'MPO_ID', 'MPO_NAME', 'CENSUS_TRACT_ID', 'geometry']
+        columns = ['STATE_ID_left', 'STATE_NAME_left', 'COUNTY_ID',
+                   'COUNTY_NAME', 'MPO_ID', 'MPO_NAME', 'CENSUS_TRACT_ID', 'geometry']
         gdf = gdf[columns]
 
         # Rename some columns
         renames = {
-            'STATE_ID_left' : 'STATE_ID',
-            'STATE_NAME_left' : 'STATE_NAME',
+            'STATE_ID_left': 'STATE_ID',
+            'STATE_NAME_left': 'STATE_NAME',
         }
-        gdf.rename(columns = renames,inplace = True)
+        gdf.rename(columns=renames, inplace=True)
     else:
         # If state id is 0, state name is None
         def set_to_none(row):
             return None
         gdf['MPO_ID'] = gdf.apply(lambda row: set_to_none(row), axis=1)
         gdf['MPO_NAME'] = gdf.apply(lambda row: set_to_none(row), axis=1)
-        columns = ['STATE_ID', 'STATE_NAME', 'COUNTY_ID', 'COUNTY_NAME', 'MPO_ID', 'MPO_NAME', 'CENSUS_TRACT_ID', 'geometry']
+        columns = ['STATE_ID', 'STATE_NAME', 'COUNTY_ID', 'COUNTY_NAME',
+                   'MPO_ID', 'MPO_NAME', 'CENSUS_TRACT_ID', 'geometry']
         gdf = gdf[columns]
 
     # Join census tract data with justice40 stats
-    justice40 = helper.load_df_from_csv(path = "Justice40/justice_40_communities_clean.csv", low_memory = False)
-    gdf = pd.merge(gdf,justice40[['CENSUS_TRACT_ID','IDENTIFIED_AS_DISADVANTAGED']],on='CENSUS_TRACT_ID', how='left')
+    justice40 = helper.load_df_from_csv(
+        path="Justice40/justice_40_communities_clean.csv", low_memory=False)
+    gdf = pd.merge(gdf, justice40[[
+                   'CENSUS_TRACT_ID', 'IDENTIFIED_AS_DISADVANTAGED']], on='CENSUS_TRACT_ID', how='left')
 
     return gdf
+
 
 def preprocess_HIN_df(path, hin_id):
     """Takes a path to a generated HIN and the associated HIN_id and preprocesses the hin at the given path. 
@@ -300,18 +314,20 @@ def preprocess_HIN_df(path, hin_id):
     def add_hin_id(row: pd.Series, hin_id):
         return hin_id
 
-    # Load the HIN properties (and place into a Pandas Dataframe with a single row  
+    # Load the HIN properties (and place into a Pandas Dataframe with a single row
     f = open(path)
     data = json.load(f)
     print("FEATURE COLLECTION PROPERTIES: ", data["properties"])
     hin_properties_df = pd.DataFrame.from_dict([data["properties"]])
     hin_properties_df.columns = map(str.upper, hin_properties_df.columns)
     # Add ID column
-    hin_properties_df['ID'] = hin_properties_df.apply(lambda row: add_hin_id(row, hin_id), axis=1)
+    hin_properties_df['ID'] = hin_properties_df.apply(
+        lambda row: add_hin_id(row, hin_id), axis=1)
     print("HIN PROPERTY COLUMNS: ", hin_properties_df.columns)
 
-    # Load the HIN LineStrings into a geodataframe 
-    gdf = helper.load_gdf_from_geojson(path)     # load geojson into a geodataframe
+    # Load the HIN LineStrings into a geodataframe
+    # load geojson into a geodataframe
+    gdf = helper.load_gdf_from_geojson(path)
     # Cast the type of the geodataframe to linestring
     gdf = gpd.GeoDataFrame(gdf[gdf['geometry'].geom_type == "LineString"])
     gdf = gdf[['type', 'MPO_ID', 'IN_J40', 'geometry']]
@@ -321,9 +337,8 @@ def preprocess_HIN_df(path, hin_id):
     # Add id column
     gdf['ID'] = gdf.apply(lambda row: add_hin_id(row, hin_id), axis=1)
 
-
     # Add a singular column for the identifier
-    # Add the 
+    # Add the
 
     return hin_properties_df, gdf
 
@@ -341,7 +356,6 @@ def preprocess_HIN_df(path, hin_id):
     # gdf = combine_geojsons_to_single_gdf(path = "_Shapefiles/county_by_state/")
     # gdf = preprocess_county_boundaries_df(gdf)
     # polygon_gdf, multipolygon_gdf = separate_gdf_into_polygon_multipolygon(gdf)
-
 
     # gdf = combine_geojsons_to_single_gdf(path = "_Shapefiles/census_tracts_by_state/census_tract_AK.geojson")
     # gdf = preprocess_census_tract_boundaries_df('Shapefiles/census_tracts_by_state/census_tract_AK.geojson')
