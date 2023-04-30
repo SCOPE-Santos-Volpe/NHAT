@@ -22,12 +22,51 @@ The data used in this project comes from the following sources:
   - [Massachussets SDS](https://apps.impact.dot.state.ma.us/cdp/home)
 - [Justice 40: Justice 40 equity data](https://www.transportation.gov/equity-Justice40)
 
-To access the data, please use the following line of code, replacing `<placeholders>` with the appropriate information:
+### Crash Data Structure
+FARS and SDS data all come in different formats. In order to use them consistently with our web app, we narrowed down several key attributes to retain for each dataset. Our data format is heavily inspired by the Massachusetts SDS format.
 
-```bash
-<placeholder_code_to_access_database>
-```
+YEAR :			int
+IS_FATAL :		int (one-hot)
+SEVERITY :		int (1-4 range)
+1 - Fatal
+2 - Injury (Severe)
+3 - Injury (Other Visible)
+4 - Injury (Complaint of Pain)
+    	0 - PDO (Property Damage/Other)
+IS_PED : 		int (one-hot)
+IS_CYC : 		int (one-hot)
+WEATHER_COND :	int (1-4 range)
+A - Clear
+B - Cloudy
+C - Rain
+D - Snow / Sleet / Hail
+E - Fog / Smog / Smoke
+-  - Other
+LIGHT_COND :	int (1-4 range)
+A - Daylight
+B - Dusk - Dawn
+C - Dark - Street Lights
+D - Dark - No Street Lights
+E - Dark - Unknown Street Lights
+-  - Other
+ROAD_COND :	int (1-4 range)
+A - Dry
+B - Wet / Water
+C - Snowy / Icy / Slush
+D - Slippery (Muddy, Oily, etc.)
+-  - Not Stated
+ROAD_NAME : 	str
+IS_INTERSECTION :	int (one-hot)
+LAT : 			int
+LON : 			int
 
+### How to Update the Data
+
+See generate_and_upload_everything.py, which regenerates/reprocesses all data from its raw source and uploads it to the database.
+
+To add or update SDS data, add the files into SDS/Data/{state name}/{file name}.csv. If adding a new state, in preprocess_SDS_data.py, write a new function that takes in a pd.DataFrame, processes it, and returns a pd.DataFrame. Then, add that function into preprocess_func_dict. Then, reprocess and upload the data.
+
+To add new FARS data, download the data and unzip the .zip file. Take the accident.CSV file and put it into FARS/FARS CSVs/*.CSV . Renaming the accident.CSV file is not necessary but recommended for future maintainability. The file extension for these files is .CSV instead of .csv because that’s what the files came as, and we didn’t change them. Then, reprocess and upload the data.
 
 ## High Injury Network
 
