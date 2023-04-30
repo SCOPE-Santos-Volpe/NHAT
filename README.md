@@ -25,6 +25,7 @@ The data used in this project comes from the following sources:
 ### Crash Data Structure
 FARS and SDS data all come in different formats. In order to use them consistently with our web app, we narrowed down several key attributes to retain for each dataset. Our data format is heavily inspired by the Massachusetts SDS format.
 
+```bash
 YEAR :			int
 IS_FATAL :		int (one-hot)
 SEVERITY :		int (1-4 range)
@@ -59,6 +60,7 @@ ROAD_NAME : 	str
 IS_INTERSECTION :	int (one-hot)
 LAT : 			int
 LON : 			int
+```
 
 ### How to Update the Data
 
