@@ -29,33 +29,33 @@ FARS and SDS data all come in different formats. In order to use them consistent
 YEAR :			int
 IS_FATAL :		int (one-hot)
 SEVERITY :		int (1-4 range)
-1 - Fatal
-2 - Injury (Severe)
-3 - Injury (Other Visible)
-4 - Injury (Complaint of Pain)
-    	0 - PDO (Property Damage/Other)
+    1 - Fatal
+    2 - Injury (Severe)
+    3 - Injury (Other Visible)
+    4 - Injury (Complaint of Pain)
+    0 - PDO (Property Damage/Other)
 IS_PED : 		int (one-hot)
 IS_CYC : 		int (one-hot)
 WEATHER_COND :	int (1-4 range)
-A - Clear
-B - Cloudy
-C - Rain
-D - Snow / Sleet / Hail
-E - Fog / Smog / Smoke
--  - Other
+    A - Clear
+    B - Cloudy
+    C - Rain
+    D - Snow / Sleet / Hail
+    E - Fog / Smog / Smoke
+    -  - Other
 LIGHT_COND :	int (1-4 range)
-A - Daylight
-B - Dusk - Dawn
-C - Dark - Street Lights
-D - Dark - No Street Lights
-E - Dark - Unknown Street Lights
--  - Other
+    A - Daylight
+    B - Dusk - Dawn
+    C - Dark - Street Lights
+    D - Dark - No Street Lights
+    E - Dark - Unknown Street Lights
+    -  - Other
 ROAD_COND :	int (1-4 range)
-A - Dry
-B - Wet / Water
-C - Snowy / Icy / Slush
-D - Slippery (Muddy, Oily, etc.)
--  - Not Stated
+    A - Dry
+    B - Wet / Water
+    C - Snowy / Icy / Slush
+    D - Slippery (Muddy, Oily, etc.)
+    -  - Not Stated
 ROAD_NAME : 	str
 IS_INTERSECTION :	int (one-hot)
 LAT : 			int
