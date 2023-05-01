@@ -64,19 +64,23 @@ LON : 			int
 
 ### How to Update the Data
 
-See generate_and_upload_everything.py, which regenerates/reprocesses all data from its raw source and uploads it to the database.
+See [`generate_and_upload_everything.py`](generate_and_upload_everything.py), which regenerates/reprocesses all data from its raw source and uploads it to the database.
 
-To add or update SDS data, add the files into SDS/Data/{state name}/{file name}.csv. If adding a new state, in preprocess_SDS_data.py, write a new function that takes in a pd.DataFrame, processes it, and returns a pd.DataFrame. Then, add that function into preprocess_func_dict. Then, reprocess and upload the data.
+To add or update SDS data, add the files into `SDS/Data/{state name}/{file name}.csv`. If adding a new state, in [`preprocess_SDS_data.py`](preprocess_SDS_data.py), write a new function that takes in a `pd.DataFrame`, processes it, and returns a `pd.DataFrame`. Then, add that function into `preprocess_func_dict`. Then, reprocess and upload the data.
 
-To add new FARS data, download the data and unzip the .zip file. Take the accident.CSV file and put it into FARS/FARS CSVs/*.CSV . Renaming the accident.CSV file is not necessary but recommended for future maintainability. The file extension for these files is .CSV instead of .csv because that’s what the files came as, and we didn’t change them. Then, reprocess and upload the data.
+To add new FARS data, download the data and unzip the `.zip` file. Take the `accident.CSV` file and put it into `FARS/FARS CSVs/*.CSV` . Renaming the `accident.CSV` file is not necessary but recommended for future maintainability. The file extension for these files is `.CSV` instead of `.csv` because that’s what the files came as, and we didn’t change them. Then, reprocess and upload the data.
 
 ## High Injury Network
+TODO: Update this once Mira edits the code to work with generate and upload everything
 
-The High Injury Network (HIN) module is responsible for processing the data and generating the high injury network using kernel density estimation. To execute this module, run the `generate_hin.py` script with the desired area and the choice between the FARS or SDS dataset, with the possible additional layer of Justice 40.
+The High Injury Network (HIN) module is responsible for processing the data and generating the high injury network using kernel density estimation. To execute this module, run the [`generate_hin.py`](generate_hin.py) script with the desired area and the choice between the FARS or SDS dataset, with the possible additional layer of Justice 40.
 
 ### Dependencies
 
+TODO: Update this
+
 To install the required libraries, run the following command:
+
 ```bash
 pip install osmnx scipy numpy matplotlib pandas geopandas shapely multiprocessing geojson pyproj
 ```
@@ -98,17 +102,14 @@ The web-app is built on an EC2 server and is responsible for visualizing the hig
 
 ### Interacting with the EC2 server
 
+TODO: Update this
+
 To interact with the EC2 server, please follow these instructions:
 ```bash
 <placeholder_instructions_for_interacting_with_ec2_server>
 ```
 This will allow you to visualize the high injury network on a live map, making it easy for users to explore the data and modify the HIN functionality.
 
-
-
-# Olin College Santos Volpe SCOPE Team
-
-Docstring format is [Google Python Style Guide](https://github.com/google/styleguide/blob/gh-pages/pyguide.md#38-comments-and-docstrings), copied to [`google_python_style_guide.md`](google_python_style_guide.md#38-comments-and-docstrings). We're not completely following that style guide.
 
 ## File Descriptions
 
@@ -121,6 +122,9 @@ Booleans do_uploading and do_generating select whether to upload and/or generate
 
 ### [`census_tracts_split.py`](census_tracts_split.py)
 Splits the single census tracts geojson into a geojson for each state.
+
+### [`generate_hin.py`](generate_hin.py)
+TODO: add a description
 
 ### [`helper.py`](helper.py)
 This file is to hold a bunch of useful helper functions so that they can be imported into any file.
@@ -143,7 +147,6 @@ Main function is combine_SDS_datasets. Helper functions take the folder path and
 
 ### [`preprocess_utils.py`](preprocess_utils.py)
 This file is to hold a bunch of useful helper functions for preprocessing so that they can be imported into any file.
-
 
 ### [`AWS/upload_data_to_RDS.py`](AWS/upload_data_to_RDS.py)
 Functions to upload each type of table to the relational database.
