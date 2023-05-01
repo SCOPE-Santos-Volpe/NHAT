@@ -1,24 +1,19 @@
-combined_FARS.csv
-combined_FARS_categorized.csv
-
 NEMSIS/2021 ASCII.zip
 NEMSIS/2021 ASCII/*
 
 
 .DS_Store
 
-cache/**
+cache
 
 state_**
 
-SDS/**
-SDS/Data/**
-SDS/Output/**
-Hospital_Data/
-Justice40/
-FARS/
+FARS
+Hospital_Data
+Justice40
+SDS
+Shapefiles
 
-Shapefiles/*
 __pycache__
 AWS/config/__pycache__
 sqlalchemy_conn_string.txt

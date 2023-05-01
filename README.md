@@ -42,18 +42,3 @@ Functions to upload each type of table to the relational database.
 
 ### [`sqlalchemy_conn_string.txt`](sqlalchemy_conn_string.txt)
 Holds the secret connection string for the RDB. Not uploaded to GitHub.
-
-
-## Base Data Files & Process Overview
-
-FARS/FARS CSVs/* > preprocess_FARS_data.py > FARS/FARS_w_MPO_County_Identifiers.csv > upload
-
-SDS/Data/* > preprocess_SDS_data.py > SDS/Output/* > upload
-
-Justice40/justice_40_communities.csv > preprocess_Justice40_data.py > Justice40/justice_40_communities_clean.csv > upload
-
-Shapefiles/mpo_boundaries_by_state/* > upload
-
-Shapefiles/county_by_state/* > upload
-
-Shapefiles/raw_shapefiles/census_tracts_raw > census_tracts_split.py > Shapefiles/census_tracts_by_state/* > upload
