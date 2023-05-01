@@ -51,6 +51,175 @@ class Fars_accident_2020(db.Model):
     def get_longitude(self):
         return self.longitude
 
+class FARS(db.Model):
+    __tablename__ = 'FARS'
+    YEAR = db.Column(db.Integer)
+    STATE_ID = db.Column(db.Integer)
+    STATE_NAME = db.Column(db.String(80))
+    COUNTY_ID = db.Column(db.Float)
+    COUNTY_NAME = db.Column(db.String(80))
+    MPO_ID = db.Column(db.Float)
+    MPO_NAME = db.Column(db.String(80))
+    IS_FATAL =  db.Column(db.Integer)
+    SEVERITY = db.Column(db.Integer)
+    IS_PED = db.Column(db.Integer)
+    IS_CYC = db.Column(db.Integer)
+    WEATHER_COND = db.Column(db.String(80))
+    LIGHT_COND = db.Column(db.String(80))
+    ROAD_COND = db.Column(db.String(80))
+    ROAD_NAME = db.Column(db.String(80))
+    IS_INTERSECTION = db.Column(db.Integer)
+    LAT = db.Column(db.Float, primary_key=True)
+    LON = db.Column(db.Float)
+
+    def __init__(self, STATE_ID, COUNTY_ID, LAT, LON):
+        print("init point")
+        self.STATE_ID = STATE_ID
+        self.COUNTY_ID = COUNTY_ID
+        self.LAT = LAT
+        self.LON = LON
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+    def __repr__(self):
+        return "<State %d: Lat %s Lng %s>" % (self.STATE_ID, self.LAT, self.LON)
+
+@app.route('/get_fars_data_by_county/<int:state_id><string:county_name>')
+def get_fars_data_by_county(state_id, county_name):
+    # Filter data points by a particular state id
+    print("getting fars data for state: ", state_id, " county_name: ", county_name)
+    fars_state_county_data = FARS.query.filter(FARS.STATE_ID == state_id).\
+                                        filter(FARS.COUNTY_NAME == county_name).all()
+    fars_state_county_coords = [[point.LAT, point.LON] for point in fars_state_county_data]
+    return jsonify({"data": fars_state_county_coords})
+
+
+@app.route('/get_fars_data_by_mpo/<int:state_id><string:mpo_name>')
+def get_fars_data_by_mpo(state_id, mpo_name):
+    # Filter data points by a particular state id
+    print("getting fars data for state: ", state_id, " mpo_name: ", mpo_name)
+    fars_state_mpo_data = FARS.query.filter(FARS.STATE_ID == state_id).\
+                                        filter(FARS.MPO_NAME == mpo_name).all()
+    fars_state_mpo_data_coords = [[point.LAT, point.LON] for point in fars_state_mpo_data]
+    return jsonify({"data": fars_state_mpo_data_coords})
+
+
+class SDS_California(db.Model):
+    __tablename__ = 'SDS_California'
+    YEAR = db.Column(db.Integer)
+    COUNTY_ID = db.Column(db.Float)
+    COUNTY_NAME = db.Column(db.String(80))
+    MPO_ID = db.Column(db.Float)
+    MPO_NAME = db.Column(db.String(80))
+    IS_FATAL =  db.Column(db.Integer)
+    SEVERITY = db.Column(db.Integer)
+    IS_PED = db.Column(db.Integer)
+    IS_CYC = db.Column(db.Integer)
+    WEATHER_COND = db.Column(db.String(80))
+    LIGHT_COND = db.Column(db.String(80))
+    ROAD_COND = db.Column(db.String(80))
+    ROAD_NAME = db.Column(db.String(80))
+    IS_INTERSECTION = db.Column(db.Integer)
+    LAT = db.Column(db.Float, primary_key=True)
+    LON = db.Column(db.Float)
+
+    def __init__(self, STATE_ID, COUNTY_ID, LAT, LON):
+        print("init point")
+        self.COUNTY_ID = COUNTY_ID
+        self.LAT = LAT
+        self.LON = LON
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+    def __repr__(self):
+        return "<State %d: Lat %s Lng %s>" % (self.LAT, self.LON)
+
+class SDS_Massachusetts(db.Model):
+    __tablename__ = 'SDS_Massachusetts'
+    YEAR = db.Column(db.Integer)
+    COUNTY_ID = db.Column(db.Float)
+    COUNTY_NAME = db.Column(db.String(80))
+    MPO_ID = db.Column(db.Float)
+    MPO_NAME = db.Column(db.String(80))
+    IS_FATAL =  db.Column(db.Integer)
+    SEVERITY = db.Column(db.Integer)
+    IS_PED = db.Column(db.Integer)
+    IS_CYC = db.Column(db.Integer)
+    WEATHER_COND = db.Column(db.String(80))
+    LIGHT_COND = db.Column(db.String(80))
+    ROAD_COND = db.Column(db.String(80))
+    ROAD_NAME = db.Column(db.String(80))
+    IS_INTERSECTION = db.Column(db.Integer)
+    LAT = db.Column(db.Float, primary_key=True)
+    LON = db.Column(db.Float)
+
+    def __init__(self, STATE_ID, COUNTY_ID, LAT, LON):
+        print("init point")
+        self.COUNTY_ID = COUNTY_ID
+        self.LAT = LAT
+        self.LON = LON
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+    def __repr__(self):
+        return "<State %d: Lat %s Lng %s>" % (self.LAT, self.LON)
+
+
+SDS_database_name_dict = {
+    6: SDS_California,
+    25: SDS_Massachusetts
+}
+
+class hin_properties(db.Model):
+    __tablename__ = 'hin_properties'
+    STATE_ID = db.Column(db.Integer)
+    COUNTY_ID = db.Column(db.Integer)
+    MPO_ID = db.Column(db.String)
+    THRESHOLD = db.Column(db.Float)
+    LENGTH = db.Column(db.Float)
+    NUM_CRASHES = db.Column(db.Integer)
+    TOTAL_LENGTH = db.Column(db.Float)
+    TOTAL_CRASHES = db.Column(db.Integer)
+    PERCENT_LENGTH = db.Column(db.Float)
+    PERCENT_CRASHES = db.Column(db.Float)
+    ID = db.Column(db.Integer, primary_key=True)
+
+    def __init__(self, STATE_ID, COUNTY_ID, MPO_ID, THRESHOLD):
+        print("init properties")
+        self.STATE_ID = STATE_ID
+        self.COUNTY_ID = COUNTY_ID
+        self.MPO_ID = MPO_ID
+        self.MPO_ID = THRESHOLD
+    
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+@app.route('/get_sds_data_by_county/<int:state_id><string:county_name>')
+def get_sds_data_by_county(state_id, county_name):
+    # Filter data points by a particular state id
+    print("getting fars data for state: ", state_id, " county_name: ", county_name)
+    SDS_table = SDS_database_name_dict[state_id]
+    SDS_county_data = SDS_table.query.filter(SDS_table.COUNTY_NAME == county_name).all()
+    if state_id == 6:
+            SDS_coords = [[point.LAT, -point.LON] for point in SDS_county_data]
+    else:
+        SDS_coords = [[point.LAT, point.LON] for point in SDS_county_data]
+    return jsonify({"data": SDS_coords})
+
+@app.route('/get_sds_data_by_mpo/<int:state_id><string:mpo_name>')
+def get_sds_data_by_mpo(state_id, mpo_name):
+    # Filter data points by a particular state id
+    print("getting fars data for state: ", state_id, " mpo_name: ", mpo_name)
+    SDS_table = SDS_database_name_dict[state_id]
+    SDS_mpo_data = SDS_table.query.filter(SDS_table.MPO_NAME == mpo_name).all()
+    if state_id == 6:
+            SDS_coords = [[point.LAT, -point.LON] for point in SDS_mpo_data]
+    else:
+        SDS_coords = [[point.LAT, point.LON] for point in SDS_mpo_data]
+    return jsonify({"data": SDS_coords})
 
 class States(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -125,6 +294,60 @@ def get_fars_from_rds(state_id:int, county_name:String = None, mpo_name:String =
     geojson = gdf.to_json()
     return geojson
 
+def get_hin_from_rds(state_id:int, threshold: float, county_id:int = None, mpo_id:int = None):
+
+    hin_property_row = get_hin_properties_from_rds(state_id, threshold, county_id, mpo_id)
+    hin_id = hin_property_row.ID
+
+    # Get hin from hin_properties - these are the polylines
+    sql = text(""" SELECT * FROM "hin" WHERE "ID" = {} """.format(hin_id))
+    hin_gdf = gpd.read_postgis(sql, con=sqlalchemy_conn)  
+    hin_geojson = hin_gdf.to_json()
+    return hin_geojson
+
+
+def get_hin_properties_from_rds(state_id:int, threshold: float, county_id:int = None, mpo_id:int = None):
+    print("in get hin from rds")
+    # Get hin properties
+    hin_properties_data = None
+    if county_id != None:
+        hin_properties_data = hin_properties.query.filter(hin_properties.STATE_ID == state_id).\
+                                        filter(hin_properties.COUNTY_ID == county_id).\
+                                        filter(hin_properties.THRESHOLD == threshold).all()
+    elif mpo_id != None:
+        hin_properties_data = hin_properties.query.filter(hin_properties.STATE_ID == state_id).\
+                                        filter(hin_properties.MPO_ID == mpo_id).\
+                                        filter(hin_properties.THRESHOLD == threshold).all()
+    print("HIN PROPERTIES DATA: ", type(hin_properties_data))
+
+    hin_property_row = hin_properties_data[0]
+
+    return hin_property_row
+
+# Get HIN by MPO/County and properties
+@app.route('/get_hin_by_mpo_id_and_properties/<int:state_id><int:mpo_id><float:threshold>')
+def get_hin_by_mpo_id_and_properties(state_id, mpo_id, threshold):
+    print("getting hin boundaries for {} in # {} for threshold {}".format(state_id, mpo_id, threshold))
+    hin_geojson = get_hin_from_rds(state_id, threshold = threshold, mpo_id = mpo_id)
+    return hin_geojson
+
+# Get HIN by County and properties
+@app.route('/get_hin_by_county_id_and_properties', methods = ['GET'])
+def get_hin_by_county_id_and_properties():
+    state_id = request.args.get('state_id')
+    county_id = request.args.get('county_id')
+    threshold = request.args.get('threshold')
+    print("getting hin boundaries for {} in # {} for threshold {}".format(state_id, county_id, threshold))
+    hin_geojson = get_hin_from_rds(state_id, threshold = threshold, county_id = county_id)
+    return hin_geojson
+
+# Get HIN properties
+@app.route('/get_hin_properties/<int:state_id><int:county_id><float:threshold>')
+def get_hin_properties(state_id, county_id, threshold):
+    print("getting hin properties for {} in # {} for threshold {}".format(state_id, county_id, threshold))
+    hin_properties = get_hin_properties_from_rds(state_id, threshold = threshold, county_id = county_id)
+    return jsonify(hin_properties.as_dict())
+
 
 # Query fars accident data by state
 @app.route('/get_fars_data/<int:state_id>')
@@ -135,12 +358,7 @@ def get_fars_data(state_id):
     # print("state_id, points, coords", state_id, fars_state_data, fars_state_coords)
     return jsonify({"data": fars_state_coords})
 
-# Get FARS of selected county
-@app.route('/get_fars_data_by_county/<int:state_id><string:county_name>')
-def get_fars_data_by_county(state_id, county_name):
-    print("getting fars data for {} in # {}".format(county_name, state_id))
-    geojson = get_fars_from_rds(state_id, county_name=county_name)
-    return geojson
+
 
 # Get state boundaries and return it as as a geojson
 @app.route('/get_state_boundaries_by_state/<int:state_id>')
@@ -194,7 +412,6 @@ def get_census_tract_boundaries_by_state_id(state_id):
 @app.route('/get_census_tract_boundaries_by_state_id_and_county_name/<int:state_id><string:county_name>')
 def get_census_tract_boundaries_by_state_id_and_county_name(state_id, county_name):
     print("getting census tract boundaries for {} in # {}".format(county_name, state_id))
-    logging.warning('Watch out!')
     geojson = get_census_tract_boundaries_from_rds(state_id, county_name=county_name)
     return geojson
 

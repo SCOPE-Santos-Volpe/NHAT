@@ -80,13 +80,14 @@ body {
   position: absolute;
   z-index: 999;
   background-color: lightgoldenrodyellow;
-  width: 450px;
+  width: 27%;
   height: 97%;
-  padding: 30px 40px;
+  padding: 30px 20px;
   transform: translate(10%, 0%);
   /* left: 27%; */
   /* top: 50%; */
   border-radius: 8px;
+  overflow: scroll;
 }
 .tab-filter-container {
   padding: 0px;
@@ -95,7 +96,7 @@ body {
 }
 .filter-btn {
   display: inline-flex;
-  padding: 0.8rem 2.5rem;
+  padding: 0.8rem 6.0rem;
   cursor: pointer;
   /* border-radius: 2rem; */
   align-items: center;
@@ -128,12 +129,12 @@ body {
 
 .tab-heading {
   padding: 2rem 0;
-  font-size: 3rem;
+  font-size: 2.5rem;
 }
 
 .tab-heading2 {
   padding: 2rem 0;
-  font-size: 2rem;
+  font-size: 1.5rem;
 }
 
 .tab-item.select_tab {
@@ -152,7 +153,7 @@ body {
   color: var(--white);
 }
 .tab p{
-  font-size: 15px;
+  font-size: 13px;
   margin: 0 0;
 }
 
@@ -170,7 +171,7 @@ body {
   margin: 1rem 0rem;
   padding: 0.4rem 2rem;
   background: lightgray;
-  font-size: 15px;
+  font-size: 13px;
 
 }
 
@@ -179,7 +180,7 @@ body {
   margin: 1rem 0rem;
   padding: 0.4rem 2rem;
   background: lightgray;
-  font-size: 15px;
+  font-size: 13px;
 
 }
 
@@ -189,7 +190,7 @@ body {
   background: lightgray;
   border-radius: 2rem;
   padding: 0.3rem 2rem;
-  font-size: 15px; 
+  font-size: 13px; 
   
 }
 
@@ -217,7 +218,7 @@ body {
   background: lightgray;
   border-radius: 2rem;
   padding: 0.3rem 2rem;
-  font-size: 15px;
+  font-size: 13px;
 }
 
 /* .btn-confirm {
@@ -229,6 +230,110 @@ body {
   font-size: 15px;
 } */
 
+.stats{
+  padding: 0.2rem 0.3rem;
+}
+
+/* ------------------------------------------------------ */
+/* Slider */
+
+.slidecontainer {
+  width: 80%; /* Width of the outside container */
+}
+
+.slider {
+  width: 100%;
+  height: 15px;
+  border-radius: 5px;  
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%; 
+  background: #04AA6D;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #04AA6D;
+  cursor: pointer;
+}
+
+/*------------------------------------------------------------------*/
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 55px;
+  height: 26px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The toggle */
+.toggle {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .3s;
+  transition: .3s;
+}
+
+.toggle:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 4px;
+  bottom: 2px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .toggle {
+  background-color: #2196F3;
+}
+
+input:focus + .toggle {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .toggle:before {
+  -webkit-transform: translateX(21px);
+  -ms-transform: translateX(21px);
+  transform: translateX(21px);
+}
+
+/* Rounded sliders */
+.toggle.round {
+  border-radius: 34px;
+}
+
+.toggle.round:before {
+  border-radius: 50%;
+}
+
 /* -----------------------------------------------*/
 /* Radio Box Style*/
 
@@ -237,13 +342,14 @@ label {
   align-items: center;
   margin: 15px 20px;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 13px;
   
 }
 
 /* input[type="radio"] {
   opacity: 0;
 } */
+
 
 /* -----------------------------------------------*/
 
@@ -302,206 +408,3 @@ input[type="file"] {
 }
 
 
-
-
-/*  ----------------------------------------------------  */
-/*  ----------------------------------------------------  */
-/*  ----------------------------------------------------  */
-svg:not(:root) {
-  overflow: hidden;
-}
-
-.hidden {
-  display: none;
-}
-
-.leaflet-left {
-  transform: translateX(55px);
-}
-
-.active-sidebar .leaflet-left {
-  transform: translateX(490px);
-  transition: transform 350ms;
-}
-
-.sidebar {
-  display: flex;
-  gap: 1rem;
-  position: absolute;
-  width: 46px;
-  /* max-width: 480px; */
-  max-width: 400px;
-  z-index: 99999;
-  background: #fff;
-  box-shadow: none;
-  overflow: hidden;
-  border-right: 2px solid rgba(0, 0, 0, 0.2);
-  height: 100%;
-}
-
-.active-sidebar .sidebar {
-  /* max-width: 760px; */
-  max-width: 400px;
-  width: 100%;
-}
-
-@media (min-width: 768px) {
-  .sidebar {
-    top: 10px;
-    left: 10px;
-    height: calc(100% - 20px);
-    border: 2px solid rgba(0, 0, 0, 0.2);
-    transition: width 500ms;
-  }
-
-  .leaflet-left {
-    transform: translateX(55px);
-  }
-
-  .active-sidebar .sidebar {
-    /*Change this if want to change width of the active sidebar*/
-    max-width: 400px;
-    width: 100%;
-    transition: width 1s;
-  }
-}
-
-.close-button {
-  cursor: pointer;
-  position: absolute;
-  top: 10px;
-  right: 8px;
-  border: none;
-  padding: 5px;
-  margin: 0;
-  padding: 0;
-  border-radius: 3px;
-  background: none;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.active-sidebar .close-button {
-  pointer-events: all;
-  opacity: 1;
-  transition: opacity 100ms ease-in-out;
-}
-
-.sidebar .close-button svg {
-  fill: #fff;
-}
-
-.sidebar::before {
-  position: absolute;
-  content: "";
-  z-index: -1;
-  top: 0;
-  left: 44px;
-  width: 100%;
-  height: 40px;
-  background: #0052b1;
-}
-
-.active-sidebar .sidebar::before {
-  left: 44px;
-}
-
-.sidebar svg {
-  display: block;
-  width: 20px;
-  height: 20px;
-  fill: #3f3f3f;
-  pointer-events: none;
-}
-
-.sidebar-menu {
-  /* display: flex; */
-  flex-direction: row;
-  /* list-style: none;  */
-  /* height: 100%; */
-  float: left;
-  background: #eee; 
-  padding: 10px; 
-  border: 1px solid #ccc; 
-  margin-left: -10px; 
-  position: relative;
-  left: 1px; 
-
-}
-
-.sidebar-menu li {
-  padding: 10px 11px;
-  cursor: pointer;
-}
-
-.sidebar-menu li:last-child {
-  margin-top: auto;
-}
-
-.sidebar-menu li:hover:last-child svg {
-  animation: rotation 500ms ease-in;
-  transform-origin: center;
-}
-
-@keyframes rotation {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(180deg);
-  }
-}
-
-.active-item {
-  background: #0052b1;
-}
-
-.active-item svg {
-  fill: #fff;
-}
-
-.item-content {
-  display: none;
-  margin-top: 8px;
-  padding-right: 10px;
-  height: 100%;
-}
-
-.item-content .content {
-  overflow: auto;
-  margin-top: 15px;
-  height: calc(100% - 50px);
-  padding-right: 10px;
-}
-
-.sidebar-content {
-  width: 100%;
-  opacity: 0;
-  pointer-events: none;
-  margin-bottom: 15px;
-  transition: opacity 500ms;
-  overflow: hidden;
-}
-
-.active-sidebar .sidebar-content {
-  opacity: 1;
-  pointer-events: visible;
-  transition: opacity 200ms;
-}
-
-.sidebar-content h2 {
-  font-size: 1.2rem;
-  font-weight: bold;
-  letter-spacing: 1px;
-  color: #fff;
-  white-space: nowrap;
-  width: calc(100% - 10px);
-  height: 25px;
-  margin: 0;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-
-.active-content {
-  display: block;
-}
