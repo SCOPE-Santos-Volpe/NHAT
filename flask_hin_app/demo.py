@@ -6,7 +6,7 @@ https://realpython.com/flask-javascript-frontend-for-rest-api/#investigate-the-p
 
 import sys
 import random
-from flask import Flask, render_template, jsonify #, request
+from flask import Flask, render_template, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from geoalchemy2 import Geometry, WKTElement
 import geopandas as gpd
@@ -173,29 +173,7 @@ SDS_database_name_dict = {
     25: SDS_Massachusetts
 }
 
-class hin_properties(db.Model):
-    __tablename__ = 'hin_properties'
-    STATE_ID = db.Column(db.Integer)
-    COUNTY_ID = db.Column(db.Integer)
-    MPO_ID = db.Column(db.String)
-    THRESHOLD = db.Column(db.Float)
-    LENGTH = db.Column(db.Float)
-    NUM_CRASHES = db.Column(db.Integer)
-    TOTAL_LENGTH = db.Column(db.Float)
-    TOTAL_CRASHES = db.Column(db.Integer)
-    PERCENT_LENGTH = db.Column(db.Float)
-    PERCENT_CRASHES = db.Column(db.Float)
-    ID = db.Column(db.Integer, primary_key=True)
 
-    def __init__(self, STATE_ID, COUNTY_ID, MPO_ID, THRESHOLD):
-        print("init properties")
-        self.STATE_ID = STATE_ID
-        self.COUNTY_ID = COUNTY_ID
-        self.MPO_ID = MPO_ID
-        self.MPO_ID = THRESHOLD
-    
-    def as_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 @app.route('/get_sds_data_by_county/<int:state_id><string:county_name>')
 def get_sds_data_by_county(state_id, county_name):
@@ -294,31 +272,67 @@ def get_fars_from_rds(state_id:int, county_name:String = None, mpo_name:String =
     geojson = gdf.to_json()
     return geojson
 
-def get_hin_from_rds(state_id:int, threshold: float, county_id:int = None, mpo_id:int = None):
+class hin_properties(db.Model):
+    __tablename__ = 'hin_properties_state_6'
+    STATE_ID = db.Column(db.Integer)
+    COUNTY_ID = db.Column(db.Integer)
+    MPO_ID = db.Column(db.String)
+    THRESHOLD = db.Column(db.Float)
+    LENGTH = db.Column(db.Float)
+    NUM_CRASHES = db.Column(db.Integer)
+    TOTAL_LENGTH = db.Column(db.Float)
+    TOTAL_CRASHES = db.Column(db.Integer)
+    PERCENT_LENGTH = db.Column(db.Float)
+    PERCENT_CRASHES = db.Column(db.Float)
+    DATA_SOURCE = db.Column(db.String)
+    ID = db.Column(db.Integer, primary_key=True)
 
-    hin_property_row = get_hin_properties_from_rds(state_id, threshold, county_id, mpo_id)
+    def __init__(self, STATE_ID, COUNTY_ID, MPO_ID, THRESHOLD, DATA_SOURCE):
+        print("init properties")
+        self.STATE_ID = STATE_ID
+        self.COUNTY_ID = COUNTY_ID
+        self.MPO_ID = MPO_ID
+        self.MPO_ID = THRESHOLD
+        self.DATA_SOURCE = DATA_SOURCE
+    
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+    
+
+def get_hin_from_rds(state_id:int, datasource:String, threshold: float, county_id:int = None, mpo_id:int = None):
+    
+    hin_property_row = get_hin_properties_from_rds(state_id, datasource, threshold, county_id, mpo_id)
     hin_id = hin_property_row.ID
-
     # Get hin from hin_properties - these are the polylines
-    sql = text(""" SELECT * FROM "hin" WHERE "ID" = {} """.format(hin_id))
+    sql = text(""" SELECT * FROM "hin_state_{}" WHERE "ID" = {} """.format(state_id, hin_id))
     hin_gdf = gpd.read_postgis(sql, con=sqlalchemy_conn)  
     hin_geojson = hin_gdf.to_json()
     return hin_geojson
 
 
-def get_hin_properties_from_rds(state_id:int, threshold: float, county_id:int = None, mpo_id:int = None):
+def get_hin_properties_from_rds(state_id:int, datasource:String, threshold: float, county_id:int = None, mpo_id:int = None):
     print("in get hin from rds")
     # Get hin properties
+
+    print("DATASOURCE", datasource)
+    if datasource == "fars":
+        datasource = "FARS"
+    elif datasource == "sds":
+        datasource = "SDS"
+        
     hin_properties_data = None
     if county_id != None:
         hin_properties_data = hin_properties.query.filter(hin_properties.STATE_ID == state_id).\
                                         filter(hin_properties.COUNTY_ID == county_id).\
+                                        filter(hin_properties.DATA_SOURCE == datasource).\
                                         filter(hin_properties.THRESHOLD == threshold).all()
     elif mpo_id != None:
         hin_properties_data = hin_properties.query.filter(hin_properties.STATE_ID == state_id).\
                                         filter(hin_properties.MPO_ID == mpo_id).\
+                                        filter(hin_properties.DATA_SOURCE == datasource).\
                                         filter(hin_properties.THRESHOLD == threshold).all()
-    print("HIN PROPERTIES DATA: ", type(hin_properties_data))
+    # print("HIN PROPERTIES DATA: ", type(hin_properties_data))
+    print("HIN PROPERTIES DATA: ", hin_properties_data)
 
     hin_property_row = hin_properties_data[0]
 
@@ -332,20 +346,27 @@ def get_hin_by_mpo_id_and_properties(state_id, mpo_id, threshold):
     return hin_geojson
 
 # Get HIN by County and properties
-@app.route('/get_hin_by_county_id_and_properties', methods = ['GET'])
+@app.route('/get_hin_by_county_id_and_properties/', methods = ['GET'])
 def get_hin_by_county_id_and_properties():
     state_id = request.args.get('state_id')
     county_id = request.args.get('county_id')
     threshold = request.args.get('threshold')
-    print("getting hin boundaries for {} in # {} for threshold {}".format(state_id, county_id, threshold))
-    hin_geojson = get_hin_from_rds(state_id, threshold = threshold, county_id = county_id)
+    datasource = request.args.get('datasource')
+
+    print("getting hin boundaries for {} in # {} for threshold {} using {}".format(state_id, county_id, threshold, datasource))
+    hin_geojson = get_hin_from_rds(state_id, datasource = datasource, threshold = threshold, county_id = county_id)
     return hin_geojson
 
 # Get HIN properties
-@app.route('/get_hin_properties/<int:state_id><int:county_id><float:threshold>')
-def get_hin_properties(state_id, county_id, threshold):
-    print("getting hin properties for {} in # {} for threshold {}".format(state_id, county_id, threshold))
-    hin_properties = get_hin_properties_from_rds(state_id, threshold = threshold, county_id = county_id)
+@app.route('/get_hin_properties/', methods = ['GET'])
+def get_hin_properties():
+    state_id = request.args.get('state_id')
+    county_id = request.args.get('county_id')
+    threshold = request.args.get('threshold')
+    datasource = request.args.get('datasource')
+    
+    print("getting hin properties for {} in # {} for threshold {} using {}".format(state_id, county_id, threshold, datasource))
+    hin_properties = get_hin_properties_from_rds(state_id, datasource = datasource, threshold = threshold, county_id = county_id)
     return jsonify(hin_properties.as_dict())
 
 

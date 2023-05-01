@@ -734,8 +734,8 @@ function makeMap() {
 
 
         $.getJSON({
-          url: "/get_hin_by_county_id_and_properties", 
-          data: {state_id: clicked_state, county_id: selected_feature_id, threshold: threshold}, 
+          url: "/get_hin_by_county_id_and_properties/", 
+          data: {state_id: clicked_state, county_id: selected_feature_id, threshold: threshold, datasource: selectedData}, 
           success: function(obj) {
           var hin_geojson = obj;
           console.log('HIN GEOJSON INSIDE', hin_geojson);
@@ -743,11 +743,23 @@ function makeMap() {
           }
         });
 
-
-        $.getJSON("/get_hin_properties/"+clicked_state+selected_feature_id+threshold, function(obj) {
+        $.getJSON({
+          url: "/get_hin_properties/", 
+          data: {state_id: clicked_state, county_id: selected_feature_id, threshold: threshold, datasource: selectedData}, 
+          success: function(obj) {
           var hin_properties = obj;
           console.log('HIN PROPERTIES', hin_properties);
+          let percent_road = hin_properties.PERCENT_LENGTH.toFixed(2);
+          let percent_crash = hin_properties.PERCENT_CRASHES.toFixed(2);
+
+          var statVal = document.getElementById("stats");
+          var statHeader = document.getElementById("stat-header");
+          statHeader.innerText = "Statistics";
+          statVal.innerText = `${percent_crash}% of the fatal traffic crashes occur on just ${percent_road}% of the Alameda streets`;
+          }
         });
+
+
 
         // get hin from the output
         // d3.json(hin_geojson, function(data) { 
@@ -781,6 +793,11 @@ function makeMap() {
     }
 
     function hinToMap(geojson){
+
+      roadHighlight_polylineLayer.eachLayer(function (layer) {
+        roadHighlight_polylineLayer.removeLayer(layer);
+      });
+
       var geojson_hin_layer = L.geoJSON(geojson, {
         style: function (feature) {
           return {
