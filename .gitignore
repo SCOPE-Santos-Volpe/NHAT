@@ -1,0 +1,19 @@
+NEMSIS/2021 ASCII.zip
+NEMSIS/2021 ASCII/*
+
+
+.DS_Store
+
+cache
+
+state_**
+
+FARS
+Hospital_Data
+Justice40
+SDS
+Shapefiles
+
+__pycache__
+AWS/config/__pycache__
+sqlalchemy_conn_string.txt

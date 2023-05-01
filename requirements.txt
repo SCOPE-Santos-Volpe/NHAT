@@ -1,0 +1,11 @@
+geoalchemy2
+geojson
+geopandas
+matplotlib
+numpy
+osmnx
+pandas
+pyproj
+scipy
+shapely
+sqlalchemy<2
