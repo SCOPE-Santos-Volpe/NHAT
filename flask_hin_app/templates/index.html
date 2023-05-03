@@ -6,17 +6,9 @@
   <link rel="stylesheet" href="{{url_for('static', filename='demo.css')}}">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 
-  <title>NHAT (National HIN Aanalysis Tool)</title>
-
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-  <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script> -->
 
-  <link rel="stylesheet" href="../node_modules/leaflet/dist/leaflet.css">
-  <script src="../node_modules/leaflet/dist/leaflet.js"></script>
-  <script src="../node_modules/heatmap.js/build/heatmap.js"></script>
-  <script src="../node_modules/leaflet-heatmap/leaflet-heatmap.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/heatmap.js/2.0.2/heatmap.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/leaflet-heatmap@1.0.0/leaflet-heatmap.min.js"></script>
 
@@ -28,57 +20,12 @@
   <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
   <script src="http://d3js.org/d3.v3.min.js"></script>
 
+  <title>NHAT (National HIN Aanalysis Tool)</title>
   <base href=".">
 </head>
 
 <body>
-  <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-    <symbol id="icon-export" viewBox="0 0 24 24">
-      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0 0 5.373 0 12zm17-1h-4v8h-2v-8H7l5-6 5 6z" />
-    </symbol>
-    <symbol id="icon-add" viewBox="0 0 24 24">
-      <path
-        d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm6 13h-5v5h-2v-5H6v-2h5V6h2v5h5v2z" />
-    </symbol>
-    <symbol id="icon-remove" viewBox="0 0 24 24">
-      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm6 13H6v-2h12v2z" />
-    </symbol>
-    <symbol id="icon-import" viewBox="0 0 24 24">
-      <path d="M24 12c0-6.627-5.373-12-12-12S0 5.373 0 12s5.373 12 12 12 12-5.373 12-12zM7 13h4V5h2v8h4l-5 6-5-6z" />
-    </symbol>
-  </svg>
-
-  <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
-    <symbol id="icon-arrow-left" viewBox="0 0 24 24">
-      <path d="M15.422 16.594 14.016 18l-6-6 6-6 1.406 1.406L10.828 12z" />
-    </symbol>
-    <symbol id="icon-clear" viewBox="0 0 24 24">
-      <path
-        d="M18.984 6.422 13.406 12l5.578 5.578-1.406 1.406L12 13.406l-5.578 5.578-1.406-1.406L10.594 12 5.016 6.422l1.406-1.406L12 10.594l5.578-5.578z"
-      />
-    </symbol>
-    <symbol id="icon-email" viewBox="0 0 24 24">
-      <path
-        d="M20.016 8.016V6L12 11.016 3.984 6v2.016L12 12.985zm0-4.032q.797 0 1.383.609t.586 1.406v12q0 .797-.586 1.406t-1.383.609H3.985q-.797 0-1.383-.609t-.586-1.406v-12q0-.797.586-1.406t1.383-.609h16.031z"
-      />
-    </symbol>
-    <symbol id="icon-menu" viewBox="0 0 24 24">
-      <path
-        d="M3 13h18a1 1 0 0 0 0-2H3a1 1 0 0 0 0 2zm0-6h18a1 1 0 0 0 0-2H3a1 1 0 0 0 0 2zm0 12h18a1 1 0 0 0 0-2H3a1 1 0 0 0 0 2z"
-      />
-    </symbol>
-    <symbol id="icon-person" viewBox="0 0 24 24">
-      <path
-        d="M12 14.016q2.531 0 5.273 1.102t2.742 2.883v2.016H3.984v-2.016q0-1.781 2.742-2.883t5.273-1.102zM12 12q-1.641 0-2.813-1.172T8.015 8.015t1.172-2.836T12 3.984t2.813 1.195 1.172 2.836-1.172 2.813T12 12z"
-      />
-    </symbol>
-    <symbol id="icon-settings" viewBox="0 0 24 24">
-      <path
-        d="M12 15.516q1.453 0 2.484-1.031t1.031-2.484-1.031-2.484T12 8.486 9.516 9.517t-1.031 2.484 1.031 2.484T12 15.516zm7.453-2.532 2.109 1.641q.328.234.094.656L19.64 18.75q-.188.328-.609.188l-2.484-.984q-.984.703-1.688.984l-.375 2.625q-.094.422-.469.422H9.984q-.375 0-.469-.422l-.375-2.625q-.891-.375-1.688-.984l-2.484.984q-.422.141-.609-.188l-2.016-3.469q-.234-.422.094-.656l2.109-1.641q-.047-.328-.047-.984t.047-.984L2.437 9.375q-.328-.234-.094-.656L4.359 5.25q.188-.328.609-.188l2.484.984q.984-.703 1.688-.984l.375-2.625q.094-.422.469-.422h4.031q.375 0 .469.422l.375 2.625q.891.375 1.688.984l2.484-.984q.422-.141.609.188l2.016 3.469q.234.422-.094.656l-2.109 1.641q.047.328.047.984t-.047.984z"
-      />
-    </symbol>
-  </svg>
-
+  <!-- Right side tab -->
   <div class = "tab">
     <div class="tab-filter-container">
       <li class="filter-btn active" data-tab="home">
@@ -89,12 +36,9 @@
         <ion-icon name="options-outline"></ion-icon>
         HIN
       </li>
-      <!-- <li class="filter-btn" data-tab="stat">
-        <ion-icon name="stats-chart-outline"></ion-icon>
-        Statistic
-      </li> -->
     </div>
     <div class="tab-filter-item-container">
+      <!-- Home Tab -->
       <div class="tab-item intro select_tab">
         <h2 class="tab-heading"> National High Injury Network Analysis Tool</h2>
         <p>
@@ -108,21 +52,26 @@
         <p>
           Start by clicking the state you want to navigate to!
         </p>
+
+        <!-- Appears when state is clicked-->
         <div class= "state-click" id="state"></div>
         <div class = "after-state" id="afterstate"> </div>
         <button class= "back-button" id = "back"> Back</button>
 
+        <!-- Appears when county/mpo region is clicked-->
         <div class="region-click" id = "region"></div>
         <div class="after-region" id = "afterregion"></div>
         <div class="button-group">
           <button class= "back-button2" id = "back2"> Back</button>
           <button class= "btn-confirm" id = "btnconfirm"> Confirm </button>
         </div>
-
-
       </div>
+
+      <!-- HIN Tab -->
       <div class="tab-item hin">
         <h3 class="tab-heading">Generate High Injury Network</h1>
+
+        <!-- Radio box to choose database-->
         <h4>
           Database
         </h4>
@@ -135,27 +84,24 @@
             <input type="radio" name="database" value="sds" id="sds" disabled>
             <label for = "sds"> SDS</label>
           </div>
-          <!-- <div>
-            <input type="radio" name="database" value="own" id="own" disabled>
-            <label for = "own"> Your Own Database</label>
-          </div> -->
         </div>
+
+        <!-- Slider to choose threshold -->
         <h4>
           Threshold
         </h4>
-
         <div class="slidecontainer">
           <input type="range" min="0" max="3" value="0" step = "1" class="slider" id="myRange">
         </div>
         <div class="slider-value" id = "slidervalue"></div>
 
-        <h4>
+        <!-- <h4>
           Equity Weighting
         </h4>
         <label class="switch">
           <input type="checkbox" id = "toggle">
           <span class="toggle round"></span>
-        </label>
+        </label> -->
         
         <button class="button" id="rd-btn">Generate HIN map</button>
         <p id="output"></p>
@@ -164,29 +110,10 @@
         <p class = "stats" id = "stats"></p>
 
       </div>
-      <!-- <div class="tab-item stat">
-        <h2 class="tab-heading"> Statistic Page</h1>
-        <div class = "stats" id = "stats"></div>
-      </div> -->
     </div>
   </div>
   
   <div id="llmap"></div>
-
-  <!-- <div>
-      <select id="statesel">
-        {% for state in states %}
-        <option value="{{state.id}}">{{state.name}}</option>
-        {% endfor %}
-
-      </select>
-  </div> -->
-  
-  <!-- this was used before node.js changed from calling the script directly to calling bundle.js -->
-  <!-- <script src="script.js"></script> -->
-
-  <!-- this was used for node.js before flask -->
-  <!-- <script src="bundle.js"></script> -->
 
   <base href="/">
 
