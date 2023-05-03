@@ -12,6 +12,9 @@ https://gis.stackexchange.com/questions/239198/adding-geopandas-dataframe-to-pos
 https://gis.stackexchange.com/questions/325415/writing-geopandas-data-frame-to-postgis
 """
 
+# To import helper
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import itertools
 import json
 import os
@@ -30,9 +33,6 @@ from AWS.config.config import config
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-
-# To import helper
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Establish sqlalchemy connection
 sqlalchemy_conn = preprocess_utils.connect_to_sqlalchemy()
