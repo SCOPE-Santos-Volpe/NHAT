@@ -288,10 +288,8 @@ class Corridor:
             national_survey_foot = 1.000002
             feet_per_mile = 5280
             national_survey_feet_per_tenth_mile = feet_per_mile/national_survey_foot/10
-            arr = [0] + [self.windows[i].shape_points.length/2 + i *
-                         national_survey_feet_per_tenth_mile for i in range(len(self.windows))]
-            arr.append(self.windows[-1].shape_points.length +
-                       (len(self.windows)-1)*national_survey_feet_per_tenth_mile)
+            arr = [0] + [self.windows[i].shape_points.length/2 + i * national_survey_feet_per_tenth_mile for i in range(len(self.windows))]
+            arr.append(self.windows[-1].shape_points.length + (len(self.windows)-1)*national_survey_feet_per_tenth_mile)
             center_points_1d = arr[1:-1]
 
             # Edge case: need to distribute crash weight in order to make KDE work
@@ -303,7 +301,7 @@ class Corridor:
                     self.windows[0].window_points.coords[-1])]
 
                 center_points_1d = [
-                    0, self.windows[0].shape_points.length/2, self.windows[0].shape_points.length]
+                    0, len(self.windows[0].shape_points)/2, len(self.windows[0].shape_points)]
 
             # Edge case: need to distribute crash weights in order to run KDE
             elif sum([i > 0 for i in self.modified_crash_weights]) == 1:
@@ -339,8 +337,7 @@ class Corridor:
 
             y = kde(x)
 
-            hin_points = [self.shape_points.interpolate(
-                distance) for distance in x]
+            hin_points = [self.shape_points.interpolate(distance) for distance in x]
 
             self.x = x
             self.y = y
@@ -1066,7 +1063,7 @@ def generate_hin(state_id, county_id):
     windows_by_edge = create_windows(
         edges, bins_by_edge, points_by_edge, points_granular_by_edge)
     corridors_by_edge = create_corridors(
-        edges, points_granular_by_edge, points_by_edge, bins_by_edge, windows_by_edge)
+        edges, points_granular_by_edge= points_granular_by_edge, points_by_edge= points_by_edge, bins_by_edge= bins_by_edge, windows_by_edge= windows_by_edge)
     print("Created bins, windows, and corridors")
 
     # Get crash data:
