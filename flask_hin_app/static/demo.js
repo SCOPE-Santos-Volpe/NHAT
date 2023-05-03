@@ -1,43 +1,44 @@
-// import grouped_layers
-
 var map;
 
+// Leaflet plugin for group layer
+import {createGroupLayer} from './plugin.js';
+ 
+
 function makeMap() {
-  // Make Map
-    // magnification and coordinates with which the map will start
-    const zoom = 4;
-    const lat = 35;
-    const lng = -108;
+  // magnification and coordinates with which the map will start
+  const zoom = 4;
+  const lat = 35;
+  const lng = -108;
 
-    const osmLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
-    const cartoDB = '<a href="http://cartodb.com/attributions">CartoDB</a>';
-    const osmUrl = "http://tile.openstreetmap.org/{z}/{x}/{y}.png";
-    const osmAttrib = `&copy; ${osmLink} Contributors`;
-    const landUrl = "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png";
-    const cartoAttrib = `&copy; ${osmLink} Contributors & ${cartoDB}`;
+  const osmLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
+  const cartoDB = '<a href="http://cartodb.com/attributions">CartoDB</a>';
+  const osmUrl = "http://tile.openstreetmap.org/{z}/{x}/{y}.png";
+  const osmAttrib = `&copy; ${osmLink} Contributors`;
+  const landUrl = "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png";
+  const cartoAttrib = `&copy; ${osmLink} Contributors & ${cartoDB}`;
 
-    const osmMap = L.tileLayer(osmUrl, { attribution: osmAttrib });
-    // const landMap = L.tileLayer(landUrl, { attribution: cartoAttrib });
+  const osmMap = L.tileLayer(osmUrl, { attribution: osmAttrib });
 
-    // config map
-    let config = {
-      layers: [osmMap],
-      minZoom: 3,
-      maxZoom: 18,
-      zoomControl: false,
-      preferCanvas: true, // helps to fix slowness by plotting points on a canvas rather than individual layers
-      // fullscreenControl: true,
-    };
+  let config = {
+    layers: [osmMap],
+    minZoom: 3,
+    maxZoom: 18,
+    zoomControl: false,
+    preferCanvas: true, // helps to fix slowness by plotting points on a canvas rather than individual layers
+  };
 
-    // calling map
-    map = L.map("llmap", config).setView([lat, lng], zoom);
+  // calling map
+  map = L.map("llmap", config).setView([lat, lng], zoom);
 
-    L.control.zoom({ position: "topright" }).addTo(map);
+  // move the zoom in/out button to the top right
+  L.control.zoom({ position: "topright" }).addTo(map);
 
-    var baseLayers = {
-      "OSM": osmMap,
-      // CartoDB: landMap,
-    };
+
+  // Define the base layer for the map
+  var baseLayers = {
+    "OSM": osmMap,
+    // CartoDB: landMap,
+  };
 
   // Make Layers
     const pointsA = [
@@ -572,7 +573,7 @@ function makeMap() {
     function sdsToMap(sds_data){
 
       var markers = sds_data.data.map(function(arr) {
-        return L.circleMarker([arr[0], arr[1]], {radius: 2, color: 'CadetBlue'}).bindPopup("Coordinates:<br>" + [arr[0], arr[1]]);
+        return L.circleMarker([arr[0], arr[1]], {radius: 2, color: 'red'}).bindPopup("Coordinates:<br>" + [arr[0], arr[1]]);
       });
 
       layer = L.layerGroup(markers);
@@ -759,36 +760,6 @@ function makeMap() {
           }
         });
 
-
-
-        // get hin from the output
-        // d3.json(hin_geojson, function(data) { 
-        //   let percent_road = data.properties.percent_length.toFixed(2);
-        //   let percent_crash = data.properties.percent_crashes.toFixed(2);
-        //   console.log("percent_road", percent_road);
-        //   console.log("percent_crash", percent_crash);
-
-        //   var statVal = document.getElementById("stats");
-        //   var statHeader = document.getElementById("stat-header");
-        //   statHeader.innerText = "Statistics";
-        //   statVal.innerText = `${percent_crash}% of the fatal traffic crashes occur on just ${percent_road}% of the Alameda streets`;
-
-        //   const feature = L.geoJSON(data, {
-        //     style: function (feature) {
-        //       return {
-        //         color: "blue",
-        //         weight: 5,
-        //         opacity: 0.5,
-        //       };
-        //     },
-        //     onEachFeature: function (feature, layer) {
-        //       roadHighlight_polylineLayer.addLayer(layer);
-        //       const coordinates = feature.geometry.coordinates.toString();
-        //     },
-        //   });
-        //   map.addLayer(roadHighlight_polylineLayer);
-        // }); 
-
       });
     }
 
@@ -901,388 +872,6 @@ function makeMap() {
     var startLayer = L.control.layers(null, overlayMaps, {collapsed:false}).addTo(map);
     map.removeControl(startLayer);
 
-    // -------------------------------------------------------------------------------------------
-    // EXCLUSIVE LAYER PLUGIN (ALLOWS RADIO BOXES FOR LAYERS, NOT JUST CHECKBOXES)
-
-    // A layer control which provides for layer groupings.
-    // Author: Ishmael Smyrnow
-    L.Control.GroupedLayers = L.Control.extend({
-
-      options: {
-          collapsed: true,
-          position: 'topright',
-          autoZIndex: true,
-          exclusiveGroups: [],
-          groupCheckboxes: false
-      },
-      
-      initialize: function (baseLayers, groupedOverlays, options) {
-          var i, j;
-          L.Util.setOptions(this, options);
-      
-          this._layers = [];
-          this._lastZIndex = 0;
-          this._handlingClick = false;
-          this._groupList = [];
-          this._domGroups = [];
-      
-          for (i in baseLayers) {
-          this._addLayer(baseLayers[i], i);
-          }
-      
-          for (i in groupedOverlays) {
-          for (j in groupedOverlays[i]) {
-              this._addLayer(groupedOverlays[i][j], j, i, true);
-          }
-          }
-      },
-      
-      onAdd: function (map) {
-          this._initLayout();
-          this._update();
-      
-          map
-              .on('layeradd', this._onLayerChange, this)
-              .on('layerremove', this._onLayerChange, this);
-      
-          return this._container;
-      },
-      
-      onRemove: function (map) {
-          map
-              .off('layeradd', this._onLayerChange, this)
-              .off('layerremove', this._onLayerChange, this);
-      },
-      
-      addBaseLayer: function (layer, name) {
-          this._addLayer(layer, name);
-          this._update();
-          return this;
-      },
-      
-      addOverlay: function (layer, name, group) {
-          this._addLayer(layer, name, group, true);
-          this._update();
-          return this;
-      },
-      
-      removeLayer: function (layer) {
-          var id = L.Util.stamp(layer);
-          var _layer = this._getLayer(id);
-          if (_layer) {
-          delete this._layers[this._layers.indexOf(_layer)];
-          }
-          this._update();
-          return this;
-      },
-      
-      _getLayer: function (id) {
-          for (var i = 0; i < this._layers.length; i++) {
-          if (this._layers[i] && L.stamp(this._layers[i].layer) === id) {
-              return this._layers[i];
-          }
-          }
-      },
-      
-      _initLayout: function () {
-          var className = 'leaflet-control-layers',
-          container = this._container = L.DomUtil.create('div', className);
-      
-          // Makes this work on IE10 Touch devices by stopping it from firing a mouseout event when the touch is released
-          container.setAttribute('aria-haspopup', true);
-      
-          if (L.Browser.touch) {
-          L.DomEvent.on(container, 'click', L.DomEvent.stopPropagation);
-          } else {
-          L.DomEvent.disableClickPropagation(container);
-          L.DomEvent.on(container, 'wheel', L.DomEvent.stopPropagation);
-          }
-      
-          var form = this._form = L.DomUtil.create('form', className + '-list');
-      
-          if (this.options.collapsed) {
-          if (!L.Browser.android) {
-              L.DomEvent
-                  .on(container, 'mouseover', this._expand, this)
-                  .on(container, 'mouseout', this._collapse, this);
-          }
-          var link = this._layersLink = L.DomUtil.create('a', className + '-toggle', container);
-          link.href = '#';
-          link.title = 'Layers';
-      
-          if (L.Browser.touch) {
-              L.DomEvent
-                  .on(link, 'click', L.DomEvent.stop)
-                  .on(link, 'click', this._expand, this);
-          } else {
-              L.DomEvent.on(link, 'focus', this._expand, this);
-          }
-      
-          this._map.on('click', this._collapse, this);
-          // TODO keyboard accessibility
-          } else {
-          this._expand();
-          }
-      
-          this._baseLayersList = L.DomUtil.create('div', className + '-base', form);
-          this._separator = L.DomUtil.create('div', className + '-separator', form);
-          this._overlaysList = L.DomUtil.create('div', className + '-overlays', form);
-      
-          container.appendChild(form);
-      },
-      
-      _addLayer: function (layer, name, group, overlay) {
-          var id = L.Util.stamp(layer);
-      
-          var _layer = {
-          layer: layer,
-          name: name,
-          overlay: overlay
-          };
-          this._layers.push(_layer);
-      
-          group = group || '';
-          var groupId = this._indexOf(this._groupList, group);
-      
-          if (groupId === -1) {
-          groupId = this._groupList.push(group) - 1;
-          }
-      
-          var exclusive = (this._indexOf(this.options.exclusiveGroups, group) !== -1);
-      
-          _layer.group = {
-          name: group,
-          id: groupId,
-          exclusive: exclusive
-          };
-      
-          if (this.options.autoZIndex && layer.setZIndex) {
-          this._lastZIndex++;
-          layer.setZIndex(this._lastZIndex);
-          }
-      },
-      
-      _update: function () {
-          if (!this._container) {
-          return;
-          }
-      
-          this._baseLayersList.innerHTML = '';
-          this._overlaysList.innerHTML = '';
-          this._domGroups.length = 0;
-      
-          var baseLayersPresent = false,
-          overlaysPresent = false,
-          i, obj;
-      
-          for (var i = 0; i < this._layers.length; i++) {
-          obj = this._layers[i];
-          this._addItem(obj);
-          overlaysPresent = overlaysPresent || obj.overlay;
-          baseLayersPresent = baseLayersPresent || !obj.overlay;
-          }
-      
-          this._separator.style.display = overlaysPresent && baseLayersPresent ? '' : 'none';
-      },
-      
-      _onLayerChange: function (e) {
-      
-          var obj = this._getLayer(L.Util.stamp(e.layer)),
-          type;
-      
-          if (!obj) {
-          return;
-          }
-      
-          if (!this._handlingClick) {
-          this._update();
-          }
-      
-          if (obj.overlay) {
-          type = e.type === 'layeradd' ? 'overlayadd' : 'overlayremove';
-      
-          // LILO : tried adding something to zoom out to fit bounds of the selected layer
-          // console.log("obj.layer", obj.layer);
-          // map.fitBounds(obj.layer.getBounds());
-      
-          } else {
-          type = e.type === 'layeradd' ? 'baselayerchange' : null;
-          }
-      
-          if (type) {
-          this._map.fire(type, obj);
-          }
-      },
-      
-      // IE7 bugs out if you create a radio dynamically, so you have to do it this hacky way (see http://bit.ly/PqYLBe)
-      _createRadioElement: function (name, checked) {
-          var radioHtml = '<input type="radio" class="leaflet-control-layers-selector" name="' + name + '"';
-          if (checked) {
-          radioHtml += ' checked="checked"';
-          }
-          radioHtml += '/>';
-      
-          var radioFragment = document.createElement('div');
-          radioFragment.innerHTML = radioHtml;
-      
-          return radioFragment.firstChild;
-      },
-      
-      _addItem: function (obj) {
-          var label = document.createElement('label'),
-          input,
-          checked = this._map.hasLayer(obj.layer),
-          container,
-          groupRadioName;
-      
-          if (obj.overlay) {
-          if (obj.group.exclusive) {
-              groupRadioName = 'leaflet-exclusive-group-layer-' + obj.group.id;
-              input = this._createRadioElement(groupRadioName, checked);
-          } else {
-              input = document.createElement('input');
-              input.type = 'checkbox';
-              input.className = 'leaflet-control-layers-selector';
-              input.defaultChecked = checked;
-          }
-          } else {
-          input = this._createRadioElement('leaflet-base-layers', checked);
-          }
-      
-          input.layerId = L.Util.stamp(obj.layer);
-          input.groupID = obj.group.id;
-          L.DomEvent.on(input, 'click', this._onInputClick, this);
-      
-          var name = document.createElement('span');
-          name.innerHTML = ' ' + obj.name;
-      
-          label.appendChild(input);
-          label.appendChild(name);
-      
-          if (obj.overlay) {
-          container = this._overlaysList;
-      
-          var groupContainer = this._domGroups[obj.group.id];
-      
-          // Create the group container if it doesn't exist
-          if (!groupContainer) {
-              groupContainer = document.createElement('div');
-              groupContainer.className = 'leaflet-control-layers-group';
-              groupContainer.id = 'leaflet-control-layers-group-' + obj.group.id;
-      
-              var groupLabel = document.createElement('label');
-              groupLabel.className = 'leaflet-control-layers-group-label';
-      
-              if (obj.group.name !== '' && !obj.group.exclusive) {
-              // ------ add a group checkbox with an _onInputClickGroup function
-              if (this.options.groupCheckboxes) {
-                  var groupInput = document.createElement('input');
-                  groupInput.type = 'checkbox';
-                  groupInput.className = 'leaflet-control-layers-group-selector';
-                  groupInput.groupID = obj.group.id;
-                  groupInput.legend = this;
-                  L.DomEvent.on(groupInput, 'click', this._onGroupInputClick, groupInput);
-                  groupLabel.appendChild(groupInput);
-              }
-              }
-      
-              var groupName = document.createElement('span');
-              groupName.className = 'leaflet-control-layers-group-name';
-              groupName.innerHTML = obj.group.name;
-              groupLabel.appendChild(groupName);
-      
-              groupContainer.appendChild(groupLabel);
-              container.appendChild(groupContainer);
-      
-              this._domGroups[obj.group.id] = groupContainer;
-          }
-      
-          container = groupContainer;
-          } else {
-          container = this._baseLayersList;
-          }
-      
-          container.appendChild(label);
-      
-          return label;
-      },
-      
-      _onGroupInputClick: function () {
-          var i, input, obj;
-      
-          var this_legend = this.legend;
-          this_legend._handlingClick = true;
-      
-          var inputs = this_legend._form.getElementsByTagName('input');
-          var inputsLen = inputs.length;
-      
-          for (i = 0; i < inputsLen; i++) {
-          input = inputs[i];
-          if (input.groupID === this.groupID && input.className === 'leaflet-control-layers-selector') {
-              input.checked = this.checked;
-              obj = this_legend._getLayer(input.layerId);
-              if (input.checked && !this_legend._map.hasLayer(obj.layer)) {
-              this_legend._map.addLayer(obj.layer);
-              } else if (!input.checked && this_legend._map.hasLayer(obj.layer)) {
-              this_legend._map.removeLayer(obj.layer);
-              }
-          }
-          }
-      
-          this_legend._handlingClick = false;
-      },
-      
-      _onInputClick: function () {
-          var i, input, obj,
-          inputs = this._form.getElementsByTagName('input'),
-          inputsLen = inputs.length;
-      
-          this._handlingClick = true;
-
-          for (i = 0; i < inputsLen; i++) {
-          input = inputs[i];
-          if (input.className === 'leaflet-control-layers-selector') {
-              obj = this._getLayer(input.layerId);
-              if (input.checked && !this._map.hasLayer(obj.layer)) {
-                this._map.addLayer(obj.layer);
-              } else if (!input.checked && this._map.hasLayer(obj.layer)) {
-                this._map.removeLayer(obj.layer);
-              }
-          }
-          }
-      
-          this._handlingClick = false;
-      },
-      
-      _expand: function () {
-          L.DomUtil.addClass(this._container, 'leaflet-control-layers-expanded');
-          // permits to have a scrollbar if overlays heighter than the map.
-          var acceptableHeight = this._map._size.y - (this._container.offsetTop * 4);
-          if (acceptableHeight < this._form.clientHeight) {
-          L.DomUtil.addClass(this._form, 'leaflet-control-layers-scrollbar');
-          this._form.style.height = acceptableHeight + 'px';
-          }
-      },
-      
-      _collapse: function () {
-          this._container.className = this._container.className.replace(' leaflet-control-layers-expanded', '');
-      },
-      
-      _indexOf: function (arr, obj) {
-          for (var i = 0, j = arr.length; i < j; i++) {
-          if (arr[i] === obj) {
-              return i;
-          }
-          }
-          return -1;
-      }
-    });
-    
-    L.control.groupedLayers = function (baseLayers, groupedOverlays, options) {
-        return new L.Control.GroupedLayers(baseLayers, groupedOverlays, options);
-    };
-
-
       
     // -----------------------------------------------------------------------------------------
     // Custom map controls
@@ -1306,7 +895,8 @@ function makeMap() {
     // HAVE BEEN USING THIS ONE, EXCEPT THAT IT DOESN'T WORK WHEN LAYERS FOR MPO AND COUNTY AREN'T PRE-LOADED AND HAVEN'T FIGURED 
     // OUT HOW TO STYLE AFTER LOADING WITHOUT REDRAWING WHICH IS CALLED FROM INSIDE "click" METHOD
     // Use grouped layer plugin instead of "L.control.layers" to create radio boxes instead of checkboxes for overlays
-    var layerControl = L.control.groupedLayers(null, groupedOverlays, options);
+    // var layerControl = L.control.groupedLayers(null, groupedOverlays, options);
+    var layerControl = createGroupLayer(null, groupedOverlays, options);
     //map.addControl(layerControl); 
 
 

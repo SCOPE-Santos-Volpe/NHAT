@@ -1,8 +1,6 @@
 body,
 html,
 #llmap {
-  /* height: 600px;
-   width: 1200px */
    height: 100%;
     width: 100%
 }
@@ -28,8 +26,6 @@ body {
   margin: 0;
   padding: 0;
   font-family: "Lato", sans-serif;
-  /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
-    sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; */
   background-color: #f1f1f1;
 }
 
@@ -84,8 +80,6 @@ body {
   height: 97%;
   padding: 30px 20px;
   transform: translate(10%, 0%);
-  /* left: 27%; */
-  /* top: 50%; */
   border-radius: 8px;
   overflow: scroll;
 }
@@ -98,7 +92,6 @@ body {
   display: inline-flex;
   padding: 0.8rem 6.0rem;
   cursor: pointer;
-  /* border-radius: 2rem; */
   align-items: center;
   gap: 0.5rem;
   font-weight: 500;
@@ -119,11 +112,7 @@ body {
   height: 100%;
   position: relative;
   padding: 0rem 1rem;
-  /* transform: translateY(100%); */
-  /* background: var(--white-light); */
-  /* transition: transform 0.5s ease-in-out; */
   display: none;
-  /* grid-template-columns: repeat(auto-fit, minmax(29rem, 1fr)); */
   place-items: normal start;
 }
 
@@ -139,10 +128,8 @@ body {
 
 .tab-item.select_tab {
   transform: translateY(0);
-  /* transition: transform 0.5s ease-in-out; */
   background: var(--white-light);
-  display: grid;
-  /* animation: feadIn 0.6s ease-in-out; */
+  display: grid;/
 }
 .btn-primary {
   margin-top: 1.5rem;
@@ -194,16 +181,6 @@ body {
   
 }
 
-/* .back-button2 {
-  display: none;
-  margin: 1rem 0;
-  background: lightgray;
-  border-radius: 2rem;
-  padding: 0.3rem 2rem;
-  font-size: 15px; 
-  
-} */
-
 .after-state {
   display: none;
 }
@@ -220,15 +197,6 @@ body {
   padding: 0.3rem 2rem;
   font-size: 13px;
 }
-
-/* .btn-confirm {
-  margin-right: 1rem;
-  margin-left: auto;
-  background: lightgray;
-  border-radius: 2rem;
-  padding: 0.3rem 2rem;
-  font-size: 15px;
-} */
 
 .stats{
   padding: 0.2rem 0.3rem;
@@ -345,10 +313,6 @@ label {
   font-size: 13px;
   
 }
-
-/* input[type="radio"] {
-  opacity: 0;
-} */
 
 
 /* -----------------------------------------------*/
