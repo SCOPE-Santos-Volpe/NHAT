@@ -78,7 +78,7 @@ The High Injury Network (HIN) module is responsible for processing the data and 
 To install the required libraries, run the following command:
 
 ```bash
-pip install geoalchemy2 geojson geopandas matplotlib numpy osmnx pandas pyproj scipy shapely sqlalchemy<2
+pip install --upgrade geoalchemy2 geojson geopandas matplotlib numpy osmnx pandas pyproj scipy shapely sqlalchemy<2
 ```
 
 ### Running the Script
