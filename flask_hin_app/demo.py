@@ -155,10 +155,7 @@ def get_sds_data_by_county(state_id, county_name):
     print("getting fars data for state: ", state_id, " county_name: ", county_name)
     SDS_table = SDS_database_name_dict[state_id]
     SDS_county_data = SDS_table.query.filter(SDS_table.COUNTY_NAME == county_name).all()
-    if state_id == 6:
-            SDS_coords = [[point.LAT, -point.LON] for point in SDS_county_data]
-    else:
-        SDS_coords = [[point.LAT, point.LON] for point in SDS_county_data]
+    SDS_coords = [[point.LAT, point.LON] for point in SDS_county_data]
     return jsonify({"data": SDS_coords})
 
 @app.route('/get_sds_data_by_mpo/<int:state_id><string:mpo_name>')
@@ -167,10 +164,7 @@ def get_sds_data_by_mpo(state_id, mpo_name):
     print("getting fars data for state: ", state_id, " mpo_name: ", mpo_name)
     SDS_table = SDS_database_name_dict[state_id]
     SDS_mpo_data = SDS_table.query.filter(SDS_table.MPO_NAME == mpo_name).all()
-    if state_id == 6:
-            SDS_coords = [[point.LAT, -point.LON] for point in SDS_mpo_data]
-    else:
-        SDS_coords = [[point.LAT, point.LON] for point in SDS_mpo_data]
+    SDS_coords = [[point.LAT, point.LON] for point in SDS_mpo_data]
     return jsonify({"data": SDS_coords})
 
 class States(db.Model):
