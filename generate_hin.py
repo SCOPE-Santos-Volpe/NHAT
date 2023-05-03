@@ -1104,11 +1104,8 @@ def generate_hin_single_county(state_id=6, county_id=1, dataset='SDS', table_nam
                 # Get county boundary:
                 county_bounds = get_county_boundaries_from_rds(
                     state_id, county_id)
-                if type(county_bounds) == type(None):
-                    print("Skipped county\n")
-                    continue
-                elif len(county_bounds) == 0:
-                    print("Skipped county\n")
+                if type(county_bounds) == type(None) or len(county_bounds) == 0:
+                    print(f"Skipped county: state {state_id}, county {county_id}")
                     continue
                 print("Got county boundary")
 
