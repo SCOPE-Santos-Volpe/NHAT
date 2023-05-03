@@ -2,7 +2,7 @@ import generate_hin
 import multiprocessing as mp
 
 state_ids = [6]
-county_ids = [range(1000)]
+county_ids = [i for i in range(10)]
 
 if __name__=="__main__":
     params = []
@@ -12,4 +12,4 @@ if __name__=="__main__":
             # theoretically this should work
 
     with mp.Pool() as pool:
-        pool.starmap(generate_hin.generate_hin_single_county, params)
+        pool.starmap(generate_hin.generate_hin_single_county, params, chunksize=1)
