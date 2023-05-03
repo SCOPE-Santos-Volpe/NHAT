@@ -285,6 +285,8 @@ def upload_hin_to_RDS(path="HIN_Outputs/state_6"):
 
     properties_table_name = "hin_properties"
     table_name = "hin_"+state_id
+    print(table_name)
+    # return
 
     # Get initial hin id
     if properties_table_name not in table_names:
@@ -296,25 +298,22 @@ def upload_hin_to_RDS(path="HIN_Outputs/state_6"):
         hin_id = int(result[0][0]) + 1
 
     print(len(hin_paths))
-    for _, path in enumerate(hin_paths):
-        print("PATH: ", path)
+    for i, path in enumerate(hin_paths):
+        print(f"{i}/{len(hin_paths)}, PATH: {path}")
         properties_df, gdf = preprocess_geojsons.preprocess_HIN_df(path, hin_id)
-        properties_df, gdf = preprocess_geojsons.preprocess_HIN_df(
-            path, hin_id)
 
         # print(gdf.columns)
         # print(gdf.head)
         # print(len(gdf))
 
+        properties_df.to_sql(properties_table_name, con=sqlalchemy_conn, if_exists='append', index=False)
 
-        properties_df.to_sql(
-            "hin_properties", con=sqlalchemy_conn, if_exists='append', index=False)
-
-        table_name = "hin"
+        # table_name = "hin"
         gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False, dtype={
                    'geom': Geometry(geometry_type='LINESTRING', srid=4269)})
 
         hin_id += 1
+
 
 
 if __name__ == "__main__":
@@ -330,4 +329,5 @@ if __name__ == "__main__":
 
     # for folder_path in helper.get_all_subdirectories("HIN_Output"):
     #     upload_hin_to_RDS("HIN_Output/"+folder_path)
+
     upload_hin_to_RDS()
