@@ -272,7 +272,7 @@ def upload_census_tract_boundaries_to_RDS(path: str = "Shapefiles/census_tracts_
         print("uploaded: ", path)
 
 
-def upload_hin_to_RDS(path="Shapefiles/hin/state_6"):
+def upload_hin_to_RDS(path="HIN_Output/state_6"):
     """
     Take generated hin and upload it to the RDS
     """
