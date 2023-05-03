@@ -53,9 +53,9 @@ bandwidth = 0.24
 threshold_settings = [0.002, 0.001, 0.0005]
 
 # Geographic parameters:
-state_ids = [25]
-# county_ids = [i for i in range(0,10)]
-county_ids = [3]
+state_ids = [i for i in range(40,56)]
+county_ids = [i for i in range(0,100)]
+# county_ids = [3]
 
 # Getting county information
 
@@ -1126,3 +1126,6 @@ def generate_hin():
                     state_id, county_id, crash_data_source, threshold_settings, joined_features_by_thr, results)
                 print(summary)
                 print("\tSaved to files\n")
+
+if __name__=="__main__":
+    generate_hin()
