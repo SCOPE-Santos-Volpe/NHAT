@@ -1002,7 +1002,8 @@ def calculate_joined_features(state_id, county_id, features_by_thr, j40_bounds):
 
 
 def save_feature_collections(state_id, county_id, crash_data_source, threshold_settings, joined_features_by_thr, results):
-
+    main_folder = "HIN_Outputs"
+    os.makedirs(main_folder, exist_ok=True)
     state_folder = f'state_{state_id}'
     os.makedirs(state_folder, exist_ok=True)
 
@@ -1039,7 +1040,7 @@ def save_feature_collections(state_id, county_id, crash_data_source, threshold_s
             dump(feature_collection, f)
 
     summary_filename = f'hin_summary_state_{state_id}_county_{county_id}_source_{crash_data_source}.txt'
-    with open(os.path.join(state_folder, summary_filename), 'w') as f:
+    with open(os.path.join(main_folder, state_folder, summary_filename), 'w') as f:
         for line in summary:
             f.write(f"{line}\n")
 
