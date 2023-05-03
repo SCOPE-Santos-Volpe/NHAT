@@ -12,9 +12,6 @@ https://gis.stackexchange.com/questions/239198/adding-geopandas-dataframe-to-pos
 https://gis.stackexchange.com/questions/325415/writing-geopandas-data-frame-to-postgis
 """
 
-# To import helper
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 import itertools
 import json
 import os
@@ -25,6 +22,9 @@ from pathlib import Path
 import pandas as pd
 import psycopg2
 from geoalchemy2 import Geometry
+
+# To import helper
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import helper
 import preprocess_geojsons
@@ -328,6 +328,6 @@ if __name__ == "__main__":
     # upload_county_boundaries_to_RDS()
     # upload_census_tract_boundaries_to_RDS()
 
-    for folder_path in helper.get_all_subdirectories("HIN_Output"):
-        upload_hin_to_RDS("HIN_Output/"+folder_path)
-    # upload_hin_to_RDS()
+    # for folder_path in helper.get_all_subdirectories("HIN_Output"):
+    #     upload_hin_to_RDS("HIN_Output/"+folder_path)
+    upload_hin_to_RDS()
