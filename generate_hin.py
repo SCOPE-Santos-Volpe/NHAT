@@ -33,7 +33,27 @@ from shapely.geometry import LineString, MultiPolygon, Point, Polygon
 from shapely.ops import transform, unary_union
 
 import preprocess_utils
+# Connect to database:
+# conn_string = 'no you cant have this'
+# sqlalchemy_conn, metadata, engine = database_connection(conn_string)
+sqlalchemy_conn, metadata, engine = preprocess_utils.connect_to_sqlalchemy(
+    include_metadata=True, include_engine=True)
+print("Connected to database")
 
+# Data parameters:
+start_year = 2016
+table_name = 'SDS_California'
+from_crs = 'EPSG:4269'
+datasource_name = ["SDS", "FARS"]
+
+# HIN parameters:
+bandwidth = 0.24
+# TODO: choose better values based on std dev of y-distribution
+threshold_settings = [0.002, 0.001, 0.0005]
+
+# Geographic parameters:
+state_ids = [i for i in range(40,56)]
+county_ids = [i for i in range(0,100)]
 # Connect to database:
 # conn_string = 'no you cant have this'
 # sqlalchemy_conn, metadata, engine = database_connection(conn_string)
@@ -1024,8 +1044,6 @@ def save_feature_collections(state_id, county_id, crash_data_source, threshold_s
     return "\n".join(summary)
 
 def generate_hin(state_id, county_id, table_name='NONE'):
-    sqlalchemy_conn, metadata, engine = preprocess_utils.connect_to_sqlalchemy(
-    include_metadata=True, include_engine=True)
     print("Connected to database")
 
     # Data parameters:
@@ -1042,10 +1060,6 @@ def generate_hin(state_id, county_id, table_name='NONE'):
     else:
       datasource_name = ["SDS", "FARS"]
 
-    # HIN parameters:
-    bandwidth = 0.24
-    # TODO: choose better values based on std dev of y-distribution
-    threshold_settings = [0.002, 0.001, 0.0005]
 
     # Geographic parameters:
     #state_ids = [i for i in range(40,56)]
