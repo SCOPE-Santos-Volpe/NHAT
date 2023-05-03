@@ -554,6 +554,7 @@ def get_sds_crashes(table_name, county_id, start_year, from_crs):
     """Return SDS crashes for given state + county for years later than 'start_year'.
 
     Different states' SDS data may have different coordinate reference systems (CRS) therefore the original CRS of the input data is needed.
+    TODO: In the future, the SDS data should be transformed to a consistent CRS rather than doing that here. We didn't realize that so it's here now.
 
     Args:
         table_name: which table to pull. The database has a different table for each state. For example, California SDS data is in the SDS_California table.
@@ -594,7 +595,7 @@ def get_sds_crashes(table_name, county_id, start_year, from_crs):
 # Crash matching and processing
 
 
-def get_nearest_edges_to_crashes(df1, graph_proj):
+def get_nearest_edges_to_crashes(crash_df, graph_proj):
     """
     Finds the nearest edge to each crash by shortest linear distance.
     """
@@ -602,7 +603,7 @@ def get_nearest_edges_to_crashes(df1, graph_proj):
     # Get the nearest edge to each crash point:
     crash_xs = []
     crash_ys = []
-    for index, crash in df1.iterrows():
+    for index, crash in crash_df.iterrows():
         crash_xs.append(crash["geometry"].x)
         crash_ys.append(crash["geometry"].y)
 
@@ -617,13 +618,13 @@ def get_nearest_edges_to_crashes(df1, graph_proj):
 def move_crashes_to_edges(data_df, edges_by_id_tuple, nearest_edge_ids_tuple):
     """
     Move crashes to corrected location on the nearest road edge in dataframe 
-    column df1['corrected_geometry'].
+    column crash_df['corrected_geometry'].
     """
 
-    df1 = data_df
-    df1['corrected_geometry'] = None
+    crash_df = data_df
+    crash_df['corrected_geometry'] = None
 
-    for index, crash in df1.iterrows():
+    for index, crash in crash_df.iterrows():
 
         nearest_edge = edges_by_id_tuple[nearest_edge_ids_tuple[index]]
         # print("nearest_edge found") #, nearest_edge)
@@ -637,10 +638,10 @@ def move_crashes_to_edges(data_df, edges_by_id_tuple, nearest_edge_ids_tuple):
         # print("correction amount", crash[0].x-nearest_point.x, crash[0].y-nearest_point.y)
 
         # Update the geometry column with the corrected location
-        df1['corrected_geometry'][index] = Point(
+        crash_df['corrected_geometry'][index] = Point(
             nearest_point.x, nearest_point.y)
 
-    return df1
+    return crash_df
 
 
 def clear_crashes_from_bins(bins_by_edge):
@@ -649,14 +650,14 @@ def clear_crashes_from_bins(bins_by_edge):
             bin.clear_crashes()
 
 
-def put_crashes_into_bins(df1, bins_by_edge, edges_by_id_tuple, nearest_edge_ids_tuple):
+def put_crashes_into_bins(crash_df, bins_by_edge, edges_by_id_tuple, nearest_edge_ids_tuple):
     """
     Puts crashes into the nearest bin by going through each bin on the nearest 
     edge and finding the one with the shortest linear distance. 
     """
 
     # crashes_by_edge = {}
-    for index, crash in df1.iterrows():
+    for index, crash in crash_df.iterrows():
 
         nearest_edge = edges_by_id_tuple[nearest_edge_ids_tuple[index]]
         # print("nearest_edge found") #, nearest_edge)
@@ -746,7 +747,7 @@ def calculate_unthresholded_hin(bandwidth, corridors_by_edge):
     return road_length_unthr_hin, features
 
 
-def calculate_thresholds(state_id, county_id, corridors_by_edge, original_points_by_edge, threshold_settings):
+def calculate_thresholds(corridors_by_edge, original_points_by_edge, threshold_settings):
 
     num_points_along_edge = 100  # This has to match the value used in 'run_kde()'
     crash_pt_dist_thr = 0.1  # TODO: figure out better value than arbitrarily setting this
@@ -913,7 +914,7 @@ def calculate_total_road_length(edges):
     return total_road_length
 
 
-def calculate_hin_statistics(df1, edges, road_length_unthr, length_by_thr, num_crashes_by_thr, threshold_settings):
+def calculate_hin_statistics(crash_df, edges, road_length_unthr, length_by_thr, num_crashes_by_thr, threshold_settings):
     results = {}
 
     total_road_length = calculate_total_road_length(edges)
@@ -928,7 +929,7 @@ def calculate_hin_statistics(df1, edges, road_length_unthr, length_by_thr, num_c
     results['percent_road_length'][0.0] = road_length_unthr / \
         total_road_length*100
 
-    total_crash_count = len(df1)
+    total_crash_count = len(crash_df)
     results['total_crash_count'] = total_crash_count
     results['num_crashes'] = {}
     results['percent_crashes'] = {}
@@ -964,7 +965,7 @@ def get_census_tract_boundaries_from_rds(state_id: int, county_id: int = None, m
     return gdf
 
 
-def calculate_joined_features(state_id, county_id, features_by_thr, j40_bounds):
+def calculate_joined_features(features_by_thr, j40_bounds):
     j40_bounds = j40_bounds.to_crs("EPSG:2805")
     j40_bounds = j40_bounds.set_geometry('geom')
     # print("len(j40_bounds)", len(j40_bounds))
@@ -1118,23 +1119,23 @@ def generate_hin_single_county(state_id=6, county_id=1, dataset='SDS', table_nam
 
                 # Set crash data source:
                 for idx in range(len(datasource)):
-                    df1 = datasource[idx]
+                    crash_df = datasource[idx]
                     crash_data_source = datasource_name[idx]
                     print("\tCalculating for", crash_data_source)
 
                     # Find nearest edge to each crash:
-                    nearest_edge_ids_tuple = get_nearest_edges_to_crashes(df1, graph_proj)
+                    nearest_edge_ids_tuple = get_nearest_edges_to_crashes(crash_df, graph_proj)
                     print("\tFound nearest edge to each crash")
 
                     # Move crashes onto edges:
-                    df1 = move_crashes_to_edges(
-                        df1, edges_by_id_tuple, nearest_edge_ids_tuple)
+                    crash_df = move_crashes_to_edges(
+                        crash_df, edges_by_id_tuple, nearest_edge_ids_tuple)
                     print("\tMoved crashes onto edges")
 
                     # Bin crashes:
                     clear_crashes_from_bins(bins_by_edge)
                     put_crashes_into_bins(
-                        df1, bins_by_edge, edges_by_id_tuple, nearest_edge_ids_tuple)
+                        crash_df, bins_by_edge, edges_by_id_tuple, nearest_edge_ids_tuple)
                     print("\tBinned crashes")
 
                     # Calculate unthresholded HIN:
@@ -1144,18 +1145,17 @@ def generate_hin_single_county(state_id=6, county_id=1, dataset='SDS', table_nam
 
                     # Calculate thresholds:
                     features_by_thr, length_by_thr, num_crashes_by_thr = calculate_thresholds(
-                        state_id, county_id, corridors_by_edge, original_points_by_edge, threshold_settings)
+                        corridors_by_edge, original_points_by_edge, threshold_settings)
                     print("\tCalculated thresholds")
 
                     # Calculate statistics:
                     features_by_thr[0.0] = features
                     results = calculate_hin_statistics(
-                        df1, edges, road_length_unthr, length_by_thr, num_crashes_by_thr, threshold_settings)
+                        crash_df, edges, road_length_unthr, length_by_thr, num_crashes_by_thr, threshold_settings)
                     print("\tCalculated statistics")
 
                     # Run spatial join on J40 bounds:
-                    joined_features_by_thr = calculate_joined_features(
-                        state_id, county_id, features_by_thr, j40_bounds)
+                    joined_features_by_thr = calculate_joined_features(features_by_thr, j40_bounds)
                     print("\tAdded IN_J40 column")
 
                     # Save to files and produce summary:
