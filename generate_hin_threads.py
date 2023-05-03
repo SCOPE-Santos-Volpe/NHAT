@@ -301,7 +301,7 @@ class Corridor:
                     self.windows[0].window_points.coords[-1])]
 
                 center_points_1d = [
-                    0, len(self.windows[0].shape_points)/2, len(self.windows[0].shape_points)]
+                    0, self.windows[0].shape_points.length/2, self.windows[0].shape_points.length]
 
             # Edge case: need to distribute crash weights in order to run KDE
             elif sum([i > 0 for i in self.modified_crash_weights]) == 1:
