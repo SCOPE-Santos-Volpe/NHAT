@@ -1064,10 +1064,10 @@ def generate_hin(state_id, county_id, table_name='NONE'):
 
 
     # Geographic parameters:
-    #state_ids = [i for i in range(40,56)]
-    #county_ids = [i for i in range(0,100)]
-    state_ids = [state_id]
-    county_ids = [county_id]
+    state_ids = [i for i in range(40,56)]
+    county_ids = [i for i in range(0,100)]
+    # state_ids = [state_id]
+    # county_ids = [county_id]
     for state_id in state_ids:
         for county_id in county_ids:
             print("State ID:", state_id, "County ID:", county_id)
@@ -1091,8 +1091,9 @@ def generate_hin(state_id, county_id, table_name='NONE'):
                 edges)
             windows_by_edge = create_windows(
                 edges, bins_by_edge, points_by_edge, points_granular_by_edge)
+            # TODO: Cleanup
             corridors_by_edge = create_corridors(
-                edges, points_granular_by_edge, points_by_edge, bins_by_edge, windows_by_edge)
+                edges, points_granular_by_edge= points_granular_by_edge,points_by_edge= points_by_edge,bins_by_edge= bins_by_edge,windows_by_edge= windows_by_edge)
             print("Created bins, windows, and corridors")
 
             # Get crash data:
@@ -1157,11 +1158,12 @@ def generate_hin(state_id, county_id, table_name='NONE'):
                 print("\tSaved to files\n")
 
 if __name__=="__main__":
-    parser = argparse.ArgumentParser(description='Generate HIN for a specified state, county, and dataset.')
-    parser.add_argument('--state_id', type=int, required=True, help='State ID for HIN generation')
-    parser.add_argument('--county_id', type=int, required=True, help='County ID for HIN generation')
-    parser.add_argument('--dataset', type=str, required=True, choices=['FARS', 'SDS'], help='Dataset to use (FARS or SDS)')
-    parser.add_argument('--table_name', type=str, required=True, choices=['California', 'Massachusetts'], help='Table name for SDS dataset (California or Massachusetts)')
+    # parser = argparse.ArgumentParser(description='Generate HIN for a specified state, county, and dataset.')
+    # parser.add_argument('--state_id', type=int, required=True, help='State ID for HIN generation')
+    # parser.add_argument('--county_id', type=int, required=True, help='County ID for HIN generation')
+    # parser.add_argument('--dataset', type=str, required=True, choices=['FARS', 'SDS'], help='Dataset to use (FARS or SDS)')
+    # parser.add_argument('--table_name', type=str, required=True, choices=['California', 'Massachusetts'], help='Table name for SDS dataset (California or Massachusetts)')
 
-    args = parser.parse_args()
-    generate_hin(args.state_id, args.county_id,args.table_name)
+    # args = parser.parse_args()
+    # generate_hin(args.state_id, args.county_id,args.table_name)
+    generate_hin()
