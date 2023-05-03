@@ -69,32 +69,37 @@ See [`generate_and_upload_everything.py`](generate_and_upload_everything.py), wh
 To add or update SDS data, add the files into `SDS/Data/{state name}/{file name}.csv`. If adding a new state, in [`preprocess_SDS_data.py`](preprocess_SDS_data.py), write a new function that takes in a `pd.DataFrame`, processes it, and returns a `pd.DataFrame`. Then, add that function into `preprocess_func_dict`. Then, reprocess and upload the data.
 
 To add new FARS data, download the data and unzip the `.zip` file. Take the `accident.CSV` file and put it into `FARS/FARS CSVs/*.CSV` . Renaming the `accident.CSV` file is not necessary but recommended for future maintainability. The file extension for these files is `.CSV` instead of `.csv` because that’s what the files came as, and we didn’t change them. Then, reprocess and upload the data.
-
 ## High Injury Network
-TODO: Update this once Mira edits the code to work with generate and upload everything
 
-The High Injury Network (HIN) module is responsible for processing the data and generating the high injury network using kernel density estimation. To execute this module, run the [`generate_hin.py`](generate_hin.py) script with the desired area and the choice between the FARS or SDS dataset, with the possible additional layer of Justice 40.
+The High Injury Network (HIN) module is responsible for processing the data and generating the high injury network using kernel density estimation. To execute this module, run the [`generate_hin.py`](generate_hin.py) script with the specified state and county IDs, and the choice of table name (either "California" or "Massachusetts") for the SDS dataset.
 
 ### Dependencies
-
-TODO: Update this
 
 To install the required libraries, run the following command:
 
 ```bash
 pip install osmnx scipy numpy matplotlib pandas geopandas shapely multiprocessing geojson pyproj
 ```
+
 ### Running the Script
 
 To execute the HIN module, use the following command:
 
 ```bash
-
-python generate_hin.py --area <AREA> --dataset <FARS/SDS> [--justice40]
-
+python generate_hin.py --state_id <STATE_ID> --county_id <COUNTY_ID> --table_name <TABLE_NAME>
 ```
 
-Replace <AREA> with the desired geographic area, <FARS/SDS> with either "FARS" or "SDS" based on the dataset you'd like to use, and add --justice40 if you'd like to include the Justice 40 equity data layer.
+Replace `<STATE_ID>` with the desired state ID, `<COUNTY_ID>` with the desired county ID, and `<TABLE_NAME>` with either "California" or "Massachusetts" based on the SDS dataset you'd like to use.
+
+### Example
+
+Here's an example of running the script for state ID 6 (California) and county ID 3:
+
+```bash
+python generate_hin.py --state_id 6 --county_id 3 --table_name California
+```
+
+This command will generate the high injury network for the specified state and county using the California SDS dataset.
 
 ## Web-app
 
