@@ -37,24 +37,7 @@ import preprocess_utils
 # Connect to database:
 # conn_string = 'no you cant have this'
 # sqlalchemy_conn, metadata, engine = database_connection(conn_string)
-sqlalchemy_conn, metadata, engine = preprocess_utils.connect_to_sqlalchemy(
-    include_metadata=True, include_engine=True)
-print("Connected to database")
 
-# Data parameters:
-start_year = 2016
-table_name = 'SDS_California'
-from_crs = 'EPSG:4269'
-datasource_name = ["SDS", "FARS"]
-
-# HIN parameters:
-bandwidth = 0.24
-# TODO: choose better values based on std dev of y-distribution
-threshold_settings = [0.002, 0.001, 0.0005]
-
-# Geographic parameters:
-state_ids = [i for i in range(40,56)]
-county_ids = [i for i in range(0,100)]
 # county_ids = [3]
 
 # Getting county information
@@ -1040,8 +1023,35 @@ def save_feature_collections(state_id, county_id, crash_data_source, threshold_s
 
     return "\n".join(summary)
 
-def generate_hin():
+def generate_hin(state_id, county_id, table_name='NONE'):
+    sqlalchemy_conn, metadata, engine = preprocess_utils.connect_to_sqlalchemy(
+    include_metadata=True, include_engine=True)
+    print("Connected to database")
 
+    # Data parameters:
+    start_year = 2016
+    if table_name == 'California':
+        table_name = 'SDS_California'
+    elif table_name == "Massachusetts":
+        table_name = 'SDS_Massachusetts'
+    else:
+        table_name = 'NONE'
+    from_crs = 'EPSG:4269'
+    if table_name == 'NONE':
+        datasource_name = ["FARS"]
+    else:
+      datasource_name = ["SDS", "FARS"]
+
+    # HIN parameters:
+    bandwidth = 0.24
+    # TODO: choose better values based on std dev of y-distribution
+    threshold_settings = [0.002, 0.001, 0.0005]
+
+    # Geographic parameters:
+    #state_ids = [i for i in range(40,56)]
+    #county_ids = [i for i in range(0,100)]
+    state_ids = [state_id]
+    county_ids = [county_id]
     for state_id in state_ids:
         for county_id in county_ids:
             print("State ID:", state_id, "County ID:", county_id)
@@ -1071,8 +1081,11 @@ def generate_hin():
 
             # Get crash data:
             fars_df = get_fars_crashes(state_id, county_id, start_year)
-            sds_df = get_sds_crashes(table_name, county_id, start_year, from_crs)
-            datasource = [sds_df, fars_df]
+            if table_name != 'NONE':
+                sds_df = get_sds_crashes(table_name, county_id, start_year, from_crs)
+                datasource = [sds_df, fars_df]
+            else:
+                datasource = [fars_df]
             print("Loaded crash data")
 
             # Get Justice40 data:
@@ -1128,4 +1141,11 @@ def generate_hin():
                 print("\tSaved to files\n")
 
 if __name__=="__main__":
-    generate_hin()
+    parser = argparse.ArgumentParser(description='Generate HIN for a specified state, county, and dataset.')
+    parser.add_argument('--state_id', type=int, required=True, help='State ID for HIN generation')
+    parser.add_argument('--county_id', type=int, required=True, help='County ID for HIN generation')
+    parser.add_argument('--dataset', type=str, required=True, choices=['FARS', 'SDS'], help='Dataset to use (FARS or SDS)')
+    parser.add_argument('--table_name', type=str, required=True, choices=['California', 'Massachusetts'], help='Table name for SDS dataset (California or Massachusetts)')
+
+    args = parser.parse_args()
+    generate_hin(args.state_id, args.county_id,args.table_name)
