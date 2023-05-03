@@ -316,23 +316,32 @@ def preprocess_HIN_df(path, hin_id):
     def add_hin_id(row: pd.Series, hin_id):
         return hin_id
 
-    # Load the HIN properties (and place into a Pandas Dataframe with a single row
+
+    def add_null_val(row: pd.Series, hin_id):
+        return None
+
+    # Load the HIN properties (and place into a Pandas Dataframe with a single row  
+
     f = open(path)
     data = json.load(f)
-    print("FEATURE COLLECTION PROPERTIES: ", data["properties"])
+    # print("FEATURE COLLECTION PROPERTIES: ", data["properties"])
     hin_properties_df = pd.DataFrame.from_dict([data["properties"]])
     hin_properties_df.columns = map(str.upper, hin_properties_df.columns)
     # Add ID column
-    hin_properties_df['ID'] = hin_properties_df.apply(
-        lambda row: add_hin_id(row, hin_id), axis=1)
-    print("HIN PROPERTY COLUMNS: ", hin_properties_df.columns)
+    hin_properties_df['ID'] = hin_properties_df.apply(lambda row: add_hin_id(row, hin_id), axis=1)
+    # print("HIN PROPERTY COLUMNS: ", hin_properties_df.columns)
+    # Add empty MPO/county column
+    if "county" in path:
+        hin_properties_df["MPO_ID"] = hin_properties_df.apply(lambda row: add_null_val(row, hin_id), axis=1)
+    else:
+        hin_properties_df["COUNTY_ID"] = hin_properties_df.apply(lambda row: add_null_val(row, hin_id), axis=1)
 
     # Load the HIN LineStrings into a geodataframe
     # load geojson into a geodataframe
     gdf = helper.load_gdf_from_geojson(path)
     # Cast the type of the geodataframe to linestring
     gdf = gpd.GeoDataFrame(gdf[gdf['geometry'].geom_type == "LineString"])
-    gdf = gdf[['type', 'MPO_ID', 'IN_J40', 'geometry']]
+    # gdf = gdf[['IN_J40', 'geometry']]
     gdf = change_gdf_geometry_to_geom(gdf)
     # # Trim gdf to geom column
     # gdf = gdf

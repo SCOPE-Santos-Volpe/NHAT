@@ -281,11 +281,16 @@ def upload_hin_to_RDS(path="HIN_Outputs/state_6"):
     hin_paths = helper.get_all_filenames(path=path, pattern='*.geojson')
     print("got all hin paths")
 
+    state_id= Path(path).stem.split('.')[0]
+
+    properties_table_name = "hin_properties"
+    table_name = "hin_"+state_id
+
     # Get initial hin id
-    if "hin_properties" not in table_names:
+    if properties_table_name not in table_names:
         hin_id = 0
     else:
-        query = """SELECT MAX("ID") FROM hin_properties_test;"""
+        query = """SELECT MAX("ID") FROM {};""".format(properties_table_name)
         cursor.execute(query)
         result = cursor.fetchall()
         hin_id = int(result[0][0]) + 1
@@ -293,12 +298,14 @@ def upload_hin_to_RDS(path="HIN_Outputs/state_6"):
     print(len(hin_paths))
     for _, path in enumerate(hin_paths):
         print("PATH: ", path)
+        properties_df, gdf = preprocess_geojsons.preprocess_HIN_df(path, hin_id)
         properties_df, gdf = preprocess_geojsons.preprocess_HIN_df(
             path, hin_id)
 
-        print(gdf.columns)
-        print(gdf.head)
-        print(len(gdf))
+        # print(gdf.columns)
+        # print(gdf.head)
+        # print(len(gdf))
+
 
         properties_df.to_sql(
             "hin_properties", con=sqlalchemy_conn, if_exists='append', index=False)
@@ -311,7 +318,6 @@ def upload_hin_to_RDS(path="HIN_Outputs/state_6"):
 
 
 if __name__ == "__main__":
-
     # upload_FARS_data_to_RDS()
     # upload_SDS_data_to_RDS()
     # upload_Justice40_data_to_RDS()
@@ -322,4 +328,6 @@ if __name__ == "__main__":
     # upload_county_boundaries_to_RDS()
     # upload_census_tract_boundaries_to_RDS()
 
-    upload_hin_to_RDS()
+    for folder_path in helper.get_all_subdirectories("Shapefiles/hin"):
+        upload_hin_to_RDS("Shapefiles/hin/"+folder_path)
+    # upload_hin_to_RDS()
