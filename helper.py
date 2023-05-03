@@ -8,14 +8,17 @@ import geopandas as gpd
 import pandas as pd
 
 
-def get_all_csv_filenames(path: str, filetype: str = None) -> list[str]:
+def get_all_csv_filenames(path: str, filetype: str = '.csv') -> list[str]:
     """Finds and returns the filenames (including the folder) of every `.csv` file in the folder specified at `path`.
 
     Args:
-        path: A string containing the path to the folder containing the `.csv` files
+        path: A string containing the path to the folder containing the  files
+        filetype: A string specifying the file extension, defaults to `.csv`
 
     Returns:
         A list of strings containing the file path to every csv in the folder at `path`
+
+    TODO: Rename cuz not actually csv specific
     """
     if filetype:
         all_filenames = glob.glob(os.path.join(path, "*", filetype))
