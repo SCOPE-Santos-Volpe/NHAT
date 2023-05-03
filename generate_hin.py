@@ -11,17 +11,21 @@ Original file is located at
 ## Installs and Imports
 """
 
+
+# NOTE: sqlalchemy version <2 is required
+
+# Connect to database:
+# conn_string = 'no you cant have this'
+# sqlalchemy_conn, metadata, engine = database_connection(conn_string)
 import math
 import multiprocessing
 import os
-
 import geojson
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
 import osmnx as ox
 import pandas as pd
-# NOTE: sqlalchemy version <2 is required
 import pyproj
 import scipy.stats as st
 import sqlalchemy as db
@@ -31,13 +35,9 @@ from matplotlib import pyplot as plt
 from scipy.interpolate import interp1d
 from shapely.geometry import LineString, MultiPolygon, Point, Polygon
 from shapely.ops import transform, unary_union
-
 import preprocess_utils
 import argparse
 import preprocess_utils
-# Connect to database:
-# conn_string = 'no you cant have this'
-# sqlalchemy_conn, metadata, engine = database_connection(conn_string)
 sqlalchemy_conn, metadata, engine = preprocess_utils.connect_to_sqlalchemy(
     include_metadata=True, include_engine=True)
 print("Connected to database")
@@ -67,6 +67,7 @@ county_ids = [1]
 
 # Getting county information
 
+
 def get_county_boundaries_from_rds(state_id: int, county_id: int = None, mpo_id: int = None) -> gpd.GeoDataFrame:
     """Pulls county boundaries with specified parameters from the RDS and returns as a `gpd.GeoDataFrame`.
 
@@ -90,7 +91,8 @@ def get_county_boundaries_from_rds(state_id: int, county_id: int = None, mpo_id:
     elif state_id is None:
         sql = text(""" SELECT * FROM "boundaries_county" """)
     else:
-        sql = text(""" SELECT * FROM "boundaries_county" WHERE "STATE_ID" = {} """.format(state_id))
+        sql = text(
+            """ SELECT * FROM "boundaries_county" WHERE "STATE_ID" = {} """.format(state_id))
 
     gdf = gpd.read_postgis(sql, con=sqlalchemy_conn, crs='EPSG:4326')
     return gdf
@@ -184,6 +186,7 @@ class Window:
         shape_points: a `shapely.geometry.linestring.LineString` with points that define the shape of this bin
         window_points: a `shapely.geometry.linestring.LineString` with points that define this bin. More granular than shape_points
     """
+
     def __init__(self, ids, bins, shape_points, window_points):
         self.ids = ids  # edge identifier tuple
         self.bins = bins  # bins that make up this window
@@ -237,6 +240,7 @@ class Corridor:
         shape_points: a `shapely.geometry.linestring.LineString` with points that define the shape of this corridor
         bin_points: a `shapely.geometry.linestring.LineString` with points that define this corridor. More granular than shape_points
     """
+
     def __init__(self, ids, shape_points, corridor_points, bins, windows):
         self.ids = ids  # edge identifier tuple
         self.bins = bins  # the bins on this road corridor
@@ -375,11 +379,11 @@ def create_bins(edges):
         edges: a list of edges from the road graph
 
     Returns:
-        A dictionary containing a tuple of edge ids as keys and a bin object as values
-        A dictionary containing a tuple of edge ids as keys and a `shapely.geometry.linestring.LineString` of the original points defining the bin as values
-        A dictionary containing a tuple of edge ids as keys and a `shapely.geometry.linestring.LineString` of more granular points defining the bin as values
-        A dictionary containing a tuple of edge ids as keys and a `shapely.geometry.linestring.LineString` of points defining the bin as values
-        A dictionary containing a tuple of edge ids as keys and a dictionary of the information of that edge as values
+        A dictionary containing a tuple of edge ids as keys and a bin object as values \n
+        A dictionary containing a tuple of edge ids as keys and a `shapely.geometry.linestring.LineString` of the original points defining the bin as values \n
+        A dictionary containing a tuple of edge ids as keys and a `shapely.geometry.linestring.LineString` of more granular points defining the bin as values \n
+        A dictionary containing a tuple of edge ids as keys and a `shapely.geometry.linestring.LineString` of points defining the bin as values \n
+        A dictionary containing a tuple of edge ids as keys and a dictionary of the information of that edge as values \n
     """
     original_points_by_edge = {}
     points_granular_by_edge = {}
@@ -596,8 +600,16 @@ def get_sds_crashes(table_name, county_id, start_year, from_crs):
 
 
 def get_nearest_edges_to_crashes(crash_df, graph_proj):
-    """
-    Finds the nearest edge to each crash by shortest linear distance.
+    """Finds the nearest edge to each crash by shortest linear distance.
+
+    Args:
+        crash_df: a `pd.DataFrame` of each crash
+        graph_proj: the CRS projection of the graph
+
+    Returns:
+        A tuple with the IDs of the nearest edges as keys and the ID of the nearest edge as values
+
+    TODO: Check types
     """
 
     # Get the nearest edge to each crash point:
@@ -615,13 +627,19 @@ def get_nearest_edges_to_crashes(crash_df, graph_proj):
     return nearest_edge_ids_tuple
 
 
-def move_crashes_to_edges(data_df, edges_by_id_tuple, nearest_edge_ids_tuple):
-    """
-    Move crashes to corrected location on the nearest road edge in dataframe 
-    column crash_df['corrected_geometry'].
+def move_crashes_to_edges(crash_df, edges_by_id_tuple, nearest_edge_ids_tuple):
+
+    """Moves crashes to the nearest location on the nearest road edge.
+
+    Args:
+        crash_df: a `pd.DataFrame` of crashes
+        edges_by_id_tuple: a dictionary containing a tuple of edge ids as keys and a dictionary of the information of that edge as values
+        nearest_edge_ids_tuple: ignoreme
+
+    Returns:
+        A modified `pd.DataFrame` of the `crash_df` with the added column `corrected_geometry`
     """
 
-    crash_df = data_df
     crash_df['corrected_geometry'] = None
 
     for index, crash in crash_df.iterrows():
@@ -645,6 +663,7 @@ def move_crashes_to_edges(data_df, edges_by_id_tuple, nearest_edge_ids_tuple):
 
 
 def clear_crashes_from_bins(bins_by_edge):
+
     for idx in bins_by_edge:
         for bin in bins_by_edge[tuple(idx)]:
             bin.clear_crashes()
@@ -653,7 +672,9 @@ def clear_crashes_from_bins(bins_by_edge):
 def put_crashes_into_bins(crash_df, bins_by_edge, edges_by_id_tuple, nearest_edge_ids_tuple):
     """
     Puts crashes into the nearest bin by going through each bin on the nearest 
-    edge and finding the one with the shortest linear distance. 
+    edge and finding the one with the shortest linear distance.
+
+    edges_by_id_tuple: A dictionary containing a tuple of edge ids as keys and a dictionary of the information of that edge as values
     """
 
     # crashes_by_edge = {}
@@ -1009,7 +1030,7 @@ def save_feature_collections(state_id, county_id, crash_data_source, threshold_s
     main_folder = "HIN_Outputs"
     os.makedirs(main_folder, exist_ok=True)
     state_folder = f'state_{state_id}'
-    os.makedirs(state_folder, exist_ok=True)
+    os.makedirs(os.path.join(main_folder, state_folder), exist_ok=True)
 
     total_road_length = results['total_road_length']
     total_crash_count = results['total_crash_count']
@@ -1040,7 +1061,7 @@ def save_feature_collections(state_id, county_id, crash_data_source, threshold_s
                                                features=joined_features_by_thr[thr_set])
 
         hin_filename = f'hin_state_{state_id}_county_{county_id}_source_{crash_data_source}_threshold_{str(thr_set)[2:]}.geojson'
-        with open(os.path.join(state_folder, hin_filename), 'w') as f:
+        with open(os.path.join(main_folder, state_folder, hin_filename), 'w') as f:
             dump(feature_collection, f)
 
     summary_filename = f'hin_summary_state_{state_id}_county_{county_id}_source_{crash_data_source}.txt'
@@ -1049,6 +1070,7 @@ def save_feature_collections(state_id, county_id, crash_data_source, threshold_s
             f.write(f"{line}\n")
 
     return "\n".join(summary)
+
 
 def generate_hin_single_county(state_id=6, county_id=1, dataset='SDS', table_name='NONE'):
     try:
@@ -1064,11 +1086,10 @@ def generate_hin_single_county(state_id=6, county_id=1, dataset='SDS', table_nam
         else:
             table_name = 'NONE'
         from_crs = 'EPSG:4269'
-        if table_name == 'NONE' or dataset =='FARS':
+        if table_name == 'NONE' or dataset == 'FARS':
             datasource_name = ["FARS"]
         else:
             datasource_name = ["SDS", "FARS"]
-
 
         # Geographic parameters:
         # state_ids = [i for i in range(40,56)]
@@ -1081,7 +1102,8 @@ def generate_hin_single_county(state_id=6, county_id=1, dataset='SDS', table_nam
                 print("State ID:", state_id, "County ID:", county_id)
 
                 # Get county boundary:
-                county_bounds = get_county_boundaries_from_rds(state_id, county_id)
+                county_bounds = get_county_boundaries_from_rds(
+                    state_id, county_id)
                 if type(county_bounds) == type(None):
                     print("Skipped county\n")
                     continue
@@ -1091,7 +1113,8 @@ def generate_hin_single_county(state_id=6, county_id=1, dataset='SDS', table_nam
                 print("Got county boundary")
 
                 # Get graph of road network:
-                G, graph_proj, nodes, edges = get_graph_from_county(county_bounds)
+                G, graph_proj, nodes, edges = get_graph_from_county(
+                    county_bounds)
                 print("Loaded graph of road network")
 
                 # Create bins, windows, and corridors:
@@ -1101,13 +1124,14 @@ def generate_hin_single_county(state_id=6, county_id=1, dataset='SDS', table_nam
                     edges, bins_by_edge, points_by_edge, points_granular_by_edge)
                 # TODO: Cleanup
                 corridors_by_edge = create_corridors(
-                    edges, points_granular_by_edge= points_granular_by_edge,points_by_edge= points_by_edge,bins_by_edge= bins_by_edge,windows_by_edge= windows_by_edge)
+                    edges, points_granular_by_edge=points_granular_by_edge, points_by_edge=points_by_edge, bins_by_edge=bins_by_edge, windows_by_edge=windows_by_edge)
                 print("Created bins, windows, and corridors")
 
                 # Get crash data:
                 fars_df = get_fars_crashes(state_id, county_id, start_year)
                 if table_name != 'NONE':
-                    sds_df = get_sds_crashes(table_name, county_id, start_year, from_crs)
+                    sds_df = get_sds_crashes(
+                        table_name, county_id, start_year, from_crs)
                     datasource = [sds_df, fars_df]
                 else:
                     datasource = [fars_df]
@@ -1124,7 +1148,8 @@ def generate_hin_single_county(state_id=6, county_id=1, dataset='SDS', table_nam
                     print("\tCalculating for", crash_data_source)
 
                     # Find nearest edge to each crash:
-                    nearest_edge_ids_tuple = get_nearest_edges_to_crashes(crash_df, graph_proj)
+                    nearest_edge_ids_tuple = get_nearest_edges_to_crashes(
+                        crash_df, graph_proj)
                     print("\tFound nearest edge to each crash")
 
                     # Move crashes onto edges:
@@ -1155,7 +1180,8 @@ def generate_hin_single_county(state_id=6, county_id=1, dataset='SDS', table_nam
                     print("\tCalculated statistics")
 
                     # Run spatial join on J40 bounds:
-                    joined_features_by_thr = calculate_joined_features(features_by_thr, j40_bounds)
+                    joined_features_by_thr = calculate_joined_features(
+                        features_by_thr, j40_bounds)
                     print("\tAdded IN_J40 column")
 
                     # Save to files and produce summary:
@@ -1163,17 +1189,24 @@ def generate_hin_single_county(state_id=6, county_id=1, dataset='SDS', table_nam
                         state_id, county_id, crash_data_source, threshold_settings, joined_features_by_thr, results)
                     print(summary)
                     print("\tSaved to files\n")
-    except:
-        print("Something went psychiatrically concerning in State {state_id}, County {county_id}")
+    except Exception as e:
+        print(f"Something went psychiatrically concerning in State {state_id}, County {county_id}")
+        print(e)
 
 
-if __name__=="__main__":
-    parser = argparse.ArgumentParser(description='Generate HIN for a specified state, county, and dataset.')
-    parser.add_argument('--state_id', type=int, required=False, default=6, help='State ID for HIN generation')
-    parser.add_argument('--county_id', type=int, required=False, default=1, help='County ID for HIN generation')
-    parser.add_argument('--dataset', type=str, required=False, choices=['FARS', 'SDS'], default='FARS', help='Dataset to use (FARS or SDS)')
-    parser.add_argument('--table_name', type=str, required=False, choices=['California', 'Massachusetts'], help='Table name for SDS dataset (California or Massachusetts)')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description='Generate HIN for a specified state, county, and dataset.')
+    parser.add_argument('--state_id', type=int, required=False,
+                        default=6, help='State ID for HIN generation')
+    parser.add_argument('--county_id', type=int, required=False,
+                        default=1, help='County ID for HIN generation')
+    parser.add_argument('--dataset', type=str, required=False, choices=[
+                        'FARS', 'SDS'], default='FARS', help='Dataset to use (FARS or SDS)')
+    parser.add_argument('--table_name', type=str, required=False, choices=[
+                        'California', 'Massachusetts'], help='Table name for SDS dataset (California or Massachusetts)')
 
     args = parser.parse_args()
-    generate_hin_single_county(args.state_id, args.county_id, args.dataset, args.table_name)
+    generate_hin_single_county(
+        args.state_id, args.county_id, args.dataset, args.table_name)
     # generate_hin()
