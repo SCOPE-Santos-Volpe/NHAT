@@ -53,17 +53,18 @@ Desired columns:
 
 """
 
-import pandas as pd
 import geopandas as gpd
+import pandas as pd
+from sqlalchemy import create_engine, text
+
 import helper
 import preprocess_utils
-from sqlalchemy import create_engine, text
 
 # Establish sqlalchemy connection
 sqlalchemy_conn = preprocess_utils.connect_to_sqlalchemy()
 
 
-def preprocess_MA_SDS(df:pd.DataFrame) -> pd.DataFrame:
+def preprocess_MA_SDS(df: pd.DataFrame) -> pd.DataFrame:
     """Preprocess the Massachussetts SDS data.
 
     Args:
@@ -73,14 +74,13 @@ def preprocess_MA_SDS(df:pd.DataFrame) -> pd.DataFrame:
         A `pd.DataFrame` containing the preprocessed MA SDS data
     """
 
-
-    columns = [ 'YEAR',                                                         # Metadata
-                'MAX_INJR_SVRTY_CL', 'NUMB_FATAL_INJR', 'NUMB_NONFATAL_INJR',   # Injury level
-                'AMBNT_LIGHT_DESCR', 'WEATH_COND_DESCR', 'ROAD_SURF_COND_DESCR', # Accident conditions
-                'RDWY', 'RDWY_JNCT_TYPE_DESCR', 'F_CLASS', 'F_F_CLASS',         # Road type
-                'LAT', 'LON',                                                   # Geolocation
-                'NON_MTRST_TYPE_CL', 'NON_MTRST_ACTN_CL', 'NON_MTRST_LOC_CL',   # Parties involved
-    ]
+    columns = ['YEAR',                                                         # Metadata
+               'MAX_INJR_SVRTY_CL', 'NUMB_FATAL_INJR', 'NUMB_NONFATAL_INJR',   # Injury level
+               'AMBNT_LIGHT_DESCR', 'WEATH_COND_DESCR', 'ROAD_SURF_COND_DESCR',  # Accident conditions
+               'RDWY', 'RDWY_JNCT_TYPE_DESCR', 'F_CLASS', 'F_F_CLASS',         # Road type
+               'LAT', 'LON',                                                   # Geolocation
+               'NON_MTRST_TYPE_CL', 'NON_MTRST_ACTN_CL', 'NON_MTRST_LOC_CL',   # Parties involved
+               ]
     df = df[columns]
 
     # Make sure columns are string types
@@ -99,9 +99,9 @@ def preprocess_MA_SDS(df:pd.DataFrame) -> pd.DataFrame:
     # df['MAX_INJR_SVRTY_CL'] = df['MAX_INJR_SVRTY_CL'].astype(str)
 
     renames = {
-        'RDWY' : 'ROAD_NAME',
+        'RDWY': 'ROAD_NAME',
     }
-    df = df.rename(columns = renames)
+    df = df.rename(columns=renames)
 
     # Create appropriate columns to match format specified at start of this file
 
@@ -122,7 +122,7 @@ def preprocess_MA_SDS(df:pd.DataFrame) -> pd.DataFrame:
         severity_str = row['MAX_INJR_SVRTY_CL']
         if "No injury" in severity_str or "No Apparent Injury (O)" in severity_str:
             return 0
-        elif "Non-fatal injury - Possible" in severity_str or "Non-fatal injury - Non-incapacitating" in severity_str or "Suspected Minor Injury" in severity_str :
+        elif "Non-fatal injury - Possible" in severity_str or "Non-fatal injury - Non-incapacitating" in severity_str or "Suspected Minor Injury" in severity_str:
             return 4
         elif "Possible Injury" in severity_str or "Non-fatal injury - Incapacitating" in severity_str:
             return 3
@@ -188,7 +188,7 @@ def preprocess_MA_SDS(df:pd.DataFrame) -> pd.DataFrame:
         road_surf_str = row['ROAD_SURF_COND_DESCR'].lower()
         if "dry" in road_surf_str:
             return "A"
-        elif "wet" in road_surf_str or  "water" in road_surf_str:
+        elif "wet" in road_surf_str or "water" in road_surf_str:
             return "B"
         elif "ice" in road_surf_str or "snow" in road_surf_str or "slush" in road_surf_str:
             return "C"
@@ -197,14 +197,16 @@ def preprocess_MA_SDS(df:pd.DataFrame) -> pd.DataFrame:
         else:
             return "-"
     df['ROAD_COND'] = df.apply(lambda row: road_cond(row), axis=1)
-    
+
     # Trim columns again
-    new_columns = ["YEAR", "IS_FATAL", "SEVERITY", "IS_PED", "IS_CYC", "WEATHER_COND", "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON"]
+    new_columns = ["YEAR", "IS_FATAL", "SEVERITY", "IS_PED", "IS_CYC", "WEATHER_COND",
+                   "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON"]
     df = df[new_columns]
 
     return df
 
-def preprocess_CA_SDS(df:pd.DataFrame) -> pd.DataFrame:
+
+def preprocess_CA_SDS(df: pd.DataFrame) -> pd.DataFrame:
     """Preprocess the California SDS data.
 
     Args:
@@ -215,26 +217,27 @@ def preprocess_CA_SDS(df:pd.DataFrame) -> pd.DataFrame:
     """
 
     columns = ['ACCIDENT_YEAR',                                                 # Metadata
-                'COLLISION_SEVERITY', 'NUMBER_KILLED', 'NUMBER_INJURED',        # Injury level
-                'WEATHER_1','ROAD_SURFACE', 'ROAD_COND_1', 'LIGHTING',          # Accident conditions
-                'PRIMARY_RD', 'SECONDARY_RD', 'DIRECTION', 'INTERSECTION',      # Road type
-                'LATITUDE', 'LONGITUDE',                                        # Geolocation
-                'PEDESTRIAN_ACCIDENT', 'BICYCLE_ACCIDENT', 'MOTORCYCLE_ACCIDENT', 'TRUCK_ACCIDENT', # Parties involved
-                'PRIMARY_COLL_FACTOR', 'TYPE_OF_COLLISION', 'ALCOHOL_INVOLVED'  # Accident reason
-    ]
+               'COLLISION_SEVERITY', 'NUMBER_KILLED', 'NUMBER_INJURED',        # Injury level
+               'WEATHER_1', 'ROAD_SURFACE', 'ROAD_COND_1', 'LIGHTING',          # Accident conditions
+               'PRIMARY_RD', 'SECONDARY_RD', 'DIRECTION', 'INTERSECTION',      # Road type
+               'LATITUDE', 'LONGITUDE',                                        # Geolocation
+               # Parties involved
+               'PEDESTRIAN_ACCIDENT', 'BICYCLE_ACCIDENT', 'MOTORCYCLE_ACCIDENT', 'TRUCK_ACCIDENT',
+               'PRIMARY_COLL_FACTOR', 'TYPE_OF_COLLISION', 'ALCOHOL_INVOLVED'  # Accident reason
+               ]
     columns = [x.upper() for x in columns]
     df = df[columns]
 
     renames = {
-        'ACCIDENT_YEAR' : 'YEAR',
-        'COLLISION_SEVERITY' : 'SEVERITY',
-        'ROAD_SURFACE' : 'ROAD_COND',
-        'PRIMARY_RD' : 'ROAD_NAME',
-        'LIGHTING' : 'LIGHT_COND',
-        'LATITUDE' : 'LAT',
-        'LONGITUDE' : 'LON'
+        'ACCIDENT_YEAR': 'YEAR',
+        'COLLISION_SEVERITY': 'SEVERITY',
+        'ROAD_SURFACE': 'ROAD_COND',
+        'PRIMARY_RD': 'ROAD_NAME',
+        'LIGHTING': 'LIGHT_COND',
+        'LATITUDE': 'LAT',
+        'LONGITUDE': 'LON'
     }
-    df = df.rename(columns = renames)
+    df = df.rename(columns=renames)
 
     def negate_lon(row):
         return -1*row['LON']
@@ -246,7 +249,7 @@ def preprocess_CA_SDS(df:pd.DataFrame) -> pd.DataFrame:
             return 1
         return 0
     df['IS_FATAL'] = df.apply(lambda row: is_fatal(row), axis=1)
-    
+
     def is_ped(row: pd.Series):
         str = row['PEDESTRIAN_ACCIDENT']
         if str == "Y":
@@ -276,10 +279,12 @@ def preprocess_CA_SDS(df:pd.DataFrame) -> pd.DataFrame:
     df['IS_INTERSECTION'] = df.apply(lambda row: is_intersection(row), axis=1)
 
     # Trim columns again
-    new_columns = ["YEAR", "IS_FATAL", "SEVERITY", "IS_PED", "IS_CYC", "WEATHER_COND", "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON"]
+    new_columns = ["YEAR", "IS_FATAL", "SEVERITY", "IS_PED", "IS_CYC", "WEATHER_COND",
+                   "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON"]
     df = df[new_columns]
-    
+
     return df
+
 
 # A dictionary with state names as keys and the corresponding preprocessing functions as values
 preprocess_func_dict = {
@@ -287,7 +292,8 @@ preprocess_func_dict = {
     'Massachusetts': preprocess_MA_SDS
 }
 
-def preprocess_SDS_datasets(path: str = 'SDS/Data/', output_path: str = 'SDS/Output_w_MPO_County_Identifiers/') -> dict[str,pd.DataFrame]:
+
+def preprocess_SDS_datasets(path: str = 'SDS/Data/', output_path: str = 'SDS/Output_w_MPO_County_Identifiers/') -> dict[str, pd.DataFrame]:
     """Combines folders of SDS datasets in folder `path` into a single CSV file for each folder in `output_path`. Also runs the appropriate preprocessing and labeling function for each state.
 
     Args:
@@ -298,19 +304,20 @@ def preprocess_SDS_datasets(path: str = 'SDS/Data/', output_path: str = 'SDS/Out
         A dictionary where the keys are the subdirectories of `path` (which should be state names) and the values are the `pd.DataFrame`s of all the `.csv` files contained within that folder.
     """
 
-    all_dirs = helper.get_all_subdirectories(path = path)
+    all_dirs = helper.get_all_subdirectories(path=path)
 
     # Dictionary to store all preprocessed dataframes with state names as keys
     output = {}
     for state in all_dirs:
         # print("Processing: "+state)
         # Get all SDS filenames within that state (files for different years)
-        all_filenames = helper.get_all_filenames(path+state,"*.csv")
+        all_filenames = helper.get_all_filenames(path+state, "*.csv")
 
         # Get a list of dataframes loaded from the filenames for this state
-        all_dfs_state = helper.get_all_dfs_from_csv(all_filenames, index_col=None, encoding_errors='ignore', low_memory=False)
+        all_dfs_state = helper.get_all_dfs_from_csv(
+            all_filenames, index_col=None, encoding_errors='ignore', low_memory=False)
         for df in all_dfs_state:
-            df.columns =  df.columns.str.upper()
+            df.columns = df.columns.str.upper()
 
         # Concatenate all the dataframes into one
         df = helper.concat_pandas_dfs(all_dfs_state)
@@ -332,6 +339,7 @@ def preprocess_SDS_datasets(path: str = 'SDS/Data/', output_path: str = 'SDS/Out
     # Return output dictionary
     return output
 
+
 def label_SDS_with_MPO_and_county_identifiers(df: pd.DataFrame, state_name: str) -> pd.DataFrame:
     """Loops through all MPO and county shapefiles and check whether each point is inside the polygon boundary.
 
@@ -349,42 +357,47 @@ def label_SDS_with_MPO_and_county_identifiers(df: pd.DataFrame, state_name: str)
         flip_lon_sign = False
     else:
         flip_lon_sign = False
-    SDS_gdf = preprocess_utils.create_point_column_from_lat_lon(SDS_df, flip_lon_sign)
+    SDS_gdf = preprocess_utils.create_point_column_from_lat_lon(
+        SDS_df, flip_lon_sign)
 
     # Convert state name to state id
     state_id = preprocess_utils.d_state_name2id[state_name]
 
     # Get all County boundaries within state
-    sql = text(""" SELECT * FROM "boundaries_county" WHERE "STATE_ID" = {} """.format(state_id))
+    sql = text(
+        """ SELECT * FROM "boundaries_county" WHERE "STATE_ID" = {} """.format(state_id))
     county_boundaries = gpd.read_postgis(sql, con=sqlalchemy_conn)
 
-
     # Get all MPO boundaries within state
-    sql = text(""" SELECT * FROM "boundaries_mpo" WHERE "STATE_ID" = {} """.format(state_id))
+    sql = text(
+        """ SELECT * FROM "boundaries_mpo" WHERE "STATE_ID" = {} """.format(state_id))
     mpo_boundaries = gpd.read_postgis(sql, con=sqlalchemy_conn)
 
     # Perform a spatial join between SDS and county boundaries
-    SDS_with_county = gpd.sjoin(SDS_gdf,county_boundaries, predicate='intersects', how='left')
-    columns = ["YEAR", 'COUNTY_ID', "COUNTY_NAME", "IS_FATAL", "SEVERITY", "IS_PED", "IS_CYC", "WEATHER_COND", "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON", "geometry"]
+    SDS_with_county = gpd.sjoin(
+        SDS_gdf, county_boundaries, predicate='intersects', how='left')
+    columns = ["YEAR", 'COUNTY_ID', "COUNTY_NAME", "IS_FATAL", "SEVERITY", "IS_PED", "IS_CYC",
+               "WEATHER_COND", "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON", "geometry"]
     SDS_with_county = SDS_with_county[columns]
 
     # Perform a spatial join between SDS and mpo boundaries, but don't include the geometry column
-    SDS_with_MPOs = gpd.sjoin(SDS_with_county,mpo_boundaries, predicate='intersects', how='left')
-    columns = ["YEAR", 'COUNTY_ID', "COUNTY_NAME", "MPO_ID", "MPO_NAME", "IS_FATAL", "SEVERITY", "IS_PED", "IS_CYC", "WEATHER_COND", "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON"]
+    SDS_with_MPOs = gpd.sjoin(
+        SDS_with_county, mpo_boundaries, predicate='intersects', how='left')
+    columns = ["YEAR", 'COUNTY_ID', "COUNTY_NAME", "MPO_ID", "MPO_NAME", "IS_FATAL", "SEVERITY", "IS_PED",
+               "IS_CYC", "WEATHER_COND", "LIGHT_COND", "ROAD_COND", "ROAD_NAME", "IS_INTERSECTION", "LAT", "LON"]
     SDS_altered = SDS_with_MPOs[columns]
 
     # Make sure all the types of the columns are correct
-    added_column_type_dict = {  "MPO_ID"                : float, 
-                                "MPO_NAME"              : str, 
-                                "COUNTY_ID"             : float,
-                                "COUNTY_NAME"           : str
-    }
+    added_column_type_dict = {"MPO_ID": float,
+                              "MPO_NAME": str,
+                              "COUNTY_ID": float,
+                              "COUNTY_NAME": str
+                              }
     SDS_altered = SDS_altered.astype(added_column_type_dict)
 
     return SDS_altered
 
 
-
-if __name__=="__main__":
+if __name__ == "__main__":
 
     preprocess_SDS_datasets()

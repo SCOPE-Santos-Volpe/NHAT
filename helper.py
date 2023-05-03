@@ -1,27 +1,32 @@
 """This file is to hold a bunch of useful helper functions so that they can be imported into any file.
 """
 
-import pandas as pd
 import glob
 import os
+
 import geopandas as gpd
+import pandas as pd
 
 
-def get_all_csv_filenames(path: str, filetype: str = None) -> list[str]:
+def get_all_csv_filenames(path: str, filetype: str = '.csv') -> list[str]:
     """Finds and returns the filenames (including the folder) of every `.csv` file in the folder specified at `path`.
 
     Args:
-        path: A string containing the path to the folder containing the `.csv` files
+        path: A string containing the path to the folder containing the  files
+        filetype: A string specifying the file extension, defaults to `.csv`
 
     Returns:
         A list of strings containing the file path to every csv in the folder at `path`
+
+    TODO: Rename cuz not actually csv specific
     """
     if filetype:
         all_filenames = glob.glob(os.path.join(path, "*", filetype))
     else:
         all_filenames = glob.glob(os.path.join(path, "*"))
-        
+
     return all_filenames
+
 
 def get_all_filenames(path: str, pattern: str, recursive: bool = True) -> list[str]:
     """Finds and returns all filenames within a folder (optionally recursively) with the filename regex pattern match specified by `pattern`.
@@ -34,16 +39,17 @@ def get_all_filenames(path: str, pattern: str, recursive: bool = True) -> list[s
     Returns:
         A list strings with each element being the path to a file
     """
-    
-    if(recursive):
+
+    if (recursive):
         all_files = []
         for path_i, subdir, files in os.walk(path):
             for filename in glob.glob(os.path.join(path_i, pattern)):
                 all_files.append(filename)
     else:
         all_files = glob.glob(os.path.join(path, pattern))
-        
+
     return all_files
+
 
 def get_all_subdirectories(path: str):
     """Recursively locates all subdirectories within a folder at `path`
@@ -63,7 +69,8 @@ def get_all_subdirectories(path: str):
             all_subdirs.append(s)
     return all_subdirs
 
-def load_df_from_csv(path:str, **kwargs) -> pd.DataFrame:
+
+def load_df_from_csv(path: str, **kwargs) -> pd.DataFrame:
     """Loads a dataframe from the csv at `path`.
 
     Convenience wrapper for `pd.read_csv` because Mira likes wrapping everything in their own helper function
@@ -75,10 +82,11 @@ def load_df_from_csv(path:str, **kwargs) -> pd.DataFrame:
     Returns:
         A `pd.DataFrame` loaded from the `.csv` file
     """
-    df=pd.read_csv(path, **kwargs)
+    df = pd.read_csv(path, **kwargs)
     return df
 
-def load_gdf_from_geojson(path:str, **kwargs) -> pd.DataFrame:
+
+def load_gdf_from_geojson(path: str, **kwargs) -> pd.DataFrame:
     """Loads a `gpd.GeoDataFrame` from the geojson at `path`.
 
     Args:
@@ -95,6 +103,7 @@ def load_gdf_from_geojson(path:str, **kwargs) -> pd.DataFrame:
 
     return gdf
 
+
 def get_all_dfs_from_csv(filenames: list[str], required_columns: list[str] = [], **kwargs) -> list[pd.DataFrame]:
     """Returns a list of dataframes loaded from the list of files `filename`.
 
@@ -110,14 +119,15 @@ def get_all_dfs_from_csv(filenames: list[str], required_columns: list[str] = [],
     """
     all_files = filenames
 
-    dfs=[]
+    dfs = []
 
     for filename in all_files:
-        df=load_df_from_csv(filename, **kwargs)
-        if(all(elem in df.columns for elem in required_columns)):
+        df = load_df_from_csv(filename, **kwargs)
+        if (all(elem in df.columns for elem in required_columns)):
             dfs.append(df)
 
     return dfs
+
 
 def concat_pandas_dfs(dfs: list[pd.DataFrame]) -> pd.DataFrame:
     """Wrapper for `pd.concat` to make maintennance easier
@@ -127,8 +137,9 @@ def concat_pandas_dfs(dfs: list[pd.DataFrame]) -> pd.DataFrame:
     Returns:
         A single `pd.DataFrame`
     """
-    
+
     return pd.concat(dfs, axis=0, ignore_index=True)
+
 
 def write_dataframe_to_file(df: pd.DataFrame, filename: str):
     """Writes a `pd.DataFrame` to a CSV file at `filename`.
