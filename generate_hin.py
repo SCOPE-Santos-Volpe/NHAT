@@ -50,10 +50,10 @@ bandwidth = 0.24
 threshold_settings = [0.002, 0.001, 0.0005]
 
 # Geographic parameters:
+state_ids = [6]	
+county_ids = [1]
 table_name = 'SDS_California'
 from_crs = 'EPSG:4269' # Assumes SDS crash data table CRS is always EPSG:4269 
-state_ids = [i for i in range(40,56)]
-county_ids = [i for i in range(0,100)]
 
 
 """ Getting county information """
@@ -538,6 +538,7 @@ def get_sds_crashes(table_name, county_id, start_year, from_crs):
     """Return SDS crashes for given state + county for years later than 'start_year'.
 
     Different states' SDS data may have different coordinate reference systems (CRS) therefore the original CRS of the input data is needed.
+    TODO: In the future, the SDS data should be transformed to a consistent CRS rather than doing that here. We didn't realize that so it's here now.
 
     Args:
         table_name: which table to pull. The database has a different table for each state. For example, California SDS data is in the SDS_California table.
@@ -578,7 +579,7 @@ def get_sds_crashes(table_name, county_id, start_year, from_crs):
 
 """ Crash matching and processing """
 
-def get_nearest_edges_to_crashes(df1, graph_proj):
+def get_nearest_edges_to_crashes(crash_df, graph_proj):
     """
     Finds the nearest edge to each crash by shortest linear distance.
     """
@@ -586,7 +587,7 @@ def get_nearest_edges_to_crashes(df1, graph_proj):
     # Get the nearest edge to each crash point:
     crash_xs = []
     crash_ys = []
-    for index, crash in df1.iterrows():
+    for index, crash in crash_df.iterrows():
         crash_xs.append(crash["geometry"].x)
         crash_ys.append(crash["geometry"].y)
 
@@ -601,13 +602,13 @@ def get_nearest_edges_to_crashes(df1, graph_proj):
 def move_crashes_to_edges(data_df, edges_by_id_tuple, nearest_edge_ids_tuple):
     """
     Move crashes to corrected location on the nearest road edge in dataframe 
-    column df1['corrected_geometry'].
+    column dcrash_dff1['corrected_geometry'].
     """
 
-    df1 = data_df
-    df1['corrected_geometry'] = None
+    crash_df = data_df
+    crash_df['corrected_geometry'] = None
 
-    for index, crash in df1.iterrows():
+    for index, crash in crash_df.iterrows():
 
         nearest_edge = edges_by_id_tuple[nearest_edge_ids_tuple[index]]
         # print("nearest_edge found") #, nearest_edge)
@@ -621,10 +622,10 @@ def move_crashes_to_edges(data_df, edges_by_id_tuple, nearest_edge_ids_tuple):
         # print("correction amount", crash[0].x-nearest_point.x, crash[0].y-nearest_point.y)
 
         # Update the geometry column with the corrected location
-        df1['corrected_geometry'][index] = Point(
+        crash_df['corrected_geometry'][index] = Point(
             nearest_point.x, nearest_point.y)
 
-    return df1
+    return crash_df
 
 
 def clear_crashes_from_bins(bins_by_edge):
@@ -633,20 +634,20 @@ def clear_crashes_from_bins(bins_by_edge):
             bin.clear_crashes()
 
 
-def put_crashes_into_bins(df1, bins_by_edge, edges_by_id_tuple, nearest_edge_ids_tuple):
+def put_crashes_into_bins(crash_df, bins_by_edge, edges_by_id_tuple, nearest_edge_ids_tuple):
     """
     Puts crashes into the nearest bin by going through each bin on the nearest 
     edge and finding the one with the shortest linear distance. 
     """
 
     # crashes_by_edge = {}
-    for index, crash in df1.iterrows():
+    for index, crash in crash_df.iterrows():
 
         nearest_edge = edges_by_id_tuple[nearest_edge_ids_tuple[index]]
         nearest_edge_id = nearest_edge["id"][1:-1].split()
     
         # Compute the closest point on the nearest road to the crash location
-        nearest_point = df1['corrected_geometry'][index]
+        nearest_point = crash_df['corrected_geometry'][index]
         # print(crash[0], nearest_point)
         # print("correction amount", crash[0].x-nearest_point.x, crash[0].y-nearest_point.y)
 
@@ -718,7 +719,7 @@ def calculate_unthresholded_hin(bandwidth, corridors_by_edge):
     return road_length_unthr_hin, features
 
 
-def calculate_thresholds(state_id, county_id, corridors_by_edge, original_points_by_edge, threshold_settings):
+def calculate_thresholds(corridors_by_edge, original_points_by_edge, threshold_settings):
 
     num_points_along_edge = 100  # This has to match the value used in 'run_kde()'
     crash_pt_dist_thr = 0.1  # TODO: figure out better value than arbitrarily setting this
@@ -887,7 +888,7 @@ def calculate_total_road_length(edges):
     return total_road_length
 
 
-def calculate_hin_statistics(df1, edges, road_length_unthr, length_by_thr, num_crashes_by_thr, threshold_settings):
+def calculate_hin_statistics(crash_df, edges, road_length_unthr, length_by_thr, num_crashes_by_thr, threshold_settings):
     results = {}
 
     total_road_length = calculate_total_road_length(edges)
@@ -902,7 +903,7 @@ def calculate_hin_statistics(df1, edges, road_length_unthr, length_by_thr, num_c
     results['percent_road_length'][0.0] = road_length_unthr / \
         total_road_length*100
 
-    total_crash_count = len(df1)
+    total_crash_count = len(crash_df)
     results['total_crash_count'] = total_crash_count
     results['num_crashes'] = {}
     results['percent_crashes'] = {}
@@ -937,7 +938,7 @@ def get_census_tract_boundaries_from_rds(state_id: int, county_id: int = None, m
     return gdf
 
 
-def calculate_joined_features(state_id, county_id, features_by_thr, j40_bounds):
+def calculate_joined_features(features_by_thr, j40_bounds):
     j40_bounds = j40_bounds.to_crs("EPSG:2805")
     j40_bounds = j40_bounds.set_geometry('geom')
     # print("len(j40_bounds)", len(j40_bounds))
@@ -979,7 +980,9 @@ def calculate_joined_features(state_id, county_id, features_by_thr, j40_bounds):
 
 """ Save to files """
 
-def save_feature_collections(state_id, county_id, crash_data_source, threshold_settings, joined_features_by_thr, results):
+def save_feature_collections(state_id, county_id, crash_data_source, threshold_settings, joined_features_by_thr, results):	
+    main_folder = "HIN_Outputs"	
+    os.makedirs(main_folder, exist_ok=True)
 
     state_folder = f'state_{state_id}'
     os.makedirs(state_folder, exist_ok=True)
@@ -1017,134 +1020,138 @@ def save_feature_collections(state_id, county_id, crash_data_source, threshold_s
             dump(feature_collection, f)
 
     summary_filename = f'hin_summary_state_{state_id}_county_{county_id}_source_{crash_data_source}.txt'
-    with open(os.path.join(state_folder, summary_filename), 'w') as f:
+    with open(os.path.join(main_folder, state_folder, summary_filename), 'w') as f:
         for line in summary:
             f.write(f"{line}\n")
 
     return "\n".join(summary)
 
 
-def generate_hin(state_id, county_id, table_name='NONE'):
+def generate_hin_single_county(state_id=6, county_id=1, dataset='SDS', table_name='NONE'):
 
-    # Data parameters:
-    start_year = 2016
-    if table_name == 'California':
-        table_name = 'SDS_California'
-    elif table_name == "Massachusetts":
-        table_name = 'SDS_Massachusetts'
-    else:
-        table_name = 'NONE'
-    from_crs = 'EPSG:4269'
-    if table_name == 'NONE':
-        datasource_name = ["FARS"]
-    else:
-        datasource_name = ["SDS", "FARS"]
+    try:
 
-    # Geographic parameters:
-    state_ids = [i for i in range(40,56)]
-    county_ids = [i for i in range(0,100)]
-    # state_ids = [state_id]
-    # county_ids = [county_id]
+        # Data parameters:	
+        start_year = 2016	
+        if table_name == 'California':	
+            table_name = 'SDS_California'	
+        elif table_name == "Massachusetts":	
+            table_name = 'SDS_Massachusetts'	
+        else:	
+            table_name = 'NONE'	
+        from_crs = 'EPSG:4269'	
+        if table_name == 'NONE' or dataset =='FARS':	
+            datasource_name = ["FARS"]	
+        else:	
+            datasource_name = ["SDS", "FARS"]
 
-    for state_id in state_ids:
-        for county_id in county_ids:
-            print("State ID:", state_id, "County ID:", county_id)
+        # Geographic parameters:	
+        # state_ids = [i for i in range(40,56)]	
+        # state_ids = [6]	
+        # county_ids = [i for i in range(0,1000)]	
+        state_ids = [state_id]	
+        county_ids = [county_id]	
 
-            # Get county boundary:
-            county_bounds = get_county_boundaries_from_rds(state_id, county_id)
-            if type(county_bounds) == type(None):
-                print("Skipped county\n")
-                continue
-            elif len(county_bounds) == 0:
-                print("Skipped county\n")
-                continue
-            print("Got county boundary")
+        for state_id in state_ids:
+            for county_id in county_ids:
+                print("State ID:", state_id, "County ID:", county_id)
 
-            # Get graph of road network:
-            G, graph_proj, nodes, edges = get_graph_from_county(county_bounds)
-            print("Loaded graph of road network")
+                # Get county boundary:
+                county_bounds = get_county_boundaries_from_rds(state_id, county_id)
+                if type(county_bounds) == type(None):
+                    print("Skipped county\n")
+                    continue
+                elif len(county_bounds) == 0:
+                    print("Skipped county\n")
+                    continue
+                print("Got county boundary")
 
-            # Create bins, windows, and corridors:
-            bins_by_edge, original_points_by_edge, points_granular_by_edge, points_by_edge, edges_by_id_tuple = create_bins(
-                edges)
-            windows_by_edge = create_windows(
-                edges, bins_by_edge, points_by_edge, points_granular_by_edge)
-            # TODO: Cleanup
-            corridors_by_edge = create_corridors(
-                edges, points_granular_by_edge= points_granular_by_edge,points_by_edge= points_by_edge,bins_by_edge= bins_by_edge,windows_by_edge= windows_by_edge)
-            print("Created bins, windows, and corridors")
+                # Get graph of road network:
+                G, graph_proj, nodes, edges = get_graph_from_county(county_bounds)
+                print("Loaded graph of road network")
 
-            # Get crash data:
-            fars_df = get_fars_crashes(state_id, county_id, start_year)
-            if table_name != 'NONE':
-                sds_df = get_sds_crashes(table_name, county_id, start_year, from_crs)
-                datasource = [sds_df, fars_df]
-            else:
-                datasource = [fars_df]
-            print("Loaded crash data")
+                # Create bins, windows, and corridors:
+                bins_by_edge, original_points_by_edge, points_granular_by_edge, points_by_edge, edges_by_id_tuple = create_bins(
+                    edges)
+                windows_by_edge = create_windows(
+                    edges, bins_by_edge, points_by_edge, points_granular_by_edge)
+                # TODO: Cleanup
+                corridors_by_edge = create_corridors(
+                    edges, points_granular_by_edge= points_granular_by_edge,points_by_edge= points_by_edge,bins_by_edge= bins_by_edge,windows_by_edge= windows_by_edge)
+                print("Created bins, windows, and corridors")
 
-            # Get Justice40 data:
-            j40_bounds = get_census_tract_boundaries_from_rds(
-                state_id, county_id=county_id)
+                # Get crash data:
+                fars_df = get_fars_crashes(state_id, county_id, start_year)
+                if table_name != 'NONE':
+                    sds_df = get_sds_crashes(table_name, county_id, start_year, from_crs)
+                    datasource = [sds_df, fars_df]
+                else:
+                    datasource = [fars_df]
+                print("Loaded crash data")
 
-            # Set crash data source:
-            for idx in range(len(datasource)):
-                df1 = datasource[idx]
-                crash_data_source = datasource_name[idx]
-                print("\tCalculating for", crash_data_source)
+                # Get Justice40 data:
+                j40_bounds = get_census_tract_boundaries_from_rds(
+                    state_id, county_id=county_id)
 
-                # Find nearest edge to each crash:
-                nearest_edge_ids_tuple = get_nearest_edges_to_crashes(df1, graph_proj)
-                print("\tFound nearest edge to each crash")
+                # Set crash data source:
+                for idx in range(len(datasource)):
+                    crash_df = datasource[idx]
+                    crash_data_source = datasource_name[idx]
+                    print("\tCalculating for", crash_data_source)
 
-                # Move crashes onto edges:
-                df1 = move_crashes_to_edges(
-                    df1, edges_by_id_tuple, nearest_edge_ids_tuple)
-                print("\tMoved crashes onto edges")
+                    # Find nearest edge to each crash:
+                    nearest_edge_ids_tuple = get_nearest_edges_to_crashes(crash_df, graph_proj)
+                    print("\tFound nearest edge to each crash")
 
-                # Bin crashes (this is where crash weighting based on severity happens):
-                clear_crashes_from_bins(bins_by_edge)
-                put_crashes_into_bins(
-                    df1, bins_by_edge, edges_by_id_tuple, nearest_edge_ids_tuple)
-                print("\tBinned crashes")
+                    # Move crashes onto edges:
+                    crash_df = move_crashes_to_edges(
+                        crash_df, edges_by_id_tuple, nearest_edge_ids_tuple)
+                    print("\tMoved crashes onto edges")
 
-                # Calculate unthresholded HIN:
-                road_length_unthr, features = calculate_unthresholded_hin(
-                    bandwidth, corridors_by_edge)
-                print("\tGenerated HIN")
+                    # Bin crashes (this is where crash weighting based on severity happens):
+                    clear_crashes_from_bins(bins_by_edge)
+                    put_crashes_into_bins(
+                        crash_df, bins_by_edge, edges_by_id_tuple, nearest_edge_ids_tuple)
+                    print("\tBinned crashes")
 
-                # Calculate thresholds:
-                features_by_thr, length_by_thr, num_crashes_by_thr = calculate_thresholds(
-                    state_id, county_id, corridors_by_edge, original_points_by_edge, threshold_settings)
-                print("\tCalculated thresholds")
+                    # Calculate unthresholded HIN:
+                    road_length_unthr, features = calculate_unthresholded_hin(
+                        bandwidth, corridors_by_edge)
+                    print("\tGenerated HIN")
 
-                # Calculate statistics:
-                features_by_thr[0.0] = features
-                results = calculate_hin_statistics(
-                    df1, edges, road_length_unthr, length_by_thr, num_crashes_by_thr, threshold_settings)
-                print("\tCalculated statistics")
+                    # Calculate thresholds:
+                    features_by_thr, length_by_thr, num_crashes_by_thr = calculate_thresholds(
+                        corridors_by_edge, original_points_by_edge, threshold_settings)
+                    print("\tCalculated thresholds")
 
-                # Run spatial join on J40 bounds (this is how we incorporate equity):
-                joined_features_by_thr = calculate_joined_features(
-                    state_id, county_id, features_by_thr, j40_bounds)
-                print("\tAdded IN_J40 column")
+                    # Calculate statistics:
+                    features_by_thr[0.0] = features
+                    results = calculate_hin_statistics(
+                        crash_df, edges, road_length_unthr, length_by_thr, num_crashes_by_thr, threshold_settings)
+                    print("\tCalculated statistics")
 
-                # Save to files and produce summary:
-                summary = save_feature_collections(
-                    state_id, county_id, crash_data_source, threshold_settings, joined_features_by_thr, results)
-                print(summary)
-                print("\tSaved to files\n")
+                    # Run spatial join on J40 bounds (this is how we incorporate equity):
+                    joined_features_by_thr = calculate_joined_features(features_by_thr, j40_bounds)
+                    print("\tAdded IN_J40 column")
+
+                    # Save to files and produce summary:
+                    summary = save_feature_collections(
+                        state_id, county_id, crash_data_source, threshold_settings, joined_features_by_thr, results)
+                    print(summary)
+                    print("\tSaved to files\n")
+
+    except:	
+        print("Something went psychiatrically concerning in State {state_id}, County {county_id}")
 
 
 """ Main """
 
 if __name__=="__main__":
-    # parser = argparse.ArgumentParser(description='Generate HIN for a specified state, county, and dataset.')
-    # parser.add_argument('--state_id', type=int, required=True, help='State ID for HIN generation')
-    # parser.add_argument('--county_id', type=int, required=True, help='County ID for HIN generation')
-    # parser.add_argument('--dataset', type=str, required=True, choices=['FARS', 'SDS'], help='Dataset to use (FARS or SDS)')
-    # parser.add_argument('--table_name', type=str, required=True, choices=['California', 'Massachusetts'], help='Table name for SDS dataset (California or Massachusetts)')
+    parser = argparse.ArgumentParser(description='Generate HIN for a specified state, county, and dataset.')
+    parser.add_argument('--state_id', type=int, required=False, default=6, help='State ID for HIN generation')
+    parser.add_argument('--county_id', type=int, required=False, default=1, help='County ID for HIN generation')
+    parser.add_argument('--dataset', type=str, required=False, choices=['FARS', 'SDS'], default='FARS', help='Dataset to use (FARS or SDS)')
+    parser.add_argument('--table_name', type=str, required=False, choices=['California', 'Massachusetts'], help='Table name for SDS dataset (California or Massachusetts)')
 
-    # args = parser.parse_args()
-    # generate_hin(args.state_id, args.county_id,args.table_name)
-    generate_hin()
+    args = parser.parse_args()
+    generate_hin_single_county(args.state_id, args.county_id, args.dataset, args.table_name)
