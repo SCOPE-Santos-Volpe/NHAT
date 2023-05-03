@@ -1126,7 +1126,7 @@ def generate_hin(state_id, county_id):
             print(summary)
             print("\tSaved to files\n")
     except:
-        print("Something went psychiatrically concerning in State {state_id}, County {county_id}", )
+        print("Something went psychiatrically concerning in State {state_id}, County {county_id}")
 
 if __name__=="__main__":
     params = []
