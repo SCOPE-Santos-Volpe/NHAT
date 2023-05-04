@@ -105,7 +105,7 @@ This command will generate the High Injury Network for the specified state and c
 
 ## Web App
 
-The web app is built on an EC2 server and is responsible for visualizing the High Injury Network on a live map. This section will guide you on how to interact with the server.
+The web app is built on an EC2 server and is responsible for visualizing the High Injury Network on a live map. This section will guide you on how to interact with the server. Visualize the High Injury Network on a live map makes it easy for users to explore the data and modify the HIN functionality.
 
 ### Change and Test Flask App Locally
 
@@ -130,17 +130,16 @@ Use this tutorial to deploy a Flask application on EC2, but substitute the code 
 Firstly, you will need the RSA private key file for your EC2 instance in order to log into it remotely. It will be a file with the extension '.pem’. The file contents should look something like this:
 ```bash
 -----BEGIN RSA PRIVATE KEY-----
-*alphanumeric RSA key here*
+<alphanumeric RSA key here>
 -----END RSA PRIVATE KEY-----
 ```
 
-To SSH into the EC2 instance, open up your terminal and run this command, replacing the <file_location> with the location of the key file and <ip-address> with the Public IPv4 DNS address of the EC2 instance. For example, if it’s in the Downloads folder and the IP address is 34.233.143.226:
+To SSH into the EC2 instance, open up your terminal and run this command, replacing the location of the key file and the Public IPv4 DNS address of the EC2 instance.
 ```bash
-ssh -i <file_location> <ip-address>
 ssh -i ~/Downloads/key_file_name.pem ubuntu@ec2-34-233-143-226.compute-1.amazonaws.com
 ```
   
-Next, clone this repository and check out the "ec2" branch where the web app code is located. Also start up the virtual environment.
+Next, clone this repository, check out the "ec2" branch where the web app code is located, and start up the virtual environment.
 ```bash
 git clone https://github.com/SCOPE-Santos-Volpe/SCOPE-Santos-Volpe-Project
 git checkout ec2
@@ -148,7 +147,8 @@ cd flask_hin_app
 source venv/bin/activate 
 ```
  
-Once you have started the web app service, go to the EC2 instance's IP address to see the web app, but make sure to use http:// rather than https://. For example: http://34.233.143.226
+Once you have started the web app service, go to the EC2 instance's IP address to see the web app, but make sure to use http rather than https. For example: http://34.233.143.226
+
 
 ### Command Lines
 To interact with and refresh the systemctl web app service, here is a list of commands:
@@ -186,8 +186,18 @@ TO STOP THE WEBAPP SERVICE:
 sudo systemctl disable helloworld.service
 sudo systemctl stop helloworld.service
 ```
-  
-### VS Code SSH Extension
+
+### Editing the Web App Code
+
+To modify and edit the web app code, there are four main files:
+```bash
+demo.py
+demo.js
+demo.css 
+index.html
+```
+
+### VS Code Extension
  
 To connect and edit the files on EC2 in VS Code, follow these instructions: 
   - First, go to extensions and look up “Remote-SSH”. Install the plugin with this name. 
@@ -206,18 +216,6 @@ https://medium.com/good-robot/use-visual-studio-code-remote-ssh-sftp-without-cra
     - If it still crashes, restart the EC2 Instance. Go to your EC2 instance on the AWS dashboard. Click on “Instance State” → “Stop Instance” and wait until the Instance State turns from “Stopping” to “Stopped”. Then click on “Instance State” → “Start Instance” and wait until the Instance State turns to “Running” again. 
 
   
-### Interacting with the EC2 server
-
-TODO: Update this
-
-To interact with the EC2 server, please follow these instructions:  
-```bash
-<placeholder_instructions_for_interacting_with_ec2_server>
-```
-
-This will allow you to visualize the High Injury Network on a live map, making it easy for users to explore the data and modify the HIN functionality.
-
-
 ## File Descriptions
 
 Note: This is not a complete list of files. This is all the files with code that is used in the final app.
