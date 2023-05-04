@@ -240,7 +240,7 @@ Main function is combine_SDS_datasets. Helper functions take the folder path and
 ### [`preprocess_utils.py`](preprocess_utils.py)
 This file is to hold a bunch of useful helper functions for preprocessing so that they can be imported into any file.
 
-### [`AWS/upload_data_to_RDS.py`](AWS/upload_data_to_RDS.py)
+### [AWS/upload_data_to_RDS.py](AWS/upload_data_to_RDS.py)
 Functions to upload each type of table to the relational database.
 
 ### [`sqlalchemy_conn_string.txt`](sqlalchemy_conn_string.txt)
