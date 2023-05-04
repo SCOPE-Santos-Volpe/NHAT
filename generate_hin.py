@@ -493,7 +493,7 @@ def create_corridors(edges, bins_by_edge, points_by_edge, points_granular_by_edg
     corridors_by_edge = {}
     for edge in edges.iterfeatures():
         ids = edge["id"][1:-1].split()
-        corridor = Corridor(ids, points_granular_by_edge[tuple(ids)], points_by_edge[tuple(
+        corridor = Corridor(ids, points_by_edge[tuple(
             ids)], bins_by_edge[tuple(ids)], windows_by_edge[tuple(ids)])
         corridors_by_edge[tuple(ids)] = corridor
 
