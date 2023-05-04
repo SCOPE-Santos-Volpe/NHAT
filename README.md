@@ -121,10 +121,7 @@ python3 demo.py
 ```
 While demo.py is running locally, go here to see the local website: http://127.0.0.1:5000 
 
-
-### Editing the Web App Code
-
-To modify and edit the web app code, there are four main files: `demo.py`, `demo.js`, `demo.css`, and `index.html`.
+To modify the web app code, there are four main files: `demo.py`, `demo.js`, `demo.css`, and `index.html`.
 
 ### Setting up an EC2 Instance 
 
