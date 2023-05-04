@@ -107,7 +107,7 @@ This command will generate the High Injury Network for the specified state and c
 
 The web app is built on an EC2 server and is responsible for visualizing the High Injury Network on a live map. This section will guide you on how to interact with the server. Visualizing on a live map makes it easy for users to explore the data and modify functionality.
 
-### Change and Test Flask App Locally
+### Change and Run Flask App Locally
 
 The branch that the web app code is contained in is called “ec2”. Run this command to get code from that branch and get into the virtual environment.
 ```bash
