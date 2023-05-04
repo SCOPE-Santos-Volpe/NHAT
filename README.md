@@ -122,23 +122,20 @@ python3 demo.py
 While demo.py is running locally, go here to see the local website: http://127.0.0.1:5000 
 
 
-### Setting up the EC2 Instance 
+### Setting up an EC2 Instance 
 
-Use this tutorial to deploy a Flask application on EC2, but substitute the code contained in the EC2 branch for the example Flask app given in the tutorial: [Flask App on AWS Tutorial](https://medium.com/techfront/step-by-step-visual-guide-on-deploying-a-flask-application-on-aws-ec2-8e3e8b82c4f7)  
+If you want to create your own public website rather than just running the code locally, you can follow this process to set up an Amazon Computing instance (EC2). Use this tutorial to deploy a Flask application on EC2, but substitute the code contained in the EC2 branch for the example Flask app given in the tutorial: [Flask App on AWS Tutorial](https://medium.com/techfront/step-by-step-visual-guide-on-deploying-a-flask-application-on-aws-ec2-8e3e8b82c4f7)  
 
-
-Firstly, you will need the RSA private key file for your EC2 instance in order to log into it remotely. It will be a file with the extension '.pem’. The file contents should look something like this:
+You will need the RSA private key file for your EC2 instance in order to log into it remotely. It will be a file with the extension '.pem’. The file contents should look like this:
 ```bash
 -----BEGIN RSA PRIVATE KEY-----
 <alphanumeric RSA key here>
 -----END RSA PRIVATE KEY-----
 ```
-
 To SSH into the EC2 instance, open up your terminal and run this command, replacing the location of the key file and the Public IPv4 DNS address of the EC2 instance.
 ```bash
 ssh -i ~/Downloads/key_file_name.pem ubuntu@ec2-34-233-143-226.compute-1.amazonaws.com
 ```
-  
 Next, clone this repository, check out the "ec2" branch where the web app code is located, and start up the virtual environment.
 ```bash
 git clone https://github.com/SCOPE-Santos-Volpe/SCOPE-Santos-Volpe-Project
@@ -146,7 +143,6 @@ git checkout ec2
 cd flask_hin_app
 source venv/bin/activate 
 ```
- 
 Once you have started the web app service, go to the EC2 instance's IP address to see the web app, but make sure to use http rather than https. For example: http://34.233.143.226
 
 
