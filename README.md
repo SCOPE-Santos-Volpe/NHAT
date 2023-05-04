@@ -157,7 +157,7 @@ source venv/bin/activate
 Once you have started the web app service, go to the EC2 instance's IP address to see the web app, but make sure to use http rather than https. For example: http://34.233.143.226
 
 
-#### Command Lines
+### Command Lines for EC2
 To interact with and refresh the systemctl web app service, here is a list of commands:
   
 To refresh the web app service:
@@ -194,7 +194,7 @@ sudo systemctl disable helloworld.service
 sudo systemctl stop helloworld.service
 ```
 
-#### VS Code Extension
+### VS Code EC2 Extension
  
 To connect and edit the files on EC2 in VS Code, follow these instructions: 
   - First, go to extensions and look up “Remote-SSH”. Install the plugin with this name. 
