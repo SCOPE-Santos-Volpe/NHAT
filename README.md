@@ -122,6 +122,17 @@ python3 demo.py
 While demo.py is running locally, go here to see the local website: http://127.0.0.1:5000 
 
 
+### Editing the Web App Code
+
+To modify and edit the web app code, there are four main files:
+```bash
+demo.py
+demo.js
+demo.css 
+index.html
+```
+
+
 ### Setting up an EC2 Instance 
 
 If you want to create your own public website rather than just running the code locally, you can follow this process to set up an Amazon Computing instance (EC2). Use this tutorial to deploy a Flask application on EC2, but substitute the code contained in the EC2 branch for the example Flask app given in the tutorial: [Flask App on AWS Tutorial](https://medium.com/techfront/step-by-step-visual-guide-on-deploying-a-flask-application-on-aws-ec2-8e3e8b82c4f7)  
@@ -146,7 +157,7 @@ source venv/bin/activate
 Once you have started the web app service, go to the EC2 instance's IP address to see the web app, but make sure to use http rather than https. For example: http://34.233.143.226
 
 
-### Command Lines
+#### Command Lines
 To interact with and refresh the systemctl web app service, here is a list of commands:
   
 TO REFRESH WEB APP:
@@ -183,17 +194,7 @@ sudo systemctl disable helloworld.service
 sudo systemctl stop helloworld.service
 ```
 
-### Editing the Web App Code
-
-To modify and edit the web app code, there are four main files:
-```bash
-demo.py
-demo.js
-demo.css 
-index.html
-```
-
-### VS Code Extension
+#### VS Code Extension
  
 To connect and edit the files on EC2 in VS Code, follow these instructions: 
   - First, go to extensions and look up “Remote-SSH”. Install the plugin with this name. 
