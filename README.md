@@ -1,4 +1,4 @@
-# National High Injury Network (HIN) Analysis Tool (NHAT) Web App 
+# National High Injury Network Analysis Tool (NHAT) Web App 
 
 Partnering with the Santos Family Foundation and the Volpe National Transportation Systems Center, NHAT was developed by Olin College Students as a Senior Capstone Project in 2023. NHAT is a free national tool that allows communities to generate interactive HIN maps and understand the relationship between safety, equity, and other contextual factors. This project aims to generate and visualize a High Injury Network for every geographic area in the United States using Fatality Analysis Reporting System (FARS), State Data System (SDS), and Justice 40 equity data. The ultimate goal is to provide a live web-app map that displays the entire national roadway network and highlights areas with the highest injury rates using an algorithm based on kernel density estimation.
 
