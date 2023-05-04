@@ -198,7 +198,7 @@ index.html
 To connect and edit the files on EC2 in VS Code, follow these instructions: 
   - First, go to extensions and look up “Remote-SSH”. Install the plugin with this name. 
   - Next, go to the command palette and look up “Remote-SSH: connect to host”. Click “Configure SSH hosts”, then select the SSH configuration file to update. This might be called C:\Users\username\.ssh\config, replacing “username” with your own username. This will open your SSH configuration file. 
-  - Paste in the following contents and save the file. Now you have added the EC2 instance as an SSH host. 
+  - Paste in the following contents and save the file to add the EC2 instance as an SSH host, again replacing the location of the key file and the Public IPv4 DNS address. 
 ```bash
 Host aws-ec2
   HostName ec2-34-233-143-226.compute-1.amazonaws.com
