@@ -107,14 +107,33 @@ This command will generate the High Injury Network for the specified state and c
 
 The web app is built on an EC2 server and is responsible for visualizing the High Injury Network on a live map. This section will guide you on how to interact with the server.
 
+### Change and Test Web App Locally
+
+
+The branch that EC2 instance is based on is “ec2”. Run this command to get code from that branch and get into the virtual environment.
+```bash
+git checkout ec2
+cd flask_hin_app
+source venv/bin/activate 
+```
+
+Now, you can edit the code. To test the changes you made, start up the flask app by running the following command:
+```bash
+python3 demo.py
+```
+
+While demo.py is running locally, go here to see the local website: http://127.0.0.1:5000 
+
+
 ### Interacting with the EC2 server
 
 TODO: Update this
 
-To interact with the EC2 server, please follow these instructions:
+To interact with the EC2 server, please follow these instructions:  
 ```bash
 <placeholder_instructions_for_interacting_with_ec2_server>
 ```
+
 This will allow you to visualize the High Injury Network on a live map, making it easy for users to explore the data and modify the HIN functionality.
 
 
