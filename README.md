@@ -1,6 +1,6 @@
-# High Injury Network Webapp 
+# National High Injury Network (HIN) Analysis Tool (NHAT) Web App 
 
-Partnering with the Santos Family Foundation and the Volpe National Transportation Systems Center, NHAT was developed by Olin College Students as a Senior Capstone Project in 2023. NHAT is a free national tool that allows communities to generate interactive HIN maps and understand the relationship between safety, equity, and other contextual factors. This project aims to identify and visualize high injury networks in the United States using Fatality Analysis Reporting System (FARS), State Data System (SDS), and Justice 40 equity data. The ultimate goal is to provide a live web-app map that displays the entire national roadway network and highlights areas with high injury rates using kernel density estimation.
+Partnering with the Santos Family Foundation and the Volpe National Transportation Systems Center, NHAT was developed by Olin College Students as a Senior Capstone Project in 2023. NHAT is a free national tool that allows communities to generate interactive HIN maps and understand the relationship between safety, equity, and other contextual factors. This project aims to generate and visualize a High Injury Network for every geographic area in the United States using Fatality Analysis Reporting System (FARS), State Data System (SDS), and Justice 40 equity data. The ultimate goal is to provide a live web-app map that displays the entire national roadway network and highlights areas with the highest injury rates using an algorithm based on kernel density estimation.
 
 The current version of the website is hosted [here](http://34.233.143.226/)
 
@@ -69,6 +69,8 @@ See [`generate_and_upload_everything.py`](generate_and_upload_everything.py), wh
 To add or update SDS data, add the files into `SDS/Data/{state name}/{file name}.csv`. If adding a new state, in [`preprocess_SDS_data.py`](preprocess_SDS_data.py), write a new function that takes in a `pd.DataFrame`, processes it, and returns a `pd.DataFrame`. Then, add that function into `preprocess_func_dict`. Then, reprocess and upload the data.
 
 To add new FARS data, download the data and unzip the `.zip` file. Take the `accident.CSV` file and put it into `FARS/FARS CSVs/*.CSV` . Renaming the `accident.CSV` file is not necessary but recommended for future maintainability. The file extension for these files is `.CSV` instead of `.csv` because that’s what the files came as, and we didn’t change them. Then, reprocess and upload the data.
+
+
 ## High Injury Network
 
 The High Injury Network (HIN) module is responsible for processing the data and generating the high injury network using kernel density estimation. To execute this module, run the [`generate_hin.py`](generate_hin.py) script with the specified state and county IDs, and the choice of table name (either "California" or "Massachusetts") for the SDS dataset.
@@ -99,11 +101,11 @@ Here's an example of running the script for state ID 6 (California) and county I
 python generate_hin.py --state_id 6 --county_id 3 --table_name California
 ```
 
-This command will generate the high injury network for the specified state and county using the California SDS dataset.
+This command will generate the High Injury Network for the specified state and county using the California SDS dataset.
 
-## Web-app
+## Web app
 
-The web-app is built on an EC2 server and is responsible for visualizing the high injury network on a live map. This section will guide you on how to interact with the server.
+The web app is built on an EC2 server and is responsible for visualizing the High Injury Network on a live map. This section will guide you on how to interact with the server.
 
 ### Interacting with the EC2 server
 
@@ -113,7 +115,7 @@ To interact with the EC2 server, please follow these instructions:
 ```bash
 <placeholder_instructions_for_interacting_with_ec2_server>
 ```
-This will allow you to visualize the high injury network on a live map, making it easy for users to explore the data and modify the HIN functionality.
+This will allow you to visualize the High Injury Network on a live map, making it easy for users to explore the data and modify the HIN functionality.
 
 
 ## File Descriptions
