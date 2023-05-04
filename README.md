@@ -160,19 +160,19 @@ Once you have started the web app service, go to the EC2 instance's IP address t
 #### Command Lines
 To interact with and refresh the systemctl web app service, here is a list of commands:
   
-TO REFRESH WEB APP:
+To refresh the web app service:
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl restart helloworld.service
 ```
   
-TO CHECK STATUS:
+To check status of the web app service:
 ```bash
 systemctl status helloworld.service
 systemctl status
 ```
 
-TO START THE WEBAPP SERVICE:
+To start the web app service:
 ```bash
 sudo systemctl start helloworld.service
 sudo systemctl enable helloworld.service
@@ -180,7 +180,7 @@ curl localhost:8010
 sudo nano /etc/nginx/sites-available/default
 ```
 
-TO RESTART THE WEBAPP SERVICE:
+To restart the web app service:
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl restart helloworld.service
@@ -188,7 +188,7 @@ sudo systemctl restart nginx
 systemctl status helloworld.service
 ```
 
-TO STOP THE WEBAPP SERVICE:
+To stop the web app service:
 ```bash
 sudo systemctl disable helloworld.service
 sudo systemctl stop helloworld.service
