@@ -107,24 +107,105 @@ This command will generate the High Injury Network for the specified state and c
 
 The web app is built on an EC2 server and is responsible for visualizing the High Injury Network on a live map. This section will guide you on how to interact with the server.
 
-### Change and Test Web App Locally
+### Change and Test Flask App Locally
 
-
-The branch that EC2 instance is based on is “ec2”. Run this command to get code from that branch and get into the virtual environment.
+The branch that the web app code is contained in is called “ec2”. Run this command to get code from that branch and get into the virtual environment.
 ```bash
 git checkout ec2
 cd flask_hin_app
 source venv/bin/activate 
 ```
-
 Now, you can edit the code. To test the changes you made, start up the flask app by running the following command:
 ```bash
 python3 demo.py
 ```
-
 While demo.py is running locally, go here to see the local website: http://127.0.0.1:5000 
 
 
+### Setting up the EC2 Instance 
+
+Use this tutorial to deploy a Flask application on EC2, but substitute the code contained in the EC2 branch for the example Flask app given in the tutorial: [Flask App on AWS Tutorial](https://medium.com/techfront/step-by-step-visual-guide-on-deploying-a-flask-application-on-aws-ec2-8e3e8b82c4f7)  
+
+
+Firstly, you will need the RSA private key file for your EC2 instance in order to log into it remotely. It will be a file with the extension '.pem’. The file contents should look something like this:
+```bash
+-----BEGIN RSA PRIVATE KEY-----
+*alphanumeric RSA key here*
+-----END RSA PRIVATE KEY-----
+```
+
+To SSH into the EC2 instance, open up your terminal and run this command, replacing the <file_location> with the location of the key file and <ip-address> with the Public IPv4 DNS address of the EC2 instance. For example, if it’s in the Downloads folder and the IP address is 34.233.143.226:
+```bash
+ssh -i <file_location> <ip-address>
+ssh -i ~/Downloads/key_file_name.pem ubuntu@ec2-34-233-143-226.compute-1.amazonaws.com
+```
+  
+Next, clone this repository and check out the "ec2" branch where the web app code is located. Also start up the virtual environment.
+```bash
+git clone https://github.com/SCOPE-Santos-Volpe/SCOPE-Santos-Volpe-Project
+git checkout ec2
+cd flask_hin_app
+source venv/bin/activate 
+```
+ 
+Once you have started the web app service, go to the EC2 instance's IP address to see the web app, but make sure to use http:// rather than https://. For example: http://34.233.143.226
+
+### Command Lines
+To interact with and refresh the systemctl web app service, here is a list of commands:
+  
+TO REFRESH WEB APP:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart helloworld.service
+```
+  
+TO CHECK STATUS:
+```bash
+systemctl status helloworld.service
+systemctl status
+```
+
+TO START THE WEBAPP SERVICE:
+```bash
+sudo systemctl start helloworld.service
+sudo systemctl enable helloworld.service
+curl localhost:8010
+sudo nano /etc/nginx/sites-available/default
+```
+
+TO RESTART THE WEBAPP SERVICE:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart helloworld.service
+sudo systemctl restart nginx
+systemctl status helloworld.service
+```
+
+TO STOP THE WEBAPP SERVICE:
+```bash
+sudo systemctl disable helloworld.service
+sudo systemctl stop helloworld.service
+```
+  
+### VS Code SSH Extension
+ 
+To connect and edit the files on EC2 in VS Code, follow these instructions: 
+  - First, go to extensions and look up “Remote-SSH”. Install the plugin with this name. 
+  - Next, go to the command palette and look up “Remote-SSH: connect to host”. Click “Configure SSH hosts”, then select the SSH configuration file to update. This might be called C:\Users\username\.ssh\config, replacing “username” with your own username. This will open your SSH configuration file. 
+  - Paste in the following contents and save the file. Now you have added the EC2 instance as an SSH host. 
+```bash
+Host aws-ec2
+  HostName ec2-34-233-143-226.compute-1.amazonaws.com
+  IdentityFile ~/Downloads/scope_team.pem
+  User ubuntu
+```
+  - To connect to the EC2 instance, again go to the command palette and look up “Remote-SSH: connect to host”. Click on “aws-ec2”. This will open a new VS Code window that is connected to the EC2 instance. 
+  - Go to the file explorer tab. Click “Open Folder”, then click “OK”. The files from the EC2 instance are shown on the left sidebar, and you can open and edit them.   
+  - If you encounter a problem with VS Code crashing when you try to edit the code, follow this tutorial: 
+https://medium.com/good-robot/use-visual-studio-code-remote-ssh-sftp-without-crashing-your-server-a1dc2ef0936d
+    - If it still crashes, restart the EC2 Instance. Go to your EC2 instance on the AWS dashboard. Click on “Instance State” → “Stop Instance” and wait until the Instance State turns from “Stopping” to “Stopped”. Then click on “Instance State” → “Start Instance” and wait until the Instance State turns to “Running” again. 
+
+  
 ### Interacting with the EC2 server
 
 TODO: Update this
