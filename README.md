@@ -10,7 +10,7 @@ For more information on the usage of the web app go [here](https://docs.google.c
 
 1. [How to Access AWS Relational Database (RDS)](#data)
 2. [How to Run High Injury Network Algorithm](#high-injury-network)
-3. [How to Launch The Web-app](#web-app)
+3. [How to Launch the Web App](#web-app)
 
 ## Data
 
