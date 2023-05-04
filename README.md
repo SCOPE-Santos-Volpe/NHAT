@@ -109,7 +109,7 @@ The web app is built on an EC2 server and is responsible for visualizing the Hig
 
 ### Change and Run Flask App Locally
 
-The branch that the web app code is contained in is called “ec2”. Run this command to get code from that branch and get into the virtual environment.
+The branch that the web app code is contained in is called “ec2”. Run this command to get code and start the virtual environment.
 ```bash
 git checkout ec2
 cd flask_hin_app
