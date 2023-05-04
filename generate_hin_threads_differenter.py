@@ -1,7 +1,7 @@
 import generate_hin
 import multiprocessing as mp
 
-state_ids = [60]
+state_ids = [i for i in range(60)]
 county_ids = [i for i in range(1000)]
 
 if __name__=="__main__":
