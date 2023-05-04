@@ -213,7 +213,7 @@ Host aws-ec2
   - Go to the file explorer tab. Click “Open Folder”, then click “OK”. The files from the EC2 instance are shown on the left sidebar, and you can open and edit them.   
   - If you encounter a problem with VS Code crashing when you try to edit the code, follow this tutorial: 
 https://medium.com/good-robot/use-visual-studio-code-remote-ssh-sftp-without-crashing-your-server-a1dc2ef0936d
-    - If it still crashes, restart the EC2 Instance. Go to your EC2 instance on the AWS dashboard. Click on “Instance State” → “Stop Instance” and wait until the Instance State turns from “Stopping” to “Stopped”. Then click on “Instance State” → “Start Instance” and wait until the Instance State turns to “Running” again. 
+  - If it still crashes, restart the EC2 Instance. Go to your EC2 instance on the AWS dashboard. Click on “Instance State” → “Stop Instance” and wait until the Instance State turns from “Stopping” to “Stopped”. Then click on “Instance State” → “Start Instance” and wait until the Instance State turns to “Running” again. 
 
   
 ## File Descriptions
