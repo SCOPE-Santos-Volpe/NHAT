@@ -103,7 +103,7 @@ python generate_hin.py --state_id 6 --county_id 3 --table_name California
 
 This command will generate the High Injury Network for the specified state and county using the California SDS dataset.
 
-## Web app
+## Web App
 
 The web app is built on an EC2 server and is responsible for visualizing the High Injury Network on a live map. This section will guide you on how to interact with the server.
 
