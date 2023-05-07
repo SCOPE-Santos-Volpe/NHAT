@@ -6,3 +6,4 @@ SDS
 Shapefiles
 combined_FARS_categorized.csv
 .DS_Store
+ __pycache__/
