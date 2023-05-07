@@ -22,6 +22,7 @@ from pathlib import Path
 import pandas as pd
 import psycopg2
 from geoalchemy2 import Geometry
+import sqlalchemy
 
 # To import helper
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -282,11 +283,28 @@ def upload_hin_to_RDS(path="HIN_Outputs/state_6"):
     print("got all hin paths")
 
     state_id= Path(path).stem.split('.')[0]
+    state_num = int(state_id.split(sep='_')[1])
 
     properties_table_name = "hin_properties"
     table_name = "hin_"+state_id
     print(table_name)
     # return
+
+    print(len(hin_paths))
+
+    try:
+        query = """DROP TABLE {}""".format(table_name)
+        print(query)
+        cursor.execute(query)
+    except:
+        print("probably table didnt exist to drop")
+
+    try:
+        query = """DELETE FROM {} WHERE "STATE_ID" = {}""".format(properties_table_name,state_num)
+        print(query)
+        cursor.execute(query)
+    except:
+        print("idk lol")
 
     # Get initial hin id
     if properties_table_name not in table_names:
@@ -297,7 +315,6 @@ def upload_hin_to_RDS(path="HIN_Outputs/state_6"):
         result = cursor.fetchall()
         hin_id = int(result[0][0]) + 1
 
-    print(len(hin_paths))
     for i, path in enumerate(hin_paths):
         print(f"{i}/{len(hin_paths)}, PATH: {path}")
         properties_df, gdf = preprocess_geojsons.preprocess_HIN_df(path, hin_id)
@@ -309,8 +326,14 @@ def upload_hin_to_RDS(path="HIN_Outputs/state_6"):
         properties_df.to_sql(properties_table_name, con=sqlalchemy_conn, if_exists='append', index=False)
 
         # table_name = "hin"
-        gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False, dtype={
-                   'geom': Geometry(geometry_type='LINESTRING', srid=4269)})
+        # gdf.columns.insert(0,type)
+        # print(gdf.columns)
+        # print(len(gdf))
+        if(len(gdf) > 0):
+            gdf.to_sql(table_name, con=sqlalchemy_conn, if_exists='append', index=False,
+                    dtype={
+                        'geom': Geometry(geometry_type='LINESTRING', srid=4269)
+                        })
 
         hin_id += 1
 
@@ -330,4 +353,4 @@ if __name__ == "__main__":
     # for folder_path in helper.get_all_subdirectories("HIN_Output"):
     #     upload_hin_to_RDS("HIN_Output/"+folder_path)
 
-    upload_hin_to_RDS()
+    upload_hin_to_RDS(path='HIN_Outputs/state_5')
