@@ -350,7 +350,7 @@ if __name__ == "__main__":
     # upload_county_boundaries_to_RDS()
     # upload_census_tract_boundaries_to_RDS()
 
-    # for folder_path in helper.get_all_subdirectories("HIN_Output"):
-    #     upload_hin_to_RDS("HIN_Output/"+folder_path)
+    for folder_path in helper.get_all_subdirectories("HIN_Outputs"):
+        upload_hin_to_RDS("HIN_Outputs/"+folder_path)
 
-    upload_hin_to_RDS(path='HIN_Outputs/state_5')
+    # upload_hin_to_RDS(path='HIN_Outputs/state_6')

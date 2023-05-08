@@ -1,7 +1,10 @@
 import generate_hin
 import multiprocessing as mp
 
-state_ids = [i for i in range(60)]
+# state_ids = [i for i in range(60)]
+state_ids = [i for i in range (0,30)]
+state_ids.remove(6)
+state_ids.remove(25)
 county_ids = [i for i in range(1000)]
 
 if __name__=="__main__":
