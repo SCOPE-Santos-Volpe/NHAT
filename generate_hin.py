@@ -1,47 +1,36 @@
 """Generates a HIN map for a single state and county. Main function is `generate_hin_single_county`.
+
+NOTE: Not all of the functions have docstrings because I ran out of time. The no docstrings functions are not intended to be used externally.
 """
 
 ## Installs and Imports
 
 
 # NOTE: sqlalchemy version <2 is required
-
-# Connect to database:
-# conn_string = 'no you cant have this'
-# sqlalchemy_conn, metadata, engine = database_connection(conn_string)
-import math
-import multiprocessing
+import argparse
 import os
-import glob
 
 import geojson
 import numpy as np
 import pandas as pd
 import geopandas as gpd
 import osmnx as ox
-# NOTE: sqlalchemy version <2 is required
 import pyproj
 import scipy.stats as st
-from scipy.interpolate import interp1d
 import sqlalchemy as db
-from sqlalchemy import create_engine, Table, Column, Integer, String, text
-from geojson import Feature, FeatureCollection, dump
-import matplotlib.pyplot as plt
-from matplotlib import patches
-from matplotlib import pyplot as plt
-from shapely.geometry import LineString, MultiPolygon, Point, Polygon
+from sqlalchemy import text
+from geojson import FeatureCollection, dump
+from shapely.geometry import LineString, Point
 from shapely.ops import transform, unary_union
-import preprocess_utils
-import argparse
+
 import preprocess_utils
 
 # Connect to database:
-# conn_string = 'no you cant have this'
-# sqlalchemy_conn, metadata, engine = database_connection(conn_string)
 sqlalchemy_conn, metadata, engine = preprocess_utils.connect_to_sqlalchemy(
     include_metadata=True, include_engine=True)
 print("Connected to database")
 
+# The data parameters must be defined globally because they aren't passed through functions. Many of them are overwritten in other parts of the code.
 # Data parameters:
 start_year = 2016
 datasource_name = ["SDS", "FARS"]
@@ -1060,6 +1049,8 @@ def generate_hin_single_county(state_id=6, county_id=1, dataset='SDS', table_nam
 
     Returns:
         None
+
+    NOTE: The dataset and table name parameter behaviors could probably be cleaned up and maybe combined into one parameter.
     """
 
     try:
