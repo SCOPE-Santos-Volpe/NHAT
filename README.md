@@ -142,7 +142,7 @@ Next, clone this repository, check out the "ec2" branch where the web app code i
 git clone https://github.com/SCOPE-Santos-Volpe/SCOPE-Santos-Volpe-Project
 git checkout ec2
 cd flask_hin_app
-source venv/bin/activate 
+source venv/bin/activate
 ```
 Once you have started the web app service, go to the EC2 instance's IP address to see the web app, but make sure to use http rather than https. For example: http://34.233.143.226
 
@@ -216,7 +216,12 @@ Booleans do_uploading and do_generating select whether to upload and/or generate
 Splits the single census tracts geojson into a geojson for each state.
 
 ### [`generate_hin.py`](generate_hin.py)
-TODO: add a description
+Generates a HIN map for a single state and county. Main function is `generate_hin_single_county`.
+
+### [`generate_hin_everything.py`](generate_hin_everything.py)
+Generates all the HIN maps for every state.
+
+This does not contain any logic beyond generating the list of states, counties, and datasets, and calling `generate_hin.generate_hin_single_county` for each of those. Uses multithreading.
 
 ### [`helper.py`](helper.py)
 This file is to hold a bunch of useful helper functions so that they can be imported into any file.

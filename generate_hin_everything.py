@@ -1,3 +1,7 @@
+"""Generates all the HIN maps for every state.
+
+This does not contain any logic beyond generating the list of states, counties, and datasets, and calling `generate_hin.generate_hin_single_county` for each of those. Uses multithreading.
+"""
 import generate_hin
 import multiprocessing as mp
 

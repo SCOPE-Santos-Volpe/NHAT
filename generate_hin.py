@@ -1,7 +1,4 @@
-"""
-Commented April Working Copy HIN Pipeline Code.ipynb
-Colab notebook at
-        https://colab.research.google.com/drive/1vwfCsS_YnaaXQBk8MG4ITCxxEY0aPiFP
+"""Generates a HIN map for a single state and county. Main function is `generate_hin_single_county`.
 """
 
 ## Installs and Imports
