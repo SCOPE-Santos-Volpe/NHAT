@@ -39,29 +39,8 @@ function makeMap() {
     "OSM": osmMap,
     // CartoDB: landMap,
   };
-
-  // Make Layers
-    const pointsA = [
-      [44.960020586193795,  -93.25083755493164, "point A1"],
-      [44.95924616170657,   -93.251320352554325, "point A2"],
-      [44.959511304688444,  -93.25270973682404, "point A3"],
-      [44.96040500771883,   -93.252146472930908, "point A4"],
-    ];
-    
-    const pointsB = [
-      [44.959314161892106,  -93.252055277824405, "point B1"],
-      [44.95950144756943,   -93.25193726062775, "point B2"],
-      [44.95966573260081,   -93.251829972267154, "point B3"],
-      [44.9598333027065,    -93.251744141578678, "point B4"],
-      [44.9599680154701,    -93.25164758205414, "point B5"],
-      [44.96012572746442,   -93.251583209037784, "point B6"],
-      [44.960276867580336,  -93.25143836975098, "point B7"],
-      [44.96046414919644,   -93.251341810226444, "point B8"],
-    ];
     
     // Extended `LayerGroup` that makes it easy to do the same for all layers of its members
-    const pA = new L.FeatureGroup();
-    const pB = new L.FeatureGroup();
     const crash_points = new L.FeatureGroup();
     const selection_boundaries = new L.FeatureGroup(); // TODO: implement
     const mpo_boundaries = new L.FeatureGroup();
@@ -70,45 +49,12 @@ function makeMap() {
     const census_boundaries = new L.FeatureGroup(); // TODO: implement
     const roadHighlight_polylineLayer = new L.FeatureGroup(); // TODO: implement
 
-    // adding markers to the layer pointsA
-    for (let i = 0; i < pointsA.length; i++) {
-        var marker = L.circleMarker([pointsA[i][0], pointsA[i][1]], {radius: 10, color: '#FF00FF'}).bindPopup(pointsA[i][2]);
-        pA.addLayer(marker);
-    }
-    
-    // adding markers to the layer pointsB
-    for (let i = 0; i < pointsB.length; i++) {
-        marker = L.marker([pointsB[i][0], pointsB[i][1]]).bindPopup(pointsB[i][2]);
-        pB.addLayer(marker);
-    }
-
     var SDS_renderer = L.canvas({ padding: 0.5 }); // helps to fix slowness by plotting points on a canvas rather than individual layers
 
+
+    // Create layer variable for FARS and SDS
     var fars_layer;
     var sds_layer;
-
-
-    // ------------------------------------------------------------------------------------
-    // HEATMAP EXAMPLE
-
-    // Configure and create the heatmap.js layer. Check out the heatmap.js Leaflet plugin docs for additional configuration options.
-    let cfg = {
-      "radius": 40,
-      "useLocalExtrema": true,
-      valueField: 'price'
-    };
-
-    let heatmapLayer = new HeatmapOverlay(cfg);
-
-    
-    d3.json('https://raw.githubusercontent.com/SCOPE-Santos-Volpe/SCOPE-Santos-Volpe-Project/app-framework/hin_app/federal_hill_sales.json', function(data) { 
-    // $.getJSON('../federal_hill_sales.json', function(data){
-
-      // Add data (from JSON data exposed as variable in sales.js) to the heatmap.js layer
-      heatmapLayer.setData({
-        data: data
-      });
-    });
 
     // -----------------------------------------------------------------------------------------
     // LOAD GEOJSON OF MPOS
@@ -126,7 +72,6 @@ function makeMap() {
       var geojson_mpo_boundaries_layer = L.geoJSON(geojson, {
         style: function (feature) {
           var state_of_mpo = feature.properties.STATE_ID;
-          // console.log("state_of_mpo", state_of_mpo);
           if (clicked_state == "NONE") {
             return {
               color: "red",
@@ -147,10 +92,8 @@ function makeMap() {
                 color: "#555555",
                 fillColor: "#555555",
                 weight: 1,
-                // opacity: 0.5,
                 opacity: 0.0,
                 fillOpacity: 0.0,
-                // clickable: true
                 clickable: false
               };
             }
@@ -197,8 +140,6 @@ function makeMap() {
             map.fitBounds(this.getBounds());
             map.removeLayer(mpo_boundaries); // makes states transition to mpo/county
 
-            // // if (map_state_codes_to_nums[state_of_mpo] != clicked_state) {
-            // // TODO: what to do here for map navigation. For now do exact same as if state is highlighted
             var mpo_name = this.feature.properties.MPO_NAME;
             var mpo_id = this.feature.properties.MPO_ID;
             var mpo_not_county_bool = true;
@@ -265,8 +206,6 @@ function makeMap() {
           }
         },
         onEachFeature: function (feature, layer) {
-          // const coordinates = feature.geometry.coordinates.toString();
-          // const coordinate_string = coordinates.match(/[^,]+,[^,]+/g);
           const county_name = feature.properties.COUNTY_NAME.toString();
           layer.bindPopup(
             "<span>County Name:<br>" + county_name + "</span>"
@@ -308,8 +247,6 @@ function makeMap() {
             map.fitBounds(this.getBounds());
             map.removeLayer(county_boundaries); // makes states transition to mpo/county
 
-            // if (state_of_county != clicked_state) {
-            // // TODO: what to do here for map navigation. For now do exact same as if state is highlighted
             var county_name = this.feature.properties.COUNTY_NAME;
             var county_id = this.feature.properties.COUNTY_ID;
             var mpo_not_county_bool = false;
@@ -327,7 +264,6 @@ function makeMap() {
             region.innerText = county_name ? `You clicked county: ${county_name}` : `You haven't selected any county`;
             afterregion.innerText = "You chose a region! Click the region one more time to confirm that this is the region you want to create HIN.";
 
-            // TODO: (JACKIE) something wierd here, not showing just one county boundary
             // Get the geojson for the selected MPO/county
             $.getJSON("/get_county_boundaries_by_state_id_and_county_name/"+clicked_state+county_name, function(obj) {
               const county_geojson = obj;
@@ -373,7 +309,6 @@ function makeMap() {
     // LOAD LAYER HIGHLIGHTING THE SELECTED AREA
 
     function setSelectionToMap(selected_feature_name, selected_feature_id, mpo_not_county_bool, geojson, thisLayer, clicked_state) {
-      console.log("checking the id is right", selected_feature_id);
 
       var geojson_selection_boundaries_layer = L.geoJSON(geojson, {
         style: function (feature) {
@@ -385,7 +320,6 @@ function makeMap() {
           if (!bool_selected) {
             return {
               color: "red",
-              //fillColor : "#555555",
               weight: 5,
               opacity: 1.0,
               clickable: true
@@ -395,64 +329,10 @@ function makeMap() {
               color: "#555555",
               opacity: 1,
               fillOpacity: 0.0,
-              // fillOpacity: 0.0L,
               clickable: true
             };
           }
         },
-        // onEachFeature: function (feature, layer) {
-        //   // console.log(selected_feature_name, feature.properties.GEOID);
-        //   layer.on('mouseover', function () {
-        //     this.setStyle({
-        //       'fillColor': 'yellow',
-        //     });
-        //     this.openPopup();
-        //   });
-        
-        //   layer.on('mouseout', function () {
-        //     this.setStyle({
-        //       'fillColor': '#555555',
-        //     });
-        //     this.closePopup(); 
-        //   });
-
-        //   layer.on('click', function (event) {
-        //     map.addControl(startLayer);
-        //     map.fitBounds(this.getBounds());
-
-        //     this.setStyle({
-        //       'color': '#555555',
-        //       'fillOpacity': 0.0,
-        //     });
-
-        //     document.querySelector('.back-button2').style.display = 'none';
-        //     document.querySelector('.after-region').style.display = 'none';
-        //     // document.querySelector('.confirmation').style.display = 'block';
-        //     // confirmation.innerText = "Go to the HIN tab to generate the HIN map!";
-
-        //     if (mpo_not_county_bool){
-        //       $.getJSON("/get_census_tract_boundaries_by_state_id_and_mpo_name/"+clicked_state+feature.properties.MPO_NAME, function(obj) {
-        //         const mpo_census = obj;
-        //         censusToMap(mpo_census);
-        //         console.log("mpo census for ", feature.properties.MPO_NAME, "loaded");
-        //         // map.addLayer(census_boundaries);
-        //       });
-        //     }
-        //     else {
-        //       $.getJSON("/get_census_tract_boundaries_by_state_id_and_county_name/"+clicked_state+feature.properties.COUNTY_NAME, function(obj) {
-        //         const county_census = obj;
-        //         censusToMap(county_census);
-        //         console.log("county census for ", feature.properties.COUNTY_NAME, "loaded");
-        //         // map.addLayer(census_boundaries);
-        //       });
-        //     }
-
-            
-        //     // Can't figure out how to dynamically restyle all the features in the feature group, tried many 
-        //     // things, resorted to clearing the layer and remaking it when the user clicks a new boundary
-        //     //setSelectionToMap(selected_feature_name, mpo_not_county_bool, geojson, thisLayer); 
-        //   });
-        // },
       });
 
       // CODE WHEN BACK BUTTON IS CLICKED
@@ -717,7 +597,6 @@ function makeMap() {
         // show the output:
         output.innerText = selectedData ? `You selected ${selectedData} and ${slider.value}` : `You haven't selected any database`;
       
-        console.log("IDDDDD", selected_feature_id);
 
         let threshold;
         if (slider.value == 0){
@@ -829,21 +708,9 @@ function makeMap() {
       // update info about bounds
       updateInfo(bounds._northEast, bounds._southWest);
 
-      // // set rentacle
-      // L.rectangle(bounds, {
-      //   color: randomColor(),
-      //   weight: 20,
-      //   fillOpacity: 0.1,
-      // }).addTo(map);
-
       // set map
       map.fitBounds(bounds);
     }
-
-    // // generate random color
-    // function randomColor() {
-    //   return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
-    // }
 
     function updateInfo(north, south) {
       // console.log("moving the map", north, south);
@@ -860,10 +727,7 @@ function makeMap() {
 
     // object with layers
     const overlayMaps = {
-      //"Circle Example": pA,
-      //"Pin Example": pB,
       "Crash Points": crash_points,
-      //"Heatmap Example": heatmapLayer,
       "Census Boundaries": census_boundaries,
       "HIN": roadHighlight_polylineLayer,
     };
@@ -892,8 +756,6 @@ function makeMap() {
       collapsed: false,
     };
 
-    // HAVE BEEN USING THIS ONE, EXCEPT THAT IT DOESN'T WORK WHEN LAYERS FOR MPO AND COUNTY AREN'T PRE-LOADED AND HAVEN'T FIGURED 
-    // OUT HOW TO STYLE AFTER LOADING WITHOUT REDRAWING WHICH IS CALLED FROM INSIDE "click" METHOD
     // Use grouped layer plugin instead of "L.control.layers" to create radio boxes instead of checkboxes for overlays
     // var layerControl = L.control.groupedLayers(null, groupedOverlays, options);
     var layerControl = createGroupLayer(null, groupedOverlays, options);
@@ -908,32 +770,10 @@ function makeMap() {
     // var custom_buttons_control = new L.Control.CustomButtons(baseLayers, overlayMaps, { collapsed: false }).addTo(map);
 
 
-
     return map;
 }
 
 var layer = L.layerGroup();
-
-/*
-This function gets the FARS data by state by querying the python file
-It also plots the fars data on the map. 
-*/
-
-function getStateBoundariesByState(state_id) {
-  $.getJSON("/get_state_boundaries_by_state_id/" + state_id, function(obj) {
-     console.log ("state boundaries: ", obj)
-      // var markers = obj.data.map(function(arr) {
-      //     return L.circleMarker([arr[0], arr[1]], {radius: 2, color: 'red'}).bindPopup("Coordinates:<br>" + [arr[0], arr[1]]);
-      // });
-      // map.removeLayer(layer);
-      // layer = L.layerGroup(markers);
-      // map.addLayer(layer);
-  });
-}
-
-
-
-// ----------------------------------------------------------------------------------------------------
 
 
 // ----------------------------------------------------------------------------------------------------
@@ -964,14 +804,5 @@ function make_tab() {
 
 $(function() {
     map = makeMap();
-    // make_sidebar();
     make_tab();
-    //getFarsDataByState('0');
-
-    // $('#statesel').change(function() {
-    //     var val = $('#statesel option:selected').val();
-    //     getFarsDataByState(val);
-    //     getStateBoundariesByState(val);
-
-    // });
 })
