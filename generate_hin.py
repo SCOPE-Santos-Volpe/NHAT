@@ -1047,7 +1047,20 @@ def save_feature_collections(state_id, county_id, crash_data_source, threshold_s
     return "\n".join(summary)
 
 
-def generate_hin_single_county(state_id=6, county_id=1, dataset='SDS', table_name='NONE'):
+def generate_hin_single_county(state_id=6, county_id=1, dataset='SDS', table_name='California'):
+    """Generates the HIN files for a single county.
+
+    All this code is wrapped in a try/except loop. Most of the HINs generate correctly, but there are edge cases that we haven't had time to investigate.
+
+    Args:
+        state_id: an integer specifying the state where the county is contained. State numbers correspond to US FIPS codes. Defaults to 6 (California)
+        county_id: an integer specifying the county to generate a HIN for. County numbers correspond to US FIPS codes. Defaults to 1 (Alameda County, CA)
+        dataset: a string specifying the dataset to use to generate the HIN. If the dataset is 'FARS' or if the table name is invalid, then FARS data will be used. Defaults to 'SDS'.
+        table_name: a string specifying the table name for the SDS data. If the table name is 'California' or 'Massachusetts' and the dataset is not 'FARS', then the SDS data for that state is used. Defaults to 'California'
+
+    Returns:
+        None
+    """
 
     try:
 
