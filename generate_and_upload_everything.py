@@ -7,6 +7,8 @@ import census_tracts_split
 import preprocess_FARS_data
 import preprocess_Justice40_data
 import preprocess_SDS_data
+import generate_hin_everything
+import helper
 
 # Whether to upload to the real tables
 AWS.upload_data_to_RDS.testing = False
@@ -35,3 +37,11 @@ if __name__ == "__main__":
         AWS.upload_data_to_RDS.upload_SDS_data_to_RDS()
         AWS.upload_data_to_RDS.upload_Justice40_data_to_RDS()
         AWS.upload_data_to_RDS.upload_census_tract_boundaries_to_RDS()
+
+    # HIN
+    if(do_generating):
+        generate_hin_everything.generate_all_hin_maps()
+
+    if(do_uploading):
+        for folder_path in helper.get_all_subdirectories("HIN_Outputs"):
+            AWS.upload_data_to_RDS.upload_hin_to_RDS("HIN_Outputs/"+folder_path)
